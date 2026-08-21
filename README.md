@@ -139,7 +139,7 @@ career-platform/
 ```
 
 ---
-
+Direct Link: https://suksha128.github.io/career-platform/
 <div align="center">
 
 Made with ❤️ for Students & Job Seekers.
