@@ -354,7 +354,7 @@ select option {background:#ffffff;color:var(--t1);}
 <!-- ═══ RESUME TAILOR ═══ -->
 <div id="page-resume" class="page">
   <div class="section-title animate">✏️ AI <span class="g-text">Resume Tailor</span></div>
-  <div class="section-sub animate">1-click ATS optimization using Google XYZ formula + keyword injection. Watch your score jump.</div>
+  <div class="section-sub animate">AI rewrites your weak resume bullets into strong, results-driven lines with numbers and impact — so recruiters notice you instantly.</div>
   <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
     <div class="g2" style="align-items:flex-end;">
       <div><label>Target Company</label><select id="tailorCompany" onchange="tailorResume()"><option>Amazon</option><option>TCS</option><option>Infosys</option><option>Wipro</option><option>Microsoft</option><option>Google</option></select></div>
@@ -369,7 +369,8 @@ select option {background:#ffffff;color:var(--t1);}
   </div>
   <div class="card animate d2" style="margin-bottom:20px;"><div class="card-body"><p style="font-size:.75rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">🎯 AI-Generated Professional Summary</p><p id="tailorSummary" style="font-size:.9rem;line-height:1.8;"></p></div></div>
   <div class="card animate d3" style="margin-bottom:20px;"><div class="card-body">
-    <p style="font-weight:700;margin-bottom:16px;">📝 Resume Bullets — Before → After (Google XYZ Formula)</p>
+    <p style="font-weight:700;margin-bottom:16px;">📝 Resume Bullets — Before → After</p>
+    <p style="font-size:.78rem;color:var(--t2);margin-bottom:14px;">AI rewrites vague bullet points into measurable impact statements. Instead of <em>"Built a website"</em> it becomes <em>"Built a platform used by 500+ students, cutting search time by 40%"</em> — that is what gets you shortlisted.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;"><div style="font-size:.72rem;font-weight:700;color:var(--red);text-transform:uppercase;">❌ Original (Weak)</div><div style="font-size:.72rem;font-weight:700;color:var(--green);text-transform:uppercase;">✅ AI-Tailored (Strong)</div></div>
     <div id="tailorBullets"></div>
   </div></div>
@@ -452,7 +453,7 @@ let state = { profile:null, selectedJob:null, quizData:[], currentQuestion:0, qu
 const HOME_FEATURES = [
   {icon:'📄',col:'rgba(99,102,241,.15)',title:'Resume Parsing + Profile Builder',sub:'AI extracts skills, projects & experience'},
   {icon:'🎯',col:'rgba(6,182,212,.15)',title:'Job Match + Skill Gap Radar',sub:'Real-time score vs 6 top companies'},
-  {icon:'✏️',col:'rgba(245,158,11,.15)',title:'1-Click ATS Resume Tailor',sub:'Google XYZ formula optimization'},
+  {icon:'✏️',col:'rgba(245,158,11,.15)',title:'1-Click ATS Resume Tailor',sub:'Turns weak resume lines into measurable impact statements'},
   {icon:'🧠',col:'rgba(244,63,94,.15)',title:'Company & Year-Tagged Quizzes',sub:'TCS 2024, Amazon 2023 patterns'},
   {icon:'📚',col:'rgba(16,185,129,.15)',title:'YouTube Learning Roadmaps',sub:'Free curated paths per skill gap'},
 ];
