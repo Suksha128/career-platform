@@ -176,6 +176,7 @@ select option {background:#ffffff;color:var(--t1);}
     <button class="nav-tab"       onclick="showPage('learn')"   id="tab-learn">📚 Learn</button>
   </div>
   <div class="nav-badge" id="profileBadge" style="display:none">✓ <span id="profileName">Student</span></div>
+  <button onclick="showSettings()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:.85rem;color:var(--t2);margin-left:8px;" title="Settings">⚙️</button>
 </nav>
 <div class="toast" id="toast"><span id="toastIcon">✅</span><span id="toastMsg"></span></div>
 
@@ -1139,13 +1140,73 @@ function classifyQuery(q){
   return 'default';
 }
 
-function sendChat(){
+// ─── HF DIRECT API CONFIG ──────────────────────
+const HF_MODEL_URL = 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct/v1/chat/completions';
+
+function getHfToken(){ return localStorage.getItem('careerai_hf_token') || ''; }
+function setHfToken(t){ localStorage.setItem('careerai_hf_token', t); }
+
+async function queryHuggingFace(userMsg){
+  const token = getHfToken();
+  if(!token) return null;
+
+  const systemPrompt = `You are CareerAI, an AI recruitment intelligence assistant for Indian students preparing for campus placements. 
+You have expert knowledge of IT company hiring cycles in India (TCS, Infosys, Wipro, Amazon, Google, Microsoft, Accenture, Cognizant, HCL, etc.).
+Always provide:
+1. Company names with their current hiring status
+2. Registration deadlines and exam dates when known
+3. Direct application links in markdown format like [Apply on Amazon Jobs](https://amazon.jobs)
+4. Salary ranges for freshers
+Keep responses concise, actionable, and formatted with bullet points and bold headers.`;
+
+  try {
+    const res = await fetch(HF_MODEL_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMsg }
+        ],
+        max_tokens: 800,
+        temperature: 0.7
+      })
+    });
+    if(!res.ok) return null;
+    const data = await res.json();
+    if(data.choices && data.choices[0] && data.choices[0].message){
+      return data.choices[0].message.content;
+    }
+    return null;
+  } catch(e) {
+    console.warn('HF API call failed, falling back to local KB:', e);
+    return null;
+  }
+}
+
+async function sendChat(){
   const inp=document.getElementById('chatInput');
   const msg=inp.value.trim(); if(!msg)return;
   inp.value='';
   addUserMsg(msg);
   addTyping();
-  
+
+  // Try HF API first if token is set
+  const token = getHfToken();
+  if(token){
+    const aiReply = await queryHuggingFace(msg);
+    removeTyping();
+    if(aiReply){
+      addBotMsg(aiReply);
+      return;
+    }
+  }
+
+  // Fallback to local knowledge base
   const delay=600 + Math.random()*500;
   setTimeout(()=>{
     removeTyping();
@@ -1158,6 +1219,33 @@ function sendQuick(msg){
   document.getElementById('chatInput').value=msg;
   sendChat();
 }
+
+// ─── SETTINGS MODAL ──────────────────────────
+function showSettings(){
+  const existing = document.getElementById('settingsModal');
+  if(existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'settingsModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;';
+  const currentToken = getHfToken();
+  modal.innerHTML = `
+    <div style="background:var(--card);border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+      <h3 style="margin:0 0 8px;font-family:'Outfit',sans-serif;font-size:1.3rem;">⚙️ CareerAI Settings</h3>
+      <p style="color:var(--t2);font-size:.85rem;margin-bottom:20px;">Enter your free Hugging Face API token to enable live AI chatbot responses.</p>
+      <label style="font-size:.8rem;font-weight:600;display:block;margin-bottom:6px;">Hugging Face API Token</label>
+      <input type="password" id="settingsHfToken" value="${currentToken}" placeholder="hf_xxxxxxxxxxxxxxxx" 
+        style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;margin-bottom:8px;box-sizing:border-box;" />
+      <p style="font-size:.75rem;color:var(--t2);margin-bottom:20px;">Get a free token at <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:var(--p);font-weight:600;">huggingface.co/settings/tokens</a> (select "Read" access).</p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="document.getElementById('settingsModal').remove()" class="btn btn-ghost" style="padding:8px 20px;">Cancel</button>
+        <button onclick="setHfToken(document.getElementById('settingsHfToken').value);document.getElementById('settingsModal').remove();showToast('✅','Settings saved! AI chatbot is now active.');" class="btn btn-primary" style="padding:8px 20px;">Save</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click',(e)=>{ if(e.target===modal) modal.remove(); });
+}
 </script>
 </body>
 </html>
+
