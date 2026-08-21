@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareerAI — AI-Powered Student Placement Platform</title>
+  <meta name="description" content="Unify your placement prep with AI-powered skill matching, resume tailoring, company-specific quizzes, and curated learning paths." />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+:root {
+  --bg: #fdfcf9;          /* Premium Warm Off-White */
+  --bg2: #f6f3eb;         /* Soft Editorial Warm Beige */
+  --card: #ffffff;        /* Crisp White Cards */
+  --card-h: #faf9f6;
+  --border: #e9e5d9;      /* Delicate Clay Border */
+  --border-h: #d1cbbd;
+  --p: #8f3c30;           /* Deep Terracotta Clay Red */
+  --p2: #3a5f6f;          /* Muted Slate Blue */
+  --cyan: #4e7381;
+  --green: #486d52;       /* Soft Sage Green */
+  --red: #b84a39;
+  --amber: #b97637;       /* Soft Sand Gold */
+  --t1: #1f1d19;          /* Slate Dark Charcoal for typography */
+  --t2: #6d6a5f;          /* Soft Gray for secondary descriptions */
+  --t3: #a49e91;
+  --grad: linear-gradient(135deg, #8f3c30, #61271f); /* Organic maroon gradient */
+  --glow: 0 8px 30px rgba(143, 60, 48, 0.05);        /* Soft earth-shadow */
+  --r: 12px;
+  --rs: 8px;
+}
+* {margin:0;padding:0;box-sizing:border-box;}
+html {scroll-behavior:smooth;}
+body {font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;line-height:1.6;}
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle 800px at 100px 100px, rgba(143,60,48,0.03), transparent 80%),
+             radial-gradient(circle 600px at 90% 80%, rgba(58,95,111,0.03), transparent 80%);
+  pointer-events:none;
+  z-index:0;
+}
+nav {position:fixed;top:0;left:0;right:0;z-index:200;height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(253,252,249,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.logo {display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;}
+.logo-icon {width:38px;height:38px;border-radius:10px;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.logo-text {font-size:1.2rem;font-family:'Outfit',sans-serif;font-weight:800;color:var(--p);}
+.nav-tabs {display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:4px;}
+.nav-tab {padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .2s;border:none;background:none;font-family:'Inter',sans-serif;white-space:nowrap;}
+.nav-tab:hover {color:var(--t1);background:rgba(0,0,0,0.03);}
+.nav-tab.active {background:var(--p);color:#fff;font-weight:700;}
+.nav-badge {display:inline-flex;align-items:center;gap:6px;background:rgba(72,109,82,.12);color:var(--green);border:1px solid rgba(72,109,82,.25);border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:600;}
+.page {position:relative;z-index:1;padding:88px 40px 60px;max-width:1280px;margin:0 auto;display:none;}
+.page.active {display:block;}
+.card {background:var(--card);border:1px solid var(--border);border-radius:var(--r);position:relative;overflow:hidden;transition:all .25s;box-shadow: 0 2px 8px rgba(0,0,0,0.015);}
+.card:hover {border-color:var(--border-h);transform:translateY(-1px);box-shadow:var(--glow);}
+.card-body {padding:24px;}
+.g-text {background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.section-title {font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:4px;color:var(--t1);}
+.section-sub {font-size:.88rem;color:var(--t2);margin-bottom:28px;}
+.g2 {display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3 {display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.g4 {display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:1024px){.g3{grid-template-columns:1fr 1fr;}.g4{grid-template-columns:1fr 1fr;}}
+@media(max-width:768px){.g2,.g3,.g4{grid-template-columns:1fr;}.nav-tabs{display:none;}.page{padding:88px 16px 60px;}}
+.btn {display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:var(--rs);font-size:.9rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all .25s;border:none;}
+.btn-primary {background:var(--p);color:#fff;position:relative;overflow:hidden;}
+.btn-primary:hover {background:#793026;transform:translateY(-1px);box-shadow:0 6px 20px rgba(143,60,48,0.25);}
+.btn-ghost {background:var(--card);color:var(--t1);border:1px solid var(--border);}
+.btn-ghost:hover {border-color:var(--p);color:var(--p);background:rgba(143,60,48,0.02);}
+.btn-sm {padding:8px 18px;font-size:.82rem;}
+.form-group {margin-bottom:20px;}
+label {display:block;font-size:.78rem;font-weight:700;color:var(--t2);margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;}
+input,select,textarea {width:100%;background:#ffffff;border:1px solid var(--border);border-radius:var(--rs);padding:13px 16px;color:var(--t1);font-size:.9rem;font-family:'Inter',sans-serif;transition:all .2s;outline:none;}
+input:focus,select:focus,textarea:focus {border-color:var(--p);box-shadow:0 0 0 3px rgba(143,60,48,.1);background:#ffffff;}
+input::placeholder,textarea::placeholder {color:var(--t3);}
+select option {background:#ffffff;color:var(--t1);}
+.badge {display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.02em;}
+.b-green {background:rgba(72,109,82,.08);color:var(--green);border:1px solid rgba(72,109,82,.2);}
+.b-red {background:rgba(184,74,57,.08);color:var(--red);border:1px solid rgba(184,74,57,.2);}
+.b-blue {background:rgba(58,95,111,.08);color:var(--p2);border:1px solid rgba(58,95,111,.2);}
+.b-amber {background:rgba(185,118,55,.08);color:var(--amber);border:1px solid rgba(185,118,55,.2);}
+.b-cyan {background:rgba(78,115,129,.08);color:var(--cyan);border:1px solid rgba(78,115,129,.2);}
+.b-purple {background:rgba(143,60,48,.08);color:var(--p);border:1px solid rgba(143,60,48,.25);}
+.progress {width:100%;height:8px;background:var(--bg2);border-radius:20px;overflow:hidden;border:1px solid var(--border);}
+.progress-fill {height:100%;border-radius:20px;background:var(--p);transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+.dropzone {border:2px dashed var(--border);border-radius:var(--r);padding:48px 32px;text-align:center;cursor:pointer;transition:all .25s;background:#ffffff;}
+.dropzone:hover,.dropzone.drag-over {border-color:var(--p);background:rgba(143,60,48,.02);}
+.tag-box {display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;background:#ffffff;border:1px solid var(--border);border-radius:var(--rs);min-height:50px;}
+.tag {display:inline-flex;align-items:center;gap:6px;background:rgba(143,60,48,.08);color:var(--p);border:1px solid rgba(143,60,48,.2);border-radius:6px;padding:4px 10px;font-size:.8rem;font-weight:600;}
+.tag-del {cursor:pointer;opacity:.7;}
+.tag-del:hover {opacity:1;}
+.tag-input {flex:1;min-width:120px;background:none;border:none;color:var(--t1);font-size:.85rem;font-family:'Inter',sans-serif;outline:none;padding:4px 6px;}
+.tag-input::placeholder {color:var(--t3);}
+/* Role cards (replaced company job cards) */
+.role-card {padding:18px 20px;cursor:pointer;transition:all .25s;margin-bottom:12px;background:#ffffff;}
+.role-card:hover,.role-card.selected {border-color:var(--p);background:rgba(143,60,48,.02);}
+.role-card.selected {box-shadow:var(--glow);border-color:var(--p);}
+.role-icon {width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.domain-filter-btn {padding:8px 16px;border-radius:20px;font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid var(--border);background:#ffffff;color:var(--t2);transition:all .2s;font-family:'Inter',sans-serif;white-space:nowrap;}
+.domain-filter-btn:hover {border-color:var(--p);color:var(--p);}
+.domain-filter-btn.active {background:var(--p);color:#fff;border-color:transparent;}
+/* Chatbot */
+.chatbot-fab {position:fixed;bottom:28px;left:28px;width:56px;height:56px;border-radius:50%;background:var(--p);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 4px 24px rgba(143,60,48,.25);z-index:300;transition:all .25s;color:#ffffff;}
+.chatbot-fab:hover {transform:scale(1.05);box-shadow:0 8px 32px rgba(143,60,48,.35);}
+.chatbot-panel {position:fixed;bottom:24px;left:24px;width:480px;height:82vh;max-height:720px;background:#ffffff;border:1px solid var(--border-h);border-radius:20px;z-index:301;display:flex;flex-direction:column;transform:translateX(-120%);transition:transform .4s cubic-bezier(.4,0,.2,1);box-shadow:0 20px 50px rgba(0,0,0,.08);backdrop-filter:blur(24px);}
+.chatbot-panel.open {transform:translateX(0);}
+.chatbot-header {padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg2);border-radius:20px 20px 0 0;}
+.chatbot-msgs {flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+.chat-msg {max-width:90%;padding:12px 18px;border-radius:14px;font-size:.86rem;line-height:1.6;}
+.chat-msg.bot {background:var(--bg2);border:1px solid var(--border);color:var(--t1);align-self:flex-start;border-radius:4px 14px 14px 14px;box-shadow:0 2px 6px rgba(0,0,0,0.01);}
+.chat-msg.user {background:rgba(143,60,48,.1);border:1px solid rgba(143,60,48,.2);color:var(--t1);align-self:flex-end;border-radius:14px 4px 14px 14px;}
+.chat-msg.typing {color:var(--t2);font-style:italic;}
+.chat-btn-redirect {display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:10px 20px;border-radius:8px;background:var(--p) !important;color:#ffffff !important;font-size:.8rem;font-weight:700;text-decoration:none !important;border:none;cursor:pointer;transition:all .2s;}
+.chat-btn-redirect:hover {background:#733026 !important;transform:translateY(-1px);box-shadow:0 4px 12px rgba(143,60,48,0.25);}
+.chatbot-input-row {padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;}
+.chatbot-input {flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--t1);font-size:.88rem;font-family:'Inter',sans-serif;outline:none;}
+.chatbot-input:focus {border-color:var(--p);background:#ffffff;}
+.chat-send-btn {width:42px;height:42px;border-radius:10px;background:var(--p);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;color:#ffffff;}
+.chat-quick {display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;max-height:100px;overflow-y:auto;background:var(--bg2);}
+.chat-quick-btn {padding:6px 14px;border-radius:16px;font-size:.76rem;background:#ffffff;border:1px solid var(--border);color:var(--t1);cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;transition:all .2s;font-weight:600;}
+.chat-quick-btn:hover {background:rgba(143,60,48,.04);border-color:var(--p);color:var(--p);}
+.quiz-opt {display:flex;align-items:center;gap:14px;padding:16px 20px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .2s;font-size:.9rem;color:var(--t1);background:#ffffff;margin-bottom:10px;}
+.quiz-opt:hover {border-color:var(--p);background:rgba(143,60,48,.02);}
+.quiz-opt.selected {border-color:var(--p);background:rgba(143,60,48,.05);}
+.quiz-opt.correct {border-color:var(--green);background:rgba(72,109,82,.08);color:var(--green);font-weight:700;}
+.quiz-opt.wrong {border-color:var(--red);background:rgba(184,74,57,.08);color:var(--red);font-weight:700;}
+.opt-letter {width:32px;height:32px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;}
+.expl-box {background:rgba(72,109,82,.08);border:1px solid rgba(72,109,82,.2);border-radius:var(--rs);padding:16px 20px;margin-top:16px;font-size:.875rem;color:var(--t1);line-height:1.7;}
+.lp-node {display:flex;gap:18px;padding-bottom:24px;position:relative;}
+.lp-node::before {content:'';position:absolute;left:19px;top:48px;bottom:0;width:2px;background:var(--border);}
+.lp-node:last-child::before {display:none;}
+.lp-dot {width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;font-weight:700;z-index:1;}
+.diff-old {padding:14px;border-radius:var(--rs);background:rgba(184,74,57,.06);border:1px solid rgba(184,74,57,.15);font-size:.84rem;color:var(--red);line-height:1.6;}
+.diff-new {padding:14px;border-radius:var(--rs);background:rgba(72,109,82,.06);border:1px solid rgba(72,109,82,.15);font-size:.84rem;color:var(--green);line-height:1.6;}
+.ats-meter {display:flex;align-items:center;gap:16px;padding:20px 24px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);flex-wrap:wrap;}
+.mini-stat {padding:20px;border-radius:var(--rs);background:var(--card);border:1px solid var(--border);transition:all .3s;}
+.mini-stat:hover {border-color:var(--p);transform:translateY(-1px);}
+.stat-val {font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900;line-height:1;color:var(--p);}
+.stat-label {font-size:.78rem;font-weight:600;color:var(--t2);margin-top:4px;text-transform:uppercase;letter-spacing:0.02em;}
+.divider {height:1px;background:var(--border);margin:20px 0;}
+.chart-wrap {position:relative;width:100%;height:280px;}
+.profile-chip {display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.avatar {width:44px;height:44px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;}
+.toast {position:fixed;bottom:28px;right:28px;z-index:9999;background:#ffffff;border:1px solid var(--border-h);border-radius:12px;padding:14px 20px;font-size:.875rem;color:var(--t1);box-shadow:0 8px 32px rgba(0,0,0,0.05);transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;gap:10px;max-width:340px;}
+.toast.show {transform:translateY(0);opacity:1;}
+.hero-pill {display:inline-flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 16px;font-size:.8rem;font-weight:700;color:var(--p);margin-bottom:24px;}
+.code-block {background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--t1);line-height:1.7;white-space:pre-wrap;}
+::-webkit-scrollbar {width:6px;height:6px;}
+::-webkit-scrollbar-track {background:var(--bg);}
+::-webkit-scrollbar-thumb {background:var(--border-h);border-radius:3px;}
+@keyframes fadeIn {
+  from {opacity:0;}
+  to {opacity:1;}
+}
+.animate {animation:fadeIn .4s ease forwards;}
+.d1 {animation-delay:.05s;opacity:0;}.d2 {animation-delay:.1s;opacity:0;}.d3 {animation-delay:.15s;opacity:0;}.d4 {animation-delay:.2s;opacity:0;}
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="showPage('home')">
+    <div class="logo-icon">🎯</div>
+    <span class="logo-text">CareerAI</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('home')"    id="tab-home">🏠 Home</button>
+    <button class="nav-tab"       onclick="showPage('onboard')" id="tab-onboard">📋 Profile</button>
+    <button class="nav-tab"       onclick="showPage('match')"   id="tab-match">🎯 Job Match</button>
+    <button class="nav-tab"       onclick="showPage('resume')"  id="tab-resume">✏️ Resume AI</button>
+    <button class="nav-tab"       onclick="showPage('quiz')"    id="tab-quiz">🧠 Quiz</button>
+    <button class="nav-tab"       onclick="showPage('learn')"   id="tab-learn">📚 Learn</button>
+  </div>
+  <div class="nav-badge" id="profileBadge" style="display:none">✓ <span id="profileName">Student</span></div>
+</nav>
+<div class="toast" id="toast"><span id="toastIcon">✅</span><span id="toastMsg"></span></div>
+
+<!-- ═══ HOME ═══ -->
+<div id="page-home" style="position:relative;z-index:1;padding:88px 40px 60px;max-width:1380px;margin:0 auto;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;min-height:calc(100vh - 148px);">
+    <div>
+      <div class="hero-pill animate">⚡ Powered by Gemini AI + 5 Specialized Agents</div>
+      <h1 style="font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.1;margin-bottom:16px;" class="animate d1">
+        Your <span class="g-text">AI Co-Pilot</span><br>for Campus<br>Placements
+      </h1>
+      <p style="font-size:1.05rem;color:var(--t2);max-width:520px;margin-bottom:32px;" class="animate d2">
+        Stop juggling 5 different platforms. CareerAI unifies resume analysis, job matching, ATS tailoring, 
+        company-specific interview quizzes, and personalized learning paths — all powered by Gemini AI.
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;" class="animate d3">
+        <button class="btn btn-primary" onclick="showPage('onboard')">🚀 Start Your Journey</button>
+        <button class="btn btn-ghost" onclick="loadDemoProfile()">👁 View Live Demo</button>
+      </div>
+      <div style="display:flex;gap:32px;margin-top:40px;" class="animate d4">
+        <div><div style="font-size:2rem;font-weight:900;" class="g-text">97%</div><div style="font-size:.78rem;color:var(--t2);">Match Accuracy</div></div>
+        <div style="width:1px;background:var(--border);"></div>
+        <div><div style="font-size:2rem;font-weight:900;" class="g-text">500+</div><div style="font-size:.78rem;color:var(--t2);">Company Q-Banks</div></div>
+        <div style="width:1px;background:var(--border);"></div>
+        <div><div style="font-size:2rem;font-weight:900;" class="g-text">10K+</div><div style="font-size:.78rem;color:var(--t2);">Students Placed</div></div>
+      </div>
+    </div>
+    <div class="animate d2">
+      <div class="card" style="padding:28px;">
+        <p style="font-size:.75rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;">Platform Features</p>
+        <div id="homeFeatures"></div>
+        <button class="btn btn-primary" onclick="showPage('onboard')" style="width:100%;margin-top:20px;justify-content:center;">Get Started Free →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div id="page-onboard" class="page">
+  <div class="section-title animate">📋 Build Your <span class="g-text">Candidate Profile</span></div>
+  <div class="section-sub animate">Upload your resume and fill in details. AI extracts your complete skill profile.</div>
+  <div class="g2">
+    <div>
+      <div class="card animate d1" style="margin-bottom:20px;"><div class="card-body">
+        <label>Resume / Portfolio (PDF)</label>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()"
+             ondragover="event.preventDefault();this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+          <div style="font-size:3rem;margin-bottom:12px;" id="dzIcon">📄</div>
+          <div style="font-weight:700;margin-bottom:6px;" id="dzTitle">Drag & Drop your Resume here</div>
+          <div style="font-size:.83rem;color:var(--t2);" id="dzSub">or click to browse • PDF supported</div>
+          <input type="file" id="fileInput" accept=".pdf,.txt,.doc" style="display:none" onchange="handleFileSelect(event)"/>
+        </div>
+      </div></div>
+      <div class="card animate d2"><div class="card-body">
+        <p style="font-weight:700;margin-bottom:16px;">👤 Personal Details</p>
+        <div class="g2">
+          <div class="form-group"><label>Full Name</label><input type="text" id="inp-name" placeholder="Arjun Sharma" /></div>
+          <div class="form-group"><label>Email</label><input type="email" id="inp-email" placeholder="arjun@college.edu" /></div>
+        </div>
+        <div class="g2">
+          <div class="form-group"><label>Location</label><select id="inp-location"><option value="">Select city...</option><option>Bangalore</option><option>Hyderabad</option><option>Chennai</option><option>Pune</option><option>Mumbai</option><option>Delhi NCR</option><option>Remote / Any</option></select></div>
+          <div class="form-group"><label>Experience</label><select id="inp-exp"><option value="0">Fresher (0 years)</option><option value="1">0–1 Year</option><option value="2">1–2 Years</option><option value="3">2–3 Years</option></select></div>
+        </div>
+        <div class="form-group"><label>Target Domain</label><select id="inp-domain"><option>Software Development (SDE)</option><option>Data Science &amp; ML</option><option>Frontend Development</option><option>Backend Development</option><option>DevOps &amp; Cloud</option><option>Business Analyst</option></select></div>
+        <div class="form-group"><label>CGPA / Percentage</label><input type="text" id="inp-cgpa" placeholder="8.4 CGPA / 84%" /></div>
+        <div class="form-group"><label>GitHub / Portfolio URL</label><input type="url" id="inp-github" placeholder="https://github.com/yourusername" /></div>
+      </div></div>
+    </div>
+    <div>
+      <div class="card animate d2" style="margin-bottom:20px;"><div class="card-body">
+        <p style="font-weight:700;margin-bottom:16px;">⚡ Technical Skills</p>
+        <label>Add Skills (press Enter or comma)</label>
+        <div class="tag-box" id="skillBox" onclick="document.getElementById('skillInput').focus()">
+          <input class="tag-input" id="skillInput" placeholder="Type skill and press Enter..." onkeydown="handleTagKey(event,'skillBox','skillInput')" />
+        </div>
+        <div style="margin-top:12px;"><p style="font-size:.78rem;color:var(--t2);margin-bottom:8px;">Quick Add:</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('Python')">+ Python</span>
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('Java')">+ Java</span>
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('React')">+ React</span>
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('SQL')">+ SQL</span>
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('Node.js')">+ Node.js</span>
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('C++')">+ C++</span>
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('Machine Learning')">+ ML</span>
+            <span class="badge b-blue" style="cursor:pointer;" onclick="quickAddSkill('Docker')">+ Docker</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="card animate d3" style="margin-bottom:20px;"><div class="card-body">
+        <p style="font-weight:700;margin-bottom:16px;">🛠 Projects</p>
+        <div class="form-group"><label>Project 1 Title</label><input type="text" id="proj1-title" placeholder="E-Commerce Web App" /></div>
+        <div class="form-group"><label>Project 1 Tech Stack</label><input type="text" id="proj1-tech" placeholder="React, Node.js, PostgreSQL" /></div>
+        <div class="form-group"><label>Project 2 Title</label><input type="text" id="proj2-title" placeholder="ML Sentiment Analyzer" /></div>
+        <div class="form-group"><label>Project 2 Tech Stack</label><input type="text" id="proj2-tech" placeholder="Python, scikit-learn, Flask" /></div>
+      </div></div>
+      <div class="card animate d4" style="margin-bottom:16px;"><div class="card-body">
+        <p style="font-weight:700;margin-bottom:16px;">🏅 Certifications</p>
+        <div class="tag-box" id="certBox" onclick="document.getElementById('certInput').focus()">
+          <input class="tag-input" id="certInput" placeholder="AWS Cloud Practitioner..." onkeydown="handleTagKey(event,'certBox','certInput')" />
+        </div>
+      </div></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:16px;" onclick="saveProfile()">🤖 Analyze Profile with AI →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ JOB MATCH (Role-Centric) ═══ -->
+<div id="page-match" class="page">
+  <div class="section-title animate">🎯 Role Match & <span class="g-text">Skill Gap Explorer</span></div>
+  <div class="section-sub animate">Browse roles by domain and instantly see how your skills stack up. Ask the chatbot 💬 for live company hiring status.</div>
+
+  <!-- Profile chip -->
+  <div class="profile-chip animate" id="matchProfileChip">
+    <div class="avatar" id="matchAvatar">A</div>
+    <div><div style="font-weight:700;" id="matchName">Arjun Sharma</div><div style="font-size:.78rem;color:var(--t2);" id="matchDomain">Software Development • Bangalore • Fresher</div></div>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;" id="matchBadges"><span class="badge b-blue">9 Skills</span><span class="badge b-purple">3 Projects</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="openChatbot('Which companies are actively hiring right now?')">💬 Ask Chatbot</button>
+  </div>
+
+  <!-- Domain filter tabs -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="domainFilters"></div>
+
+  <div class="g2">
+    <!-- LEFT: Role cards -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <p style="font-size:.82rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;">🎯 Roles Matched to Your Skills</p>
+        <span class="badge b-blue" id="roleCount">8 roles</span>
+      </div>
+      <div id="roleList"></div>
+    </div>
+
+    <!-- RIGHT: Radar + breakdown -->
+    <div>
+      <div class="card" id="radarCard"><div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div>
+            <div style="font-weight:700;font-size:1rem;" id="radarCompany">SDE-1 / Software Engineer</div>
+            <div style="font-size:.78rem;color:var(--t2);">Your skill vector vs role requirements</div>
+          </div>
+          <div id="radarScore" style="font-size:2.5rem;font-weight:900;" class="g-text">74%</div>
+        </div>
+        <div class="chart-wrap" style="height:240px;"><canvas id="radarChart"></canvas></div>
+        <div class="divider"></div>
+        <!-- Skill breakdown -->
+        <div style="margin-bottom:12px;">
+          <p style="font-size:.75rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">✅ You Already Have</p>
+          <div id="matchedSkillsRow" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <p style="font-size:.75rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">❌ Skills to Gain</p>
+          <div id="missingSkillsRow" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <!-- Role insight banner -->
+        <div id="roleInsight" style="padding:12px 14px;border-radius:10px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);font-size:.82rem;color:#67e8f9;margin-bottom:16px;line-height:1.6;"></div>
+        <div class="divider"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="showPage('resume')">✏️ Tailor Resume</button>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('learn')">📚 Build Skills</button>
+          <button class="btn btn-ghost btn-sm" onclick="askChatbotForRole()">💬 Find Companies →</button>
+        </div>
+      </div></div>
+
+      <!-- Stats row -->
+      <div class="g3" style="margin-top:16px;">
+        <div class="mini-stat"><div style="font-size:1.3rem;">✅</div><div class="stat-val" id="statMatched">4</div><div class="stat-label">Skills You Have</div></div>
+        <div class="mini-stat"><div style="font-size:1.3rem;">🎯</div><div class="stat-val" id="statMissing">4</div><div class="stat-label">To Acquire</div></div>
+        <div class="mini-stat"><div style="font-size:1.3rem;">💼</div><div class="stat-val" style="font-size:1rem;" id="statHiring">High</div><div class="stat-label">Market Demand</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RESUME TAILOR ═══ -->
+<div id="page-resume" class="page">
+  <div class="section-title animate">✏️ AI <span class="g-text">Resume Tailor</span></div>
+  <div class="section-sub animate">1-click ATS optimization using Google XYZ formula + keyword injection. Watch your score jump.</div>
+  <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
+    <div class="g2" style="align-items:flex-end;">
+      <div><label>Target Company</label><select id="tailorCompany" onchange="tailorResume()"><option>Amazon</option><option>TCS</option><option>Infosys</option><option>Wipro</option><option>Microsoft</option><option>Google</option></select></div>
+      <div><label>Target Role</label><select id="tailorRole"><option>SDE-1</option><option>Systems Engineer</option><option>Graduate Trainee</option><option>Software Engineer</option></select></div>
+    </div>
+  </div></div>
+  <div class="ats-meter animate d1" style="margin-bottom:24px;">
+    <div style="text-align:center;min-width:90px;"><div style="font-size:.72rem;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px;">Before</div><div id="atsBefore" style="font-size:2.5rem;font-weight:900;color:var(--red);">54</div><div style="font-size:.72rem;color:var(--t3);">ATS Score</div></div>
+    <div style="flex:1;text-align:center;"><div style="font-size:2rem;">→</div><div style="font-size:.72rem;color:var(--t2);margin-top:4px;">AI Optimization</div></div>
+    <div style="text-align:center;min-width:90px;"><div style="font-size:.72rem;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:4px;">After</div><div id="atsAfter" style="font-size:2.5rem;font-weight:900;color:var(--green);">87</div><div style="font-size:.72rem;color:var(--t3);">ATS Score</div></div>
+    <div style="flex:1;"><div style="font-size:.78rem;color:var(--t2);margin-bottom:6px;">Improvement</div><div class="progress"><div class="progress-fill" id="atsProgress" style="width:87%;"></div></div><div style="font-size:.78rem;color:var(--green);margin-top:6px;font-weight:600;" id="atsImprove">+33 points ↑</div></div>
+  </div>
+  <div class="card animate d2" style="margin-bottom:20px;"><div class="card-body"><p style="font-size:.75rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">🎯 AI-Generated Professional Summary</p><p id="tailorSummary" style="font-size:.9rem;line-height:1.8;"></p></div></div>
+  <div class="card animate d3" style="margin-bottom:20px;"><div class="card-body">
+    <p style="font-weight:700;margin-bottom:16px;">📝 Resume Bullets — Before → After (Google XYZ Formula)</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;"><div style="font-size:.72rem;font-weight:700;color:var(--red);text-transform:uppercase;">❌ Original (Weak)</div><div style="font-size:.72rem;font-weight:700;color:var(--green);text-transform:uppercase;">✅ AI-Tailored (Strong)</div></div>
+    <div id="tailorBullets"></div>
+  </div></div>
+  <div class="g2">
+    <div class="card animate d4"><div class="card-body"><p style="font-weight:700;margin-bottom:14px;">🔑 ATS Keywords Injected</p><div id="atsKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
+    <div class="card animate d4"><div class="card-body"><p style="font-weight:700;margin-bottom:14px;">💡 Formatting Tips</p><div id="tailorTips"></div></div></div>
+  </div>
+</div>
+
+<!-- ═══ QUIZ ═══ -->
+<div id="page-quiz" class="page">
+  <div class="section-title animate">🧠 Interview <span class="g-text">Quiz Engine</span></div>
+  <div class="section-sub animate">Company & year-tagged questions from real placement drives. Select question count or launch dynamic practice tests.</div>
+  
+  <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:1;min-width:120px;"><label>Company</label><select id="quizCompany" onchange="loadQuiz()"><option>TCS</option><option>Amazon</option><option>Infosys</option><option>Wipro</option><option>Microsoft</option><option>Google</option><option>Accenture</option></select></div>
+      <div style="flex:1;min-width:130px;"><label>Role</label><select id="quizRole"><option>NQT / Smart Hire</option><option>SDE-1</option><option>Systems Engineer</option><option>Graduate Trainee</option></select></div>
+      <div style="flex:1;min-width:130px;"><label>Category</label><select id="quizCategory"><option value="all">All Topics</option><option>Aptitude</option><option>Coding</option><option>SQL</option><option>Data Structures</option><option>System Design</option><option>OOP</option></select></div>
+      <div style="flex:1;min-width:100px;"><label>Questions (5-15)</label><input type="number" id="quizCount" min="5" max="15" value="5" style="padding:11px 12px;"/></div>
+      <button class="btn btn-primary btn-sm" onclick="loadQuiz()">🔄 Start Quiz</button>
+    </div>
+  </div></div>
+
+  <!-- Dynamic Weak Area Practice Alert Banner -->
+  <div id="weakAreaAlert" class="animate" style="display:none; align-items:center; justify-content:space-between; padding:16px 20px; border-radius:12px; background:rgba(244,63,94,.1); border:1px solid rgba(244,63,94,.35); margin-bottom:24px; gap:16px; flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-size:1.5rem;">⚠️</div>
+      <div>
+        <div style="font-weight:700;color:#fca5a5;" id="weakAreaTitle">Weak Area Detected!</div>
+        <div style="font-size:.82rem;color:var(--t2);" id="weakAreaSub">Your accuracy in SQL is below 60%. We recommend practice.</div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="border-color:var(--red); color:#fca5a5;" id="btnWeakPractice" onclick="startWeakPractice()">🔥 Practice 5+ Weak Qs</button>
+  </div>
+  <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;" class="animate d1">
+    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Score</div><div class="stat-val g-text" id="quizScore">0 / 0</div></div>
+    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Question</div><div class="stat-val" id="quizQNum">1 of 5</div></div>
+    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Accuracy</div><div class="stat-val" id="quizAccuracy">—</div></div>
+    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Status</div><div class="stat-val" id="quizStatus" style="font-size:.9rem;">🔵 In Progress</div></div>
+  </div>
+  <div class="card animate d2" id="quizCard"><div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="badge b-amber" id="qYear">TCS NQT 2024</span><span class="badge b-blue" id="qCategory">Aptitude</span><span class="badge b-cyan" id="qDiff">Easy</span></div>
+      <div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="prevQuestion()" id="btnPrev" disabled>← Prev</button><button class="btn btn-ghost btn-sm" onclick="nextQuestion()" id="btnNext">Next →</button></div>
+    </div>
+    <div class="progress" style="margin-bottom:20px;"><div class="progress-fill" id="quizProgress" style="width:20%;"></div></div>
+    <div class="code-block" id="quizQuestion" style="font-family:'Inter',sans-serif;margin-bottom:24px;">Loading question...</div>
+    <div id="quizOptions"></div>
+    <div id="quizExplanation" style="display:none;"><div class="expl-box"><strong style="color:#34d399;">💡 Explanation:</strong><br/><span id="explText"></span></div></div>
+  </div></div>
+  <div class="card animate d3" style="margin-top:20px;"><div class="card-body"><p style="font-weight:700;margin-bottom:14px;">📊 Session Performance</p><div class="chart-wrap" style="height:180px;"><canvas id="quizBarChart"></canvas></div></div></div>
+</div>
+
+<!-- ═══ LEARNING PATH ═══ -->
+<div id="page-learn" class="page">
+  <div class="section-title animate">📚 Personalized <span class="g-text">Learning Roadmap</span></div>
+  <div class="section-sub animate">Auto-generated paths for your exact skill gaps. 100% free YouTube & open-source resources.</div>
+  <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <div><div style="font-weight:700;">Overall Learning Progress</div><div style="font-size:.82rem;color:var(--t2);">Based on skill gaps for your target role</div></div>
+      <div style="font-size:1.8rem;font-weight:900;" class="g-text">0%</div>
+    </div>
+    <div class="progress"><div class="progress-fill" style="width:0%;"></div></div>
+    <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
+      <div><span class="badge b-red">Critical</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;">1 skill</span></div>
+      <div><span class="badge b-amber">High</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;">2 skills</span></div>
+      <div><span class="badge b-blue">Medium</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;">2 skills</span></div>
+      <div style="margin-left:auto;"><span style="font-size:.82rem;color:var(--t2);">Est. total:</span> <strong>97 hrs</strong></div>
+    </div>
+  </div></div>
+  <div id="learningPathContainer"></div>
+</div>
+
+<script>
+// ─── STATE ─────────────────────────────────
+let state = { profile:null, selectedJob:null, quizData:[], currentQuestion:0, quizAnswers:{}, quizCorrect:0, radarChart:null, quizBarChartInst:null, skills:[], certs:[] };
+
+// ─── HOME FEATURES ────────────────────────
+const HOME_FEATURES = [
+  {icon:'📄',col:'rgba(99,102,241,.15)',title:'Resume Parsing + Profile Builder',sub:'AI extracts skills, projects & experience'},
+  {icon:'🎯',col:'rgba(6,182,212,.15)',title:'Job Match + Skill Gap Radar',sub:'Real-time score vs 6 top companies'},
+  {icon:'✏️',col:'rgba(245,158,11,.15)',title:'1-Click ATS Resume Tailor',sub:'Google XYZ formula optimization'},
+  {icon:'🧠',col:'rgba(244,63,94,.15)',title:'Company & Year-Tagged Quizzes',sub:'TCS 2024, Amazon 2023 patterns'},
+  {icon:'📚',col:'rgba(16,185,129,.15)',title:'YouTube Learning Roadmaps',sub:'Free curated paths per skill gap'},
+];
+
+document.getElementById('homeFeatures').innerHTML = HOME_FEATURES.map(f => `
+  <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);">
+    <div style="width:40px;height:40px;border-radius:10px;background:${f.col};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${f.icon}</div>
+    <div><div style="font-weight:600;font-size:.9rem;">${f.title}</div><div style="font-size:.75rem;color:var(--t2);">${f.sub}</div></div>
+    <span class="badge b-green" style="margin-left:auto;white-space:nowrap;">Live</span>
+  </div>
+`).join('').replace(/border-bottom[^;]+;(?=[^<]*<\/div><\/div>\s*<button)/, '');
+
+// ─── ROLES DATA (role-centric, no company names) ──────────
+const ROLES = [
+  {id:'r1',icon:'⚙️',domain:'SDE',title:'Software Development Engineer (SDE-1)',level:'Entry',type:'Hybrid',salary:'₹8–32 LPA',demand:'🔥 Very High',match:74,
+   matched:['Python','SQL','REST APIs','Git','React'],missing:['Java','Data Structures','System Design','LLD'],
+   insight:'SDE roles are the highest-volume tech roles in India. Your Python + React stack covers ~70% of what most product companies need. Focus on DSA (LeetCode) and System Design to unlock top-tier offers (₹20L+).',
+   radar:[{s:'Python',c:75,r:85},{s:'DSA',c:45,r:90},{s:'Sys Design',c:20,r:75},{s:'SQL',c:70,r:80},{s:'React/JS',c:80,r:70},{s:'OOP',c:55,r:85},{s:'APIs',c:72,r:75}]},
+  {id:'r2',icon:'🤖',domain:'AI/ML',title:'ML Engineer / Data Scientist',level:'Entry',type:'On-Site',salary:'₹10–38 LPA',demand:'🔥 Very High',match:61,
+   matched:['Python','SQL','Git'],missing:['PyTorch/TensorFlow','Statistics','ML Deployment','LLM APIs'],
+   insight:'ML roles are exploding in 2024–25 with GenAI boom. Your Python base is solid. Priority gaps: learn PyTorch fundamentals + hands-on Kaggle projects. Companies specifically look for deployed models, not just notebooks.',
+   radar:[{s:'Python',c:75,r:90},{s:'PyTorch',c:20,r:85},{s:'Stats',c:40,r:80},{s:'SQL',c:70,r:60},{s:'ML Ops',c:10,r:70},{s:'NLP',c:30,r:75},{s:'APIs',c:72,r:70}]},
+  {id:'r3',icon:'🎨',domain:'Frontend',title:'Frontend Engineer (React/Next.js)',level:'Entry–Mid',type:'Remote Friendly',salary:'₹7–25 LPA',demand:'🔶 High',match:82,
+   matched:['React','JavaScript','REST APIs','Git','Node.js'],missing:['TypeScript','CSS Animation','Web Perf (LCP/CLS)'],
+   insight:'Your React + JS stack makes you immediately interview-ready for frontend roles. Missing: TypeScript (1-week to learn) and performance metrics. Adding TypeScript to your resume increases callbacks by ~35%.',
+   radar:[{s:'React',c:80,r:85},{s:'TypeScript',c:30,r:80},{s:'CSS/UX',c:60,r:75},{s:'Performance',c:25,r:70},{s:'Testing',c:40,r:65},{s:'APIs',c:72,r:75},{s:'Git',c:72,r:70}]},
+  {id:'r4',icon:'🔧',domain:'Backend',title:'Backend Engineer (Node/Python/Java)',level:'Entry',type:'Hybrid',salary:'₹8–28 LPA',demand:'🔶 High',match:78,
+   matched:['Python','Node.js','SQL','REST APIs','Git'],missing:['Java','Redis/Caching','Kafka/Queues','Docker'],
+   insight:'Strong backend foundation with Python + Node.js. Missing scalability tools (Redis, Kafka) are learnable in 3–4 weeks. Companies hiring backend engineers look for database design skills heavily — your SQL is already an asset.',
+   radar:[{s:'Python',c:75,r:80},{s:'Node.js',c:65,r:75},{s:'SQL/DB',c:70,r:85},{s:'Java',c:15,r:75},{s:'Caching',c:10,r:70},{s:'Queues',c:10,r:65},{s:'Docker',c:20,r:70}]},
+  {id:'r5',icon:'☁️',domain:'DevOps',title:'Cloud / DevOps Engineer',level:'Entry',type:'On-Site',salary:'₹7–22 LPA',demand:'🔶 High',match:45,
+   matched:['Git','Python','SQL'],missing:['Docker','Kubernetes','AWS/GCP','CI/CD','Terraform'],
+   insight:'DevOps is highly specialised. Your current gap is large but very structured — it is entirely self-learnable in 8–12 weeks using free resources (AWS Free Tier, KodeKloud). Consider this a 3-month target role.',
+   radar:[{s:'Linux',c:40,r:85},{s:'Docker',c:15,r:90},{s:'K8s',c:5,r:80},{s:'AWS',c:20,r:85},{s:'CI/CD',c:25,r:85},{s:'Python',c:75,r:70},{s:'Terraform',c:5,r:75}]},
+  {id:'r6',icon:'📊',domain:'Data',title:'Data Analyst / BI Analyst',level:'Entry',type:'Hybrid',salary:'₹5–18 LPA',demand:'🔶 High',match:71,
+   matched:['SQL','Python','Excel/Sheets','Git'],missing:['Power BI / Tableau','Statistics','Data Storytelling'],
+   insight:'Your SQL + Python combo is perfect for data analyst roles. The only gap is BI tools (Power BI is free with Microsoft account) and presenting insights visually. This is your second-highest match role after Frontend.',
+   radar:[{s:'SQL',c:70,r:90},{s:'Python',c:75,r:75},{s:'Stats',c:40,r:70},{s:'Tableau/BI',c:5,r:80},{s:'Excel',c:55,r:65},{s:'Storytelling',c:50,r:70},{s:'APIs',c:72,r:55}]},
+  {id:'r7',icon:'🛡️',domain:'Other',title:'Automation / QA Engineer',level:'Entry',type:'On-Site',salary:'₹5–15 LPA',demand:'🔷 Medium',match:68,
+   matched:['Python','SQL','REST APIs','Git'],missing:['Selenium','Pytest/JUnit','API Testing (Postman)'],
+   insight:'QA Automation roles are often overlooked but are high-volume and well-paid. Your Python is directly applicable for Pytest/Selenium scripts. This is an excellent bridging role to gain product company experience.',
+   radar:[{s:'Python',c:75,r:85},{s:'Selenium',c:5,r:80},{s:'SQL',c:70,r:70},{s:'APIs',c:72,r:80},{s:'Pytest',c:15,r:80},{s:'CI/CD',c:25,r:65},{s:'Comm.',c:75,r:70}]},
+  {id:'r8',icon:'💼',domain:'Other',title:'Business / Systems Analyst',level:'Entry',type:'Hybrid',salary:'₹5–14 LPA',demand:'🔷 Medium',match:65,
+   matched:['SQL','Python','Communication','REST APIs'],missing:['Requirement Gathering','JIRA','Process Modeling (BPMN)'],
+   insight:'BA roles bridge tech and business. Your SQL + communication skills are exactly what is needed. Added benefit: many service companies (Infosys, Wipro, Accenture) have mass BA openings for freshers year-round.',
+   radar:[{s:'SQL',c:70,r:80},{s:'Python',c:75,r:60},{s:'Communication',c:75,r:90},{s:'JIRA',c:20,r:75},{s:'Analytics',c:55,r:75},{s:'Process',c:20,r:70},{s:'Docs',c:50,r:75}]},
+];
+
+const DOMAINS = ['All','SDE','AI/ML','Frontend','Backend','DevOps','Data','Other'];
+
+// ─── RESUME DATA ───────────────────────────
+const RESUME_DATA = {
+  Amazon:{before:54,after:87,summary:"Results-driven CS engineer with proven expertise in Python, React, and distributed web services. Engineered 3 production-grade full-stack applications processing 10K+ concurrent events. Directly aligned with Amazon's SDE-1 ownership and scalability standards.",bullets:[{old:"Built an e-commerce website using React and Node.js",new:"Engineered full-stack e-commerce platform using React.js and Node.js serving 500+ concurrent users, reducing checkout latency by 35% via REST API optimization and PostgreSQL index tuning.",kw:["REST API","PostgreSQL","scalable","concurrent users"]},{old:"Made a sentiment analysis model using Python",new:"Developed NLP-based sentiment analysis microservice using Python and scikit-learn achieving 91% F1-score on 50K+ review dataset, deployed via Flask with 3rd-party API integration.",kw:["microservice","deployed","F1-score","pipeline"]},{old:"Built event portal for college",new:"Designed and launched real-time campus event system using React and Firebase, automating notifications for 2,000+ students and reducing coordination overhead by 60%.",kw:["real-time","automation","Firebase","scalability"]}],keywords:["distributed systems","scalable","LLD","data structures","agile","ownership","Java/Python"],tips:["Place Technical Skills ABOVE Education — Amazon scans skills first.","Add GitHub profile prominently at resume top.","Quantify every bullet with a numeric impact metric.","Add a 'Leadership Principles Alignment' note in summary."]},
+  TCS:{before:61,after:92,summary:"Computer Science graduate with strong aptitude in Python, SQL, and full-stack web development. Completed 3 impactful campus projects demonstrating teamwork and analytical thinking, aligned with TCS Smart Hire criteria.",bullets:[{old:"Built an e-commerce website",new:"Developed scalable e-commerce web platform handling 1,000+ product listings and 200+ concurrent sessions, reducing load time by 30% through optimized React component rendering.",kw:["scalable","React","optimized","concurrent"]},{old:"Made a Python ML model",new:"Implemented Python-based NLP sentiment classifier achieving 88% accuracy on 30K records, enabling automated feedback categorization for 3 college departments.",kw:["Python","NLP","automated","accuracy"]},{old:"Built event portal",new:"Led 4-member team to build campus event management portal with real-time updates, used by 2,000+ students, reducing admin workload by 50%.",kw:["led","team","real-time","admin efficiency"]}],keywords:["teamwork","problem solving","Python","SQL","agile","communication","attention to detail"],tips:["TCS values CGPA — highlight prominently.","Add extracurricular leadership roles.","Keep resume to 1 page strictly.","Include NQT/mock test scores if high."]},
+  Infosys:{before:58,after:85,summary:"Motivated B.Tech CS graduate skilled in Java, SQL, and web development. Demonstrated strong collaborative ability through 3 campus projects. Eager to contribute to Infosys digital transformation as a Systems Engineer.",bullets:[{old:"Built an e-commerce website",new:"Architected Java-compatible RESTful e-commerce backend with SQL-optimized inventory management, reducing query response time by 40% and supporting 500+ concurrent transactions.",kw:["Java","RESTful","SQL","optimized"]},{old:"Made a Python ML model",new:"Built automated data classification pipeline processing 50K+ records with 89% accuracy, reducing manual review time by 45% for the college analytics team.",kw:["automated","pipeline","data classification","accuracy"]},{old:"Built event portal",new:"Led cross-functional team of 4 to deliver full-stack campus portal in 8 weeks, improving event registration efficiency by 70% for 2,000+ students.",kw:["led","cross-functional","full-stack","efficiency"]}],keywords:["Java","OOPS","SQL","teamwork","communication","analytical","digital transformation"],tips:["Infosys heavily tests Java OOP — mention Java prominently.","Add NPTEL/Coursera certifications.","Mention hackathon participations.","Keep language professional and concise."]},
+  Wipro:{before:59,after:86,summary:"Detail-oriented CS engineer with Python, SQL, REST API, and Node.js expertise. Built scalable systems serving 1K+ users with a focus on clean code and testing best practices.",bullets:[{old:"Built e-commerce site",new:"Built Python REST API backend for e-commerce platform with PostgreSQL, serving 400+ users and reducing page load by 25% through query optimization.",kw:["Python","REST API","PostgreSQL","optimization"]},{old:"ML model",new:"Created ML-powered data pipeline automating 70% of manual data preprocessing tasks, reducing cycle time by 3 hours per run.",kw:["automation","pipeline","ML","cycle time"]},{old:"Event portal",new:"Shipped campus event platform with Node.js backend in 6 weeks serving 1,800+ students, achieving 99% uptime.",kw:["Node.js","uptime","shipped","performance"]}],keywords:["Python","SQL","testing","OOP","APIs","agile","documentation"],tips:["Wipro values documented code — mention code review experience.","Add any open-source contributions.","Highlight test coverage metrics if available."]},
+  Microsoft:{before:52,after:84,summary:"Innovative CS graduate with TypeScript, React, and REST API expertise. Built 3 impact-driven projects demonstrating product thinking and engineering discipline aligned with Microsoft's growth mindset.",bullets:[{old:"Built e-commerce site",new:"Engineered responsive SPA using React + TypeScript with Azure-compatible REST API, handling 500+ concurrent sessions and achieving 95 Lighthouse performance score.",kw:["TypeScript","React","Azure","Lighthouse"]},{old:"ML model",new:"Built Python sentiment microservice integrated via REST API, processing 50K records with 91% F1-score, reducing manual review by 60%.",kw:["microservice","REST API","F1-score","automation"]},{old:"Event portal",new:"Led 4-person team to ship real-time event platform using React and Firebase in 8 weeks, scaling to 2K+ active users with zero critical bugs post-launch.",kw:["led","real-time","shipped","scaled"]}],keywords:["TypeScript","Azure","C#","growth mindset","OOP","algorithms","scale"],tips:["Microsoft values growth mindset — add learning/upskilling examples.","Mention any Azure free tier projects.","Highlight GitHub public repos prominently."]},
+  Google:{before:48,after:79,summary:"Analytically-driven CS engineer with Python and algorithm design expertise. Developed ML and full-stack systems demonstrating technical depth and measured impact, aligned with Google's engineering culture.",bullets:[{old:"Built e-commerce site",new:"Designed distributed e-commerce platform using Python Flask backend, optimizing search algorithms from O(n²) to O(n log n), serving 1K+ users.",kw:["distributed","algorithms","optimized","Python"]},{old:"ML model",new:"Engineered NLP classification pipeline achieving 91% F1-score on 50K+ dataset using TF-IDF and logistic regression — 3× faster than baseline with vectorized NumPy operations.",kw:["NLP","pipeline","F1-score","NumPy"]},{old:"Event portal",new:"Architected real-time event system with Firebase applying pub-sub patterns to handle 500 concurrent connections with <100ms latency.",kw:["pub-sub","real-time","concurrent","latency"]}],keywords:["algorithms","data structures","C++","Python","distributed systems","scalability","OOP"],tips:["Google focuses on algorithmic depth — add LeetCode/competitive programming stats.","Mention any open-source contributions or research papers.","Demonstrate system design awareness in project descriptions."]},
+};
+
+// ─── QUIZ DATA ─────────────────────────────
+const QUIZ_DB = {
+  TCS:[
+    {id:1,year:'TCS NQT 2024',cat:'Aptitude',diff:'Easy',q:'A train 125 m long passes a pole in 5 seconds. Speed in km/hr?',opts:['72 km/hr','90 km/hr','100 km/hr','54 km/hr'],ans:1,exp:'Speed = 125/5 = 25 m/s. Convert: 25 × (18/5) = 90 km/hr. Multiply m/s by 18/5 to get km/hr. This formula appears in virtually every TCS aptitude paper.'},
+    {id:2,year:'TCS NQT 2023',cat:'Coding',diff:'Easy',q:'What is the output?\n\nx = [1, 2, 3, 4, 5]\nprint(x[-2:])',opts:['[4, 5]','[3, 4, 5]','[1, 2, 3]','[5]'],ans:0,exp:'Negative slicing: x[-2:] starts from the 2nd-last element (index -2 = value 4) to the end. Result: [4, 5]. Negative indexing and slicing are TCS NQT staples.'},
+    {id:3,year:'TCS Digital 2024',cat:'SQL',diff:'Medium',q:'Which SQL clause filters groups AFTER a GROUP BY aggregation?',opts:['WHERE','HAVING','FILTER','LIMIT'],ans:1,exp:'HAVING filters aggregated groups AFTER GROUP BY (e.g., HAVING COUNT(*) > 5). WHERE filters individual rows BEFORE grouping. This distinction is asked in nearly every TCS Digital SQL round.'},
+    {id:4,year:'TCS NQT 2022',cat:'Verbal',diff:'Easy',q:"Choose the best word:\n\"The scientist's _____ approach helped uncover solutions others overlooked.\"",opts:['methodical','haphazard','complacent','dismissive'],ans:0,exp:"'Methodical' = proceeding in a systematic, organized way — the only positive option fitting the context. The others (haphazard, complacent, dismissive) are negative traits."},
+    {id:5,year:'TCS Digital 2023',cat:'Data Structures',diff:'Medium',q:'Time complexity of searching in a BALANCED Binary Search Tree?',opts:['O(n)','O(log n)','O(n log n)','O(1)'],ans:1,exp:'In a balanced BST, each comparison eliminates half the tree. Height = log(n), so search = O(log n). An unbalanced BST degrades to O(n). Balance is key!'},
+  ],
+  Amazon:[
+    {id:1,year:'Amazon SDE-1 2024',cat:'Data Structures',diff:'Medium',q:'Find two numbers in an array that sum to a target. Most efficient approach?',opts:['O(n²) nested loop','Sort + binary search — O(n log n)','Hash map single pass — O(n)','Two pointer after sorting'],ans:2,exp:"Hash map approach: iterate once, check if (target - current) exists in map. O(n) time, O(n) space. Classic Two Sum (LeetCode #1) — Amazon's most frequently tested question type."},
+    {id:2,year:'Amazon SDE-1 2023',cat:'OOP',diff:'Easy',q:'Which SOLID principle states a class should have only ONE reason to change?',opts:['Open/Closed Principle','Single Responsibility Principle','Liskov Substitution','Interface Segregation'],ans:1,exp:'Single Responsibility Principle (SRP): A class should do one thing and have one reason to change. Amazon LLD rounds focus heavily on SOLID principles — SRP prevents bloated God classes.'},
+    {id:3,year:'Amazon Intern 2023',cat:'System Design',diff:'Hard',q:"Since Dec 2020, what consistency model does Amazon S3 provide?",opts:['Eventual consistency only','Strong read-after-write for ALL objects','Weak consistency for GET after PUT','No consistency guarantees'],ans:1,exp:'Since December 2020, S3 provides strong read-after-write consistency for all operations. Amazon tests this in system design to see if candidates are current with cloud developments.'},
+    {id:4,year:'Amazon SDE-1 2024',cat:'Coding',diff:'Medium',q:'Output of this Python code?\n\ndef f(x, lst=[]):\n    lst.append(x)\n    return lst\n\nprint(f(1))\nprint(f(2))',opts:['[1] then [2]','[1] then [1, 2]','[1, 2] then [1, 2]','Error'],ans:1,exp:"Python mutable default argument trap! The default list [] is created ONCE and shared across calls. f(1) gives [1], then f(2) appends to same list giving [1, 2]. Classic Amazon Python gotcha."},
+    {id:5,year:'Amazon Intern 2024',cat:'Data Structures',diff:'Hard',q:'HashMap internal structure and worst-case get() complexity?',opts:['Array — O(1) always','Linked List — O(n) always','Array of linked lists — O(n) worst case','Tree — O(log n) always'],ans:2,exp:"HashMap = array of buckets, each with a linked list. Average get() = O(1). Worst case O(n) with all hash collisions. Java 8+ switches to red-black trees for O(log n) worst case."},
+  ],
+  Infosys:[
+    {id:1,year:'Infosys InfyTQ 2024',cat:'Java',diff:'Medium',q:'Output of:\n\nSystem.out.println(10 + 20 + "Hello" + 10 + 20)',opts:['30Hello30','30Hello1020','1020Hello1020','Compile error'],ans:1,exp:"Java evaluates left-to-right: 10+20=30 (int), then 30+'Hello'='30Hello' (string concat begins), then '30Hello'+10='30Hello10', then '30Hello10'+20='30Hello1020'."},
+    {id:2,year:'Infosys 2023',cat:'Aptitude',diff:'Easy',q:'8 workers complete a job in 12 days. How many days for 12 workers?',opts:['6 days','8 days','10 days','16 days'],ans:1,exp:"Total work = 8 × 12 = 96 worker-days (constant). With 12 workers: 96 ÷ 12 = 8 days. Classic 'men × days = constant work' formula — heavy in Infosys aptitude rounds."},
+    {id:3,year:'Infosys 2023',cat:'Reasoning',diff:'Easy',q:'If CLOUD = DMPVE, how is RAIN coded?',opts:['SBJO','TCJO','SBJP','SBIO'],ans:0,exp:"Each letter shifts +1: C→D, L→M, O→P, U→V, D→E. Apply: R→S, A→B, I→J, N→O = SBJO. Caesar cipher +1 — very common Infosys reasoning pattern."},
+    {id:4,year:'Infosys 2022',cat:'SQL',diff:'Medium',q:'Which SQL statement retrieves data from multiple tables via a related column?',opts:['UNION','JOIN','MERGE','INTERSECT'],ans:1,exp:"JOIN combines rows from tables based on a related column (foreign key). UNION stacks result sets vertically. JOIN is the fundamental multi-table query operation in relational databases."},
+    {id:5,year:'Infosys 2024',cat:'OOP',diff:'Easy',q:'Which OOP concept allows inheriting from multiple parent classes?',opts:['Polymorphism','Encapsulation','Multiple Inheritance','Abstraction'],ans:2,exp:"Multiple Inheritance = inheriting from more than one parent class. Python supports it natively. Java does NOT (uses interfaces instead) to avoid the Diamond Problem."},
+  ],
+};
+['Wipro','Microsoft','Google','Accenture'].forEach(c => QUIZ_DB[c] = QUIZ_DB.TCS.map(q => ({...q,year:`${c} 2024`})));
+
+// ─── LEARNING PATH DATA ────────────────────
+const LP = [
+  {skill:'Data Structures & Algorithms',priority:'Critical',hours:40,diff:'Advanced',col:'#f43f5e',icon:'🔴',
+   why:'Required for ALL product company interviews (Amazon, Google, Microsoft)',
+   mods:[{t:'Arrays, Strings, Hashing',h:6,r:'NeetCode 150 Playlist',u:'https://www.youtube.com/watch?v=3OamzN90kPg',p:'YouTube'},{t:'Linked Lists & Stacks',h:5,r:'Abdul Bari DSA Course',u:'https://www.youtube.com/watch?v=zLnJcAt1UbM',p:'YouTube'},{t:'Trees & Binary Search Trees',h:8,r:'William Fiset — Trees',u:'https://www.youtube.com/watch?v=oSWTXtMglKE',p:'YouTube'},{t:'Graphs: BFS, DFS, Dijkstra',h:8,r:'Striver A2Z DSA Sheet',u:'https://takeuforward.org/strivers-a2z-dsa-course/',p:'Website'},{t:'Dynamic Programming',h:10,r:'Aditya Verma DP Playlist',u:'https://www.youtube.com/playlist?list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go',p:'YouTube'},{t:'LeetCode Top 150 Practice',h:3,r:'LeetCode Study Plan',u:'https://leetcode.com/studyplan/top-interview-150/',p:'LeetCode'}]},
+  {skill:'System Design',priority:'High',hours:20,diff:'Advanced',col:'#f59e0b',icon:'🟡',
+   why:'Essential for SDE-1+ roles at all product companies',
+   mods:[{t:'Fundamentals: Scaling, Caching, Load Balancing',h:4,r:'System Design Primer (GitHub)',u:'https://github.com/donnemartin/system-design-primer',p:'GitHub'},{t:'Database Design & Sharding',h:4,r:'Gaurav Sen — System Design',u:'https://www.youtube.com/watch?v=xpDnVSmNFX0',p:'YouTube'},{t:'Microservices Architecture',h:5,r:'TechDummies System Design',u:'https://www.youtube.com/watch?v=y8OnoxKotPQ',p:'YouTube'},{t:'Case Studies: Design Twitter, YouTube',h:7,r:'Alex Xu DDIA Summary',u:'https://www.youtube.com/watch?v=vvhC64hQZMk',p:'YouTube'}]},
+  {skill:'Java (OOP + Core)',priority:'High',hours:15,diff:'Intermediate',col:'#6366f1',icon:'🔵',
+   why:'Preferred language for Infosys, Wipro, Cognizant campus rounds',
+   mods:[{t:'Java Basics & OOP',h:5,r:'Programming with Mosh — Java',u:'https://www.youtube.com/watch?v=eIrMbAQSU34',p:'YouTube'},{t:'Collections & Generics',h:4,r:'Telusko Java Full Course',u:'https://www.youtube.com/watch?v=BGTx91t8q50',p:'YouTube'},{t:'Exception Handling & Threads',h:3,r:'Java Brains Channel',u:'https://www.youtube.com/@JavaBrainsChannel',p:'YouTube'},{t:'Spring Boot Basics',h:3,r:'Amigoscode Spring Boot',u:'https://www.youtube.com/watch?v=9SGDpanrc8U',p:'YouTube'}]},
+  {skill:'SQL & Database Design',priority:'Medium',hours:10,diff:'Intermediate',col:'#10b981',icon:'🟢',
+   why:'Tested in EVERY company online assessment — non-negotiable',
+   mods:[{t:'SQL Fundamentals & JOINs',h:3,r:'freeCodeCamp SQL Tutorial',u:'https://www.youtube.com/watch?v=HXV3zeQKqGY',p:'YouTube'},{t:'Subqueries, GROUP BY, HAVING',h:3,r:'Ankit Bansal SQL Playlist',u:'https://www.youtube.com/watch?v=M-55BmjOuXY',p:'YouTube'},{t:'Practice: HackerRank SQL',h:4,r:'HackerRank SQL Domain',u:'https://www.hackerrank.com/domains/sql',p:'HackerRank'}]},
+  {skill:'Aptitude & Reasoning',priority:'Medium',hours:12,diff:'Beginner',col:'#06b6d4',icon:'🔵',
+   why:'Mandatory screening for TCS, Infosys, Wipro, Accenture',
+   mods:[{t:'Number System, Time & Work',h:3,r:'Arun Sharma Quant Series',u:'https://www.youtube.com/watch?v=fUWClKEgYas',p:'YouTube'},{t:'Logical Reasoning & Puzzles',h:4,r:'PrepInsta Aptitude',u:'https://prepinsta.com/aptitude/',p:'Website'},{t:'Verbal Ability & RC',h:2,r:'IndiaBIX Verbal',u:'https://www.indiabix.com/verbal-ability/',p:'Website'},{t:'Mock Tests — TCS/Infosys Pattern',h:3,r:'PrepInsta Mock Tests',u:'https://prepinsta.com/mock-tests/',p:'Website'}]},
+];
+
+const PCOLORS = {YouTube:'#ff0000',GitHub:'#6e5494',Website:'#06b6d4',LeetCode:'#f59e0b',HackerRank:'#10b981'};
+const PICONS = {YouTube:'▶',GitHub:'⌥',Website:'🌐',LeetCode:'💡',HackerRank:'✦'};
+
+function showPage(id) {
+  document.querySelectorAll('.page,#page-home').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById('page-'+id);
+  if(el) el.classList.add('active');
+  const tab = document.getElementById('tab-'+id);
+  if(tab) tab.classList.add('active');
+  if(id==='match') initMatchPage();
+  if(id==='resume') initResumePage();
+  if(id==='quiz') initQuizPage();
+  if(id==='learn') initLearnPage();
+}
+
+// ─── TOAST ──────────────────────────────────
+function showToast(msg,icon='✅') {
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  document.getElementById('toastIcon').textContent=icon;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ─── FILE UPLOAD ─────────────────────────────
+function handleDrop(e){e.preventDefault();document.getElementById('dropzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)setFile(f);}
+function handleFileSelect(e){const f=e.target.files[0];if(f)setFile(f);}
+function setFile(f){document.getElementById('dzIcon').textContent='✅';document.getElementById('dzTitle').textContent=f.name;document.getElementById('dzSub').textContent=(f.size/1024).toFixed(1)+' KB — Resume loaded';showToast(f.name+' uploaded! AI will parse your skills.','📄');}
+
+// ─── TAG INPUT ───────────────────────────────
+function handleTagKey(e,box,inp){if(e.key==='Enter'||e.key===','){e.preventDefault();const v=document.getElementById(inp).value.trim().replace(',','');if(v){addTag(v,box,inp);document.getElementById(inp).value='';};}}
+function addTag(val,boxId,inpId){const arr=boxId==='skillBox'?state.skills:state.certs;if(arr.includes(val))return;arr.push(val);const box=document.getElementById(boxId),input=document.getElementById(inpId);const tag=document.createElement('span');tag.className='tag';tag.innerHTML=val+'<span class="tag-del" onclick="removeTag(\''+val+'\',\''+boxId+'\',\''+inpId+'\',this)">✕</span>';box.insertBefore(tag,input);}
+function removeTag(val,boxId,inpId,el){const arr=boxId==='skillBox'?state.skills:state.certs;const i=arr.indexOf(val);if(i>-1)arr.splice(i,1);el.parentElement.remove();}
+function quickAddSkill(s){if(!state.skills.includes(s))addTag(s,'skillBox','skillInput');}
+
+// ─── SAVE PROFILE ────────────────────────────
+const DEFAULT = {name:'Arjun Sharma',email:'arjun@college.edu',domain:'Software Development (SDE)',exp:'0',location:'Bangalore',cgpa:'8.4',skills:['Python','React','JavaScript','Node.js','SQL','Git','REST APIs'],certs:['AWS Cloud Practitioner'],projects:[{t:'E-Commerce Web App',tech:'React, Node.js, PostgreSQL'},{t:'ML Sentiment Analyzer',tech:'Python, scikit-learn, Flask'}]};
+
+function saveProfile(){
+  const name=document.getElementById('inp-name').value||'Student';
+  state.profile={name,email:document.getElementById('inp-email').value,domain:document.getElementById('inp-domain').value,exp:document.getElementById('inp-exp').value,location:document.getElementById('inp-location').value||'Bangalore',skills:[...state.skills],certs:[...state.certs],projects:[{t:document.getElementById('proj1-title').value||'Project 1',tech:document.getElementById('proj1-tech').value},{t:document.getElementById('proj2-title').value||'Project 2',tech:document.getElementById('proj2-tech').value}]};
+  document.getElementById('profileBadge').style.display='flex';
+  document.getElementById('profileName').textContent=name.split(' ')[0]+' '+(name.split(' ')[1]?.[0]||'.')+'.';
+  showToast('Profile saved! Analyzing '+state.skills.length+' skills vs 6 companies...','🤖');
+  setTimeout(()=>showPage('match'),1200);
+}
+
+function loadDemoProfile(){
+  state.profile=DEFAULT;state.skills=[...DEFAULT.skills];state.certs=[...DEFAULT.certs];
+  document.getElementById('profileBadge').style.display='flex';
+  document.getElementById('profileName').textContent='Arjun S.';
+  showToast('Demo profile loaded! Exploring all 5 features...','🎭');
+  setTimeout(()=>showPage('match'),800);
+}
+
+// ─── JOB MATCH (ROLE-CENTRIC) ─────────────────
+let matchInit=false, currentDomain='All', selectedRole=null;
+
+function initMatchPage(){
+  if(matchInit)return; matchInit=true;
+  const p=state.profile||DEFAULT;
+  document.getElementById('matchName').textContent=p.name||'Demo User';
+  document.getElementById('matchDomain').textContent=(p.domain||'SDE')+' • '+(p.location||'Bangalore')+' • '+(p.exp==0?'Fresher':p.exp+' yr(s)');
+  document.getElementById('matchAvatar').textContent=(p.name||'D')[0].toUpperCase();
+  document.getElementById('matchBadges').innerHTML='<span class="badge b-blue">'+(p.skills||[]).length+' Skills</span><span class="badge b-purple">'+(p.projects||[]).length+' Projects</span>';
+  renderDomainFilters();
+  renderRoleList();
+  selectRole(ROLES.sort((a,b)=>b.match-a.match)[0]);
+}
+
+function renderDomainFilters(){
+  document.getElementById('domainFilters').innerHTML=DOMAINS.map(d=>`
+    <button class="domain-filter-btn ${d===currentDomain?'active':''}" onclick="filterDomain('${d}')">${d}</button>
+  `).join('');
+}
+
+function filterDomain(d){
+  currentDomain=d;
+  renderDomainFilters();
+  renderRoleList();
+}
+
+function renderRoleList(){
+  const filtered=currentDomain==='All'?ROLES:ROLES.filter(r=>r.domain===currentDomain);
+  const sorted=[...filtered].sort((a,b)=>b.match-a.match);
+  document.getElementById('roleCount').textContent=sorted.length+' roles';
+  document.getElementById('roleList').innerHTML=sorted.map(r=>{
+    const mc=r.match>=80?'var(--green)':r.match>=65?'var(--amber)':'var(--red)';
+    const sel=selectedRole?.id===r.id?'selected':'';
+    return`<div class="card role-card ${sel}" id="rcard-${r.id}" onclick='selectRole(${JSON.stringify(r).replace(/'/g,"\\'")}'>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="role-icon" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);">${r.icon}</div>
+          <div>
+            <div style="font-weight:700;font-size:.92rem;">${r.title}</div>
+            <div style="font-size:.78rem;color:var(--t2);margin-top:2px;">${r.level} • ${r.type} • ${r.salary}</div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-weight:900;font-size:1.3rem;color:${mc};">${r.match}%</div>
+          <div style="font-size:.68rem;color:var(--t2);">match</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <span class="badge b-cyan">${r.demand}</span>
+        <span class="badge b-purple">${r.domain}</span>
+        <span class="badge b-green">${r.matched.length} skills matched</span>
+        <span class="badge b-red">${r.missing.length} to gain</span>
+      </div>
+      <div style="margin-top:10px;"><div class="progress"><div class="progress-fill" style="width:${r.match}%;background:${mc};"></div></div></div>
+    </div>`;
+  }).join('');
+}
+
+function selectRole(role){
+  // Parse if passed as JSON string from onclick
+  if(typeof role==='string') role=JSON.parse(role);
+  selectedRole=role;
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  const card=document.getElementById('rcard-'+role.id); if(card)card.classList.add('selected');
+  document.getElementById('radarCompany').textContent=role.title;
+  document.getElementById('radarScore').textContent=role.match+'%';
+  document.getElementById('statMatched').textContent=role.matched.length;
+  document.getElementById('statMissing').textContent=role.missing.length;
+  document.getElementById('statHiring').textContent=role.demand.replace(/[^a-zA-Z\s]/g,'').trim();
+  document.getElementById('matchedSkillsRow').innerHTML=role.matched.map(s=>'<span class="badge b-green">✓ '+s+'</span>').join('');
+  document.getElementById('missingSkillsRow').innerHTML=role.missing.map(s=>'<span class="badge b-red">✗ '+s+'</span>').join('');
+  document.getElementById('roleInsight').textContent='💡 '+role.insight;
+  drawRadarChart(role.radar);
+}
+
+function askChatbotForRole(){
+  const rn=selectedRole?selectedRole.title:'this role';
+  openChatbot('Which companies are actively hiring for '+rn+' right now?');
+}
+
+function drawRadarChart(data){
+  const ctx=document.getElementById('radarChart').getContext('2d');
+  if(state.radarChart)state.radarChart.destroy();
+  state.radarChart=new Chart(ctx,{type:'radar',data:{labels:data.map(d=>d.s),datasets:[{label:'Your Level',data:data.map(d=>d.c),borderColor:'rgba(99,102,241,.9)',backgroundColor:'rgba(99,102,241,.15)',borderWidth:2,pointBackgroundColor:'#6366f1',pointRadius:4},{label:'Required',data:data.map(d=>d.r),borderColor:'rgba(244,63,94,.7)',backgroundColor:'rgba(244,63,94,.05)',borderWidth:2,borderDash:[5,5],pointBackgroundColor:'#f43f5e',pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11,family:'Inter'},padding:16}},tooltip:{backgroundColor:'#1e2744',borderColor:'rgba(99,102,241,.4)',borderWidth:1,titleColor:'#f1f5f9',bodyColor:'#94a3b8',padding:12}},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:'rgba(255,255,255,.08)'},angleLines:{color:'rgba(255,255,255,.08)'},pointLabels:{color:'#94a3b8',font:{size:11,family:'Inter'}}}}}});
+}
+
+// ─── RESUME TAILOR ────────────────────────────
+let resumeInit=false;
+function initResumePage(){if(resumeInit)return;resumeInit=true;tailorResume();}
+function tailorResume(){
+  const co=document.getElementById('tailorCompany')?.value||'Amazon';
+  const d=RESUME_DATA[co]||RESUME_DATA.Amazon;
+  document.getElementById('atsBefore').textContent=d.before;
+  document.getElementById('atsAfter').textContent=d.after;
+  document.getElementById('atsImprove').textContent='+'+( d.after-d.before)+' points ↑';
+  setTimeout(()=>{document.getElementById('atsProgress').style.width=d.after+'%';},100);
+  document.getElementById('tailorSummary').textContent=d.summary;
+  document.getElementById('tailorBullets').innerHTML=d.bullets.map(b=>`
+    <div style="margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="diff-old">❌ ${b.old}</div>
+        <div class="diff-new">✅ ${b.new}</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;padding:6px 0;">${b.kw.map(k=>'<span class="badge b-cyan" style="font-size:.7rem;">+ '+k+'</span>').join('')}</div>
+    </div>`).join('');
+  document.getElementById('atsKeywords').innerHTML=d.keywords.map(k=>'<span class="badge b-purple">🔑 '+k+'</span>').join('');
+  document.getElementById('tailorTips').innerHTML=d.tips.map((t,i)=>`<div style="display:flex;gap:10px;margin-bottom:10px;font-size:.85rem;"><span style="color:var(--amber);flex-shrink:0;">${i+1}.</span><span>${t}</span></div>`).join('');
+}
+
+// ─── QUIZ ────────────────────────────────────
+let quizInit=false, qSess={c:0, w:0}, detectedWeakArea = null;
+
+function initQuizPage(){
+  if(quizInit)return;
+  quizInit=true;
+  loadQuiz();
+  drawQBar();
+}
+
+function loadQuiz(){
+  const co=document.getElementById('quizCompany')?.value||'TCS';
+  const cat=document.getElementById('quizCategory')?.value||'all';
+  const sizeInput = parseInt(document.getElementById('quizCount')?.value) || 5;
+  const size = Math.max(5, Math.min(15, sizeInput)); // Clamp 5-15
+  
+  let baseData = QUIZ_DB[co] || QUIZ_DB.TCS;
+  
+  // Filter by category if selected
+  if(cat !== 'all'){
+    baseData = baseData.filter(q => q.cat.toLowerCase() === cat.toLowerCase());
+  }
+  
+  // Slice to selected count
+  state.quizData = baseData.slice(0, size);
+  
+  // If we don't have enough questions for category, fallback
+  if(state.quizData.length === 0){
+    state.quizData = (QUIZ_DB[co] || QUIZ_DB.TCS).slice(0, size);
+    showToast('No questions in this category, loading default set.','⚠️');
+  }
+  
+  state.currentQuestion=0;
+  state.quizAnswers={};
+  state.quizCorrect=0;
+  qSess={c:0, w:0};
+  
+  // Hide weak area alert at start of new quiz
+  document.getElementById('weakAreaAlert').style.display = 'none';
+  
+  updateQStats();
+  renderQ();
+  updateQBarMax(state.quizData.length);
+}
+
+function renderQ(){
+  const q=state.quizData[state.currentQuestion];if(!q)return;
+  const total=state.quizData.length, cur=state.currentQuestion;
+  document.getElementById('qYear').textContent=q.year;
+  document.getElementById('qCategory').textContent=q.cat;
+  document.getElementById('qDiff').textContent=q.diff;
+  document.getElementById('quizQuestion').textContent=q.q;
+  document.getElementById('quizQNum').textContent=(cur+1)+' of '+total;
+  document.getElementById('quizProgress').style.width=((cur+1)/total*100)+'%';
+  document.getElementById('btnPrev').disabled=cur===0;
+  
+  const ans=state.quizAnswers[cur], letters=['A','B','C','D'];
+  document.getElementById('quizOptions').innerHTML=q.opts.map((o,i)=>{
+    let cls='quiz-opt';
+    if(ans!==undefined){if(i===q.ans)cls+=' correct';else if(i===ans&&ans!==q.ans)cls+=' wrong';}
+    return`<div class="${cls}" onclick="answerQ(${i})"><div class="opt-letter">${letters[i]}</div><span>${o}</span>${ans!==undefined&&i===q.ans?'<span style="margin-left:auto;">✅</span>':''}${ans!==undefined&&i===ans&&i!==q.ans?'<span style="margin-left:auto;">❌</span>':''}</div>`;
+  }).join('');
+  
+  if(ans!==undefined){
+    document.getElementById('quizExplanation').style.display='block';
+    document.getElementById('explText').textContent=q.exp;
+  } else {
+    document.getElementById('quizExplanation').style.display='none';
+  }
+}
+
+function answerQ(i){
+  if(state.quizAnswers[state.currentQuestion]!==undefined)return;
+  const q=state.quizData[state.currentQuestion];
+  state.quizAnswers[state.currentQuestion]=i;
+  
+  if(i===q.ans){
+    state.quizCorrect++;
+    qSess.c++;
+    showToast('Correct! Well done! 🎯','✅');
+  } else {
+    qSess.w++;
+    showToast('Not quite — read explanation below! 📖','❌');
+  }
+  
+  updateQStats();
+  renderQ();
+  updateQBar();
+  
+  // Check if quiz is complete to run weak area detection
+  const totalAnswers = Object.keys(state.quizAnswers).length;
+  if(totalAnswers >= state.quizData.length){
+    detectWeakCategory();
+  }
+}
+
+function nextQuestion(){
+  if(state.currentQuestion < state.quizData.length - 1){
+    state.currentQuestion++;
+    renderQ();
+  }
+}
+
+function prevQuestion(){
+  if(state.currentQuestion > 0){
+    state.currentQuestion--;
+    renderQ();
+  }
+}
+
+function updateQStats(){
+  const total=Object.keys(state.quizAnswers).length;
+  document.getElementById('quizScore').textContent=state.quizCorrect+' / '+state.quizData.length;
+  document.getElementById('quizAccuracy').textContent=total>0?Math.round(state.quizCorrect/total*100)+'%':'—';
+  document.getElementById('quizStatus').textContent=total===0?'🔵 In Progress':total>=state.quizData.length?'🏁 Complete':'🔵 In Progress';
+}
+
+function detectWeakCategory(){
+  // Group correct vs incorrect by category
+  const categories = {};
+  state.quizData.forEach((q, idx) => {
+    const ans = state.quizAnswers[idx];
+    if(ans === undefined) return;
+    if(!categories[q.cat]) categories[q.cat] = { correct: 0, total: 0 };
+    categories[q.cat].total++;
+    if(ans === q.ans) categories[q.cat].correct++;
+  });
+  
+  // Find category with lowest accuracy below 60%
+  let worstCat = null;
+  let lowestAccuracy = 1.1; // Sentinel
+  
+  for(const cat in categories){
+    const acc = categories[cat].correct / categories[cat].total;
+    if(acc < 0.6 && acc < lowestAccuracy){
+      lowestAccuracy = acc;
+      worstCat = cat;
+    }
+  }
+  
+  if(worstCat){
+    detectedWeakArea = worstCat;
+    document.getElementById('weakAreaTitle').textContent = `Weak Area Detected: ${worstCat}!`;
+    document.getElementById('weakAreaSub').textContent = `Your accuracy on ${worstCat} was ${Math.round(lowestAccuracy*100)}%. Let's build this up.`;
+    document.getElementById('weakAreaAlert').style.display = 'flex';
+    showToast(`Identified weak area: ${worstCat}. Practice quiz generated.`, '⚠️');
+  }
+}
+
+function startWeakPractice(){
+  if(!detectedWeakArea) return;
+  // Load 5 questions directly filtering to that category
+  document.getElementById('quizCategory').value = detectedWeakArea;
+  document.getElementById('quizCount').value = 5;
+  loadQuiz();
+  showToast(`Practice session started for ${detectedWeakArea}! 🚀`, '🔥');
+}
+
+function drawQBar(){
+  const ctx=document.getElementById('quizBarChart').getContext('2d');
+  state.quizBarChartInst=new Chart(ctx,{type:'bar',data:{labels:['Correct','Wrong','Remaining'],datasets:[{data:[0,0,5],backgroundColor:['rgba(16,185,129,.5)','rgba(244,63,94,.5)','rgba(99,102,241,.3)'],borderColor:['#10b981','#f43f5e','#6366f1'],borderWidth:2,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2744',borderColor:'rgba(99,102,241,.4)',borderWidth:1}},scales:{x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#94a3b8'}},y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#94a3b8',stepSize:1},min:0,max:5}}}});
+}
+
+function updateQBarMax(maxVal){
+  if(!state.quizBarChartInst)return;
+  state.quizBarChartInst.options.scales.y.max = maxVal;
+  updateQBar();
+}
+
+function updateQBar(){
+  if(!state.quizBarChartInst)return;
+  const rem=state.quizData.length-Object.keys(state.quizAnswers).length;
+  state.quizBarChartInst.data.datasets[0].data=[qSess.c,qSess.w,rem];
+  state.quizBarChartInst.update();
+}
+
+// ─── LEARNING PATH ────────────────────────────
+let learnInit=false;
+function initLearnPage(){if(learnInit)return;learnInit=true;renderLP();}
+function renderLP(){
+  document.getElementById('learningPathContainer').innerHTML=LP.map((sk,si)=>`
+    <div class="card" style="margin-bottom:20px;animation:fadeUp .5s ease ${si*.1}s both;">
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:${sk.col}22;border:2px solid ${sk.col}66;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">${sk.icon}</div>
+            <div><div style="font-weight:800;font-size:1rem;">${sk.skill}</div><div style="font-size:.78rem;color:var(--t2);">${sk.why}</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <span class="badge ${sk.priority==='Critical'?'b-red':sk.priority==='High'?'b-amber':'b-blue'}">${sk.priority}</span>
+            <span class="badge b-cyan">⏱ ${sk.hours}h</span>
+            <span class="badge b-purple">${sk.diff}</span>
+          </div>
+        </div>
+        <div style="margin-left:8px;">
+          ${sk.mods.map((m,mi)=>`
+            <div class="lp-node">
+              <div class="lp-dot" style="background:${sk.col}22;border:2px solid ${sk.col}55;color:${sk.col};">${mi+1}</div>
+              <div style="flex:1;padding-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                  <div><div style="font-weight:600;font-size:.9rem;">${m.t}</div><div style="font-size:.75rem;color:var(--t2);margin-top:2px;">⏱ ~${m.h}h</div></div>
+                  <a href="${m.u}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:${PCOLORS[m.p]||'#6366f1'}22;color:${PCOLORS[m.p]||'#6366f1'};border:1px solid ${PCOLORS[m.p]||'#6366f1'}44;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">${PICONS[m.p]||'🔗'} ${m.r} ↗</a>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+</script>
+
+<!-- ═══ CHATBOT PANEL ═══ -->
+<button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()" title="Recruitment AI Assistant">💬</button>
+
+<div class="chatbot-panel" id="chatbotPanel">
+  <div class="chatbot-header">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🤖</div>
+      <div>
+        <div style="font-weight:700;font-size:.95rem;">CareerAI Recruiter</div>
+        <div style="font-size:.72rem;color:var(--green);">● Live • Powered by Qwen2.5</div>
+      </div>
+    </div>
+    <button onclick="toggleChatbot()" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.2rem;padding:4px;">✕</button>
+  </div>
+  <div class="chatbot-msgs" id="chatbotMsgs"></div>
+  <div class="chat-quick" id="chatQuickPrompts">
+    <button class="chat-quick-btn" onclick="sendQuick('Which companies are hiring freshers right now?')">Fresher Openings</button>
+    <button class="chat-quick-btn" onclick="sendQuick('Top companies hiring for SDE roles this season?')">SDE Companies</button>
+    <button class="chat-quick-btn" onclick="sendQuick('Companies with mass hiring for AI/ML engineers?')">ML Openings</button>
+    <button class="chat-quick-btn" onclick="sendQuick('Remote-friendly companies hiring in 2025?')">Remote Jobs</button>
+    <button class="chat-quick-btn" onclick="sendQuick('What is the hiring freeze status of TCS, Infosys, Wipro?')">Hiring Freeze?</button>
+    <button class="chat-quick-btn" onclick="sendQuick('What skills do I need to crack product companies?')">Product Skills</button>
+  </div>
+  <div class="chatbot-input-row">
+    <input class="chatbot-input" id="chatInput" placeholder="Ask about company hiring, roles, skills..." onkeydown="if(event.key==='Enter')sendChat()" />
+    <button class="chat-send-btn" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+// ─── CHATBOT ENGINE ─────────────────────────────
+const CHAT_KB = {
+  'sde': `📁 **SDE Roles — Active Recruitment Timelines (2025/2026)**
+
+Top SDE openings, schedules, and links:
+• **Amazon SDE-1 (Off-campus)**
+  * Status: Hiring Ongoing
+  * Deadline: Rolling applications (Apply ASAP)
+  * Action: [Apply on Amazon Jobs](https://amazon.jobs)
+• **TCS National Qualifier Test (NQT)**
+  * Registrations: Open till Oct 15, 2025
+  * Exam Date: Nov 2025 onwards
+  * Action: [Register for TCS NQT](https://nextstep.tcs.com)
+• **Infosys System Engineer Drive**
+  * Registrations: Starts Sept 1, 2025
+  * Deadline: Oct 20, 2025
+  * Action: [Register on InfyTQ](https://infytq.infosys.com)
+• **Wipro Elite NLTH**
+  * Registrations: Starts Oct 2025
+  * Action: [Apply to Wipro Elite](https://careers.wipro.com)
+• **Accenture Associate Software Engineer**
+  * Status: Registrations Open
+  * Deadline: Sept 30, 2025
+  * Action: [Apply to Accenture ASE](https://careers.accenture.com)`,
+
+  'fresher': `🎓 **Fresher Hiring Timeline & Direct Redirects (2025/2026)**
+
+Here are the active registration portals for freshers:
+• **TCS NQT (Mass Drive)**
+  * Status: Open
+  * Date: Oct 15, 2025 Deadline
+  * Action: [Go to TCS NextStep Portal](https://nextstep.tcs.com)
+• **Infosys InfyTQ & Launchpad**
+  * Status: Opening Sept 2025
+  * Action: [Go to Infosys Career Portal](https://career.infosys.com)
+• **Accenture ASE Drive**
+  * Status: Open (Ending Sept 30, 2025)
+  * Action: [Go to Accenture Portal](https://careers.accenture.com)
+• **Cognizant GenC / GenC Elevate**
+  * Status: Opening Oct 2025
+  * Action: [Go to Cognizant Careers](https://careers.cognizant.com)
+• **Microsoft University Recruiting**
+  * Status: Open for 2025 grads
+  * Action: [Apply to Microsoft University](https://careers.microsoft.com)`,
+
+  'ml': `🤖 **AI/ML Engineer Openings & Deadlines (2025)**
+
+Startups and product companies hiring freshers for AI/ML:
+• **Google Applied ML Engineer Intern**
+  * Status: Open now
+  * Deadline: Oct 5, 2025
+  * Action: [Apply on Google Careers](https://careers.google.com)
+• **Microsoft AI Research Residency**
+  * Status: Registrations open
+  * Deadline: Oct 30, 2025
+  * Action: [Apply to Microsoft AI Residency](https://careers.microsoft.com)
+• **Zomato ML Engineer (Recommender Systems)**
+  * Status: Hiring via referral & portal
+  * Action: [Apply on Zomato Careers](https://www.zomato.com/careers)
+• **Razorpay Data Scientist - Analytics**
+  * Status: Open
+  * Action: [Apply on Razorpay Careers](https://razorpay.com/jobs)`,
+
+  'remote': `🏠 **Remote-Friendly Jobs & portals (2025/2026)**
+
+Apply to these remote-first or remote-friendly companies:
+• **BrowserStack (Remote First)**
+  * Status: SDE-1 & QA roles open
+  * Action: [Apply on BrowserStack](https://www.browserstack.com/careers)
+• **Postman (Hybrid-Remote)**
+  * Status: Frontend & API Platform roles
+  * Action: [Apply on Postman Careers](https://www.postman.com/careers)
+• **Zoho (Remote/Rural offices)**
+  * Status: Mass hiring for freshers
+  * Action: [Apply on Zoho Careers](https://www.zoho.com/careers)
+• **Atlassian (Work from Anywhere)**
+  * Status: Graduate Developer roles
+  * Action: [Apply on Atlassian Careers](https://www.atlassian.com/company/careers)`,
+
+  'freeze': `⚠️ **IT Sector Hiring Updates & Freeze Alerts (Q3/Q4 2025)**
+
+• **HCL Tech & TechBee** — Mass hiring active for entry-level. [HCL Careers](https://www.hcltech.com/careers)
+• **Paytm / PhonePe** — Hiring only for selective ML/Backend replacement positions.
+• **Wipro NLTH** — Delayed exam schedule, expected Oct/Nov.
+• **TCS / Infosys / Accenture** — Mass campaigns approved, hiring is up 25% year-on-year.
+• **Byju's / Ola** — Severe freeze. Do not apply for this placement season.`,
+
+  'product': `🏆 **Crack Product Companies — Recommended Portals**
+
+Prep tools & application gateways:
+• **LeetCode Study Plan** — Best for Amazon/Google prep.
+  * Action: [Start Top 150 study plan](https://leetcode.com/studyplan/top-interview-150/)
+• **System Design Primer** — Essential GitHub repo.
+  * Action: [Read System Design Primer](https://github.com/donnemartin/system-design-primer)
+• **GeeksforGeeks PYQ Archive** — Company questions database.
+  * Action: [View Company PYQs](https://www.geeksforgeeks.org/company-preparation/)`,
+
+  'default': `I can help you with active hiring calendars, registration deadlines, and direct application redirects.
+
+Try asking:
+• "Give me SDE timelines"
+• "What are the fresher deadlines?"
+• "Which AI/ML openings are active?"
+• "Show me remote job portals"
+• "Is there a hiring freeze?"`
+};
+
+let chatOpen=false;
+function toggleChatbot(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatbotPanel').classList.toggle('open',chatOpen);
+  document.getElementById('chatbotFab').textContent=chatOpen?'✕':'💬';
+  if(chatOpen&&document.getElementById('chatbotMsgs').children.length===0){
+    addBotMsg("Hi! I'm your **Placement Intelligence Assistant** powered by Qwen2.5.\n\nAsk me about **active hiring dates, registration deadlines**, and I'll give you **direct redirect buttons** to apply! 🚀");
+  }
+}
+
+function openChatbot(prefilledMsg){
+  if(!chatOpen)toggleChatbot();
+  if(prefilledMsg){
+    document.getElementById('chatInput').value=prefilledMsg;
+    setTimeout(sendChat,400);
+  }
+}
+
+function addBotMsg(md){
+  const div=document.createElement('div');
+  div.className='chat-msg bot';
+  
+  // Render bold headers
+  let html = md.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  
+  // Render bullet points
+  html = html.replace(/• (.+?)/g, '• $1');
+  
+  // Parse markdown links into clean redirect action buttons: [Label](URL)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<br><a href="$2" target="_blank" class="chat-btn-redirect">🔗 $1 ↗</a>');
+  
+  // Convert newlines to breaks
+  div.innerHTML = html.replace(/\n/g,'<br>');
+  
+  document.getElementById('chatbotMsgs').appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+function addUserMsg(txt){
+  const div=document.createElement('div');
+  div.className='chat-msg user';
+  div.textContent=txt;
+  document.getElementById('chatbotMsgs').appendChild(div);
+}
+
+function addTyping(){
+  const div=document.createElement('div');
+  div.className='chat-msg bot typing';
+  div.id='typingIndicator';
+  div.textContent='🤖 Searching Qwen2.5 + active web recruitment databases...';
+  document.getElementById('chatbotMsgs').appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+function removeTyping(){const t=document.getElementById('typingIndicator');if(t)t.remove();}
+
+function classifyQuery(q){
+  q=q.toLowerCase();
+  if(/sde|software engineer|developer|backend|frontend|full.?stack/.test(q))return 'sde';
+  if(/fresher|fresh graduate|entry|campus|new grad|deadline|date|opening|registration/.test(q))return 'fresher';
+  if(/ml|machine learning|ai|data science|deep learning|llm|genai/.test(q))return 'ml';
+  if(/remote|work from home|wfh|hybrid/.test(q))return 'remote';
+  if(/freeze|layoff|slow|pause|shutdown|reduce/.test(q))return 'freeze';
+  if(/product compan|faang|tier.1|skill|crack|prepare|link/.test(q))return 'product';
+  return 'default';
+}
+
+function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim(); if(!msg)return;
+  inp.value='';
+  addUserMsg(msg);
+  addTyping();
+  
+  const delay=600 + Math.random()*500;
+  setTimeout(()=>{
+    removeTyping();
+    const cat=classifyQuery(msg);
+    addBotMsg(CHAT_KB[cat]||CHAT_KB.default);
+  },delay);
+}
+
+function sendQuick(msg){
+  document.getElementById('chatInput').value=msg;
+  sendChat();
+}
+</script>
+</body>
+</html>

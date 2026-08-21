@@ -1,0 +1,28 @@
+# ============================================================
+# CareerAI — Python Backend Requirements
+# Qwen2.5-7B-Instruct via Hugging Face Inference API
+# ============================================================
+
+# Core web framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Hugging Face — model inference
+huggingface_hub==0.24.7
+requests==2.32.3
+
+# Web search for live recruitment data
+duckduckgo-search==6.2.13
+
+# PDF parsing for resume upload
+PyPDF2==3.0.1
+python-multipart==0.0.9
+
+# Utilities
+python-dotenv==1.0.1
+pydantic==2.8.2
+httpx==0.27.2
+aiofiles==23.2.1
+
+# CORS support
+starlette==0.38.2
