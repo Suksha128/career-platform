@@ -419,9 +419,9 @@ select option {background:#ffffff;color:var(--t1);}
   </div>
   <div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;" class="animate d1">
     <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Score</div><div class="stat-val g-text" id="quizScore">0 / 0</div></div>
-    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Question</div><div class="stat-val" id="quizQNum">1 of 5</div></div>
+    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Question</div><div class="stat-val" id="quizQNum">— / —</div></div>
     <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Accuracy</div><div class="stat-val" id="quizAccuracy">—</div></div>
-    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Status</div><div class="stat-val" id="quizStatus" style="font-size:.9rem;">🔵 In Progress</div></div>
+    <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Status</div><div class="stat-val" id="quizStatus" style="font-size:.85rem;">Not Started</div></div>
   </div>
   <div class="card animate d2" id="quizCard"><div class="card-body">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
@@ -1112,10 +1112,15 @@ function prevQuestion(){
 }
 
 function updateQStats(){
-  const total=Object.keys(state.quizAnswers).length;
-  document.getElementById('quizScore').textContent=state.quizCorrect+' / '+state.quizData.length;
-  document.getElementById('quizAccuracy').textContent=total>0?Math.round(state.quizCorrect/total*100)+'%':'—';
-  document.getElementById('quizStatus').textContent=total===0?'🔵 In Progress':total>=state.quizData.length?'🏁 Complete':'🔵 In Progress';
+  const answered=Object.keys(state.quizAnswers).length;
+  const total=state.quizData.length;
+  document.getElementById('quizScore').textContent=state.quizCorrect+' / '+total;
+  document.getElementById('quizQNum').textContent=(state.currentQuestion+1)+' / '+total;
+  document.getElementById('quizAccuracy').textContent=answered>0?Math.round(state.quizCorrect/answered*100)+'%':'—';
+  // Status: Not Started → Answering (n/total) → Complete
+  if(answered===0) document.getElementById('quizStatus').textContent='Not Started';
+  else if(answered>=total) document.getElementById('quizStatus').textContent='✅ Complete';
+  else document.getElementById('quizStatus').textContent='Answering ('+answered+'/'+total+')';
 }
 
 function detectWeakCategory(){
