@@ -152,6 +152,10 @@ select option {background:#ffffff;color:var(--t1);}
   from {opacity:0;}
   to {opacity:1;}
 }
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
 .animate {animation:fadeIn .4s ease forwards;}
 .d1 {animation-delay:.05s;}
 .d2 {animation-delay:.1s;}
@@ -173,6 +177,7 @@ select option {background:#ffffff;color:var(--t1);}
     <button class="nav-tab"       onclick="showPage('match')"   id="tab-match">🎯 Job Match</button>
     <button class="nav-tab"       onclick="showPage('resume')"  id="tab-resume">✏️ Resume AI</button>
     <button class="nav-tab"       onclick="showPage('quiz')"    id="tab-quiz">🧠 Quiz</button>
+    <button class="nav-tab"       onclick="showPage('interview')" id="tab-interview">🎙️ Mock Interview</button>
     <button class="nav-tab"       onclick="showPage('learn')"   id="tab-learn">📚 Learn</button>
   </div>
   <div class="nav-badge" id="profileBadge" style="display:none">✓ <span id="profileName">Student</span></div>
@@ -432,6 +437,213 @@ select option {background:#ffffff;color:var(--t1);}
     <div id="quizExplanation" style="display:none;"><div class="expl-box"><strong style="color:#34d399;">💡 Explanation:</strong><br/><span id="explText"></span></div></div>
   </div></div>
   <div class="card animate d3" style="margin-top:20px;"><div class="card-body"><p style="font-weight:700;margin-bottom:14px;">📊 Session Performance</p><div class="chart-wrap" style="height:180px;"><canvas id="quizBarChart"></canvas></div></div></div>
+</div>
+
+<!-- ═══ AI MOCK INTERVIEWER (AUDIO, FILLER TRACKER & PACING GAUGE) ═══ -->
+<div id="page-interview" class="page">
+  <div class="section-title animate">🎙️ AI Mock <span class="g-text">Interviewer</span></div>
+  <div class="section-sub animate">Practice live audio interviews with your Virtual Manager. Features Text-to-Speech audio voicing, Speech-to-Text stream, Filler Word Tracker &amp; WPM Pacing Gauge.</div>
+
+  <!-- CONTROL & FILTER BAR -->
+  <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:1;min-width:140px;">
+        <label>Question Domain</label>
+        <select id="interviewCategory" onchange="loadInterviewQuestion()">
+          <option value="Behavioral">Behavioral (Amazon STAR Method)</option>
+          <option value="Technical">Technical &amp; SDE Problem Solving</option>
+          <option value="SystemDesign">System Design &amp; Architecture</option>
+          <option value="Culture">HR &amp; Culture Fit</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:140px;">
+        <label>Target Role</label>
+        <select id="interviewRole" onchange="loadInterviewQuestion()">
+          <option value="SDE-1">SDE-1 (Full Stack / Backend)</option>
+          <option value="Frontend">Frontend Developer</option>
+          <option value="DataScientist">ML / Data Scientist</option>
+          <option value="DevOps">DevOps / Cloud Engineer</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="loadInterviewQuestion()">🎲 Next Question</button>
+      <button class="btn btn-ghost btn-sm" onclick="speakInterviewQuestion()">🔊 Speak Question (TTS)</button>
+    </div>
+  </div></div>
+
+  <!-- INTERVIEW MAIN GRID: AVATAR & CONTROLS -->
+  <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:24px;margin-bottom:24px;" class="animate d1">
+    
+    <!-- LEFT: VIRTUAL HIRING MANAGER AVATAR CARD -->
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <!-- Avatar Container with Animated Speaking Ring -->
+          <div id="avatarContainer" style="position:relative;width:72px;height:72px;border-radius:50%;background:rgba(99,102,241,.15);border:3px solid var(--p);display:flex;align-items:center;justify-content:center;font-size:2.4rem;flex-shrink:0;transition:all .3s ease;">
+            <span id="avatarEmoji">👨‍💼</span>
+            <div id="avatarPulse" style="position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--p);opacity:0;animation:pulseRing 1.5s infinite;display:none;"></div>
+          </div>
+          <div>
+            <div style="font-weight:800;font-size:1.1rem;font-family:'Outfit',sans-serif;" id="managerName">Alex Morgan</div>
+            <div style="font-size:.82rem;color:var(--t2);" id="managerRole">Senior Hiring Manager • Amazon SDE Tech Panel</div>
+            <div style="margin-top:6px;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);font-size:.72rem;font-weight:600;color:var(--p);" id="voiceStatusBadge">
+              <span>🔊 Web Speech Audio Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Speech Bubble -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;margin-bottom:12px;">
+          <div style="font-size:.72rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Current Question:</div>
+          <div style="font-size:1.02rem;font-weight:600;line-height:1.5;color:var(--t1);" id="interviewQuestionText">Loading question...</div>
+        </div>
+
+        <div style="font-size:.78rem;color:var(--t2);display:flex;justify-content:space-between;align-items:center;">
+          <span id="questionTag">Category: Behavioral</span>
+          <span>Tip: Use STAR format (Situation, Task, Action, Result)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RECORDING CONTROLS & REAL-TIME PACING GAUGE -->
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+      <div class="card-body">
+        <p style="font-weight:700;margin-bottom:16px;">🎙️ Response Audio Controller</p>
+        
+        <!-- Large Record Button & Timer -->
+        <div style="display:flex;align-items:center;gap:18px;margin-bottom:24px;">
+          <button id="btnInterviewRecord" class="btn btn-primary" style="padding:16px 28px;font-size:1.05rem;border-radius:12px;display:inline-flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(99,102,241,.3);" onclick="toggleInterviewRecord()">
+            <span id="recBtnIcon">🎙️</span> <span id="recBtnText">Record Answer</span>
+          </button>
+          
+          <div>
+            <div style="font-size:1.6rem;font-weight:900;font-family:monospace;color:var(--t1);" id="recTimerDisplay">00:00</div>
+            <div style="font-size:.72rem;color:var(--t2);" id="recStatusText">Click Record &amp; start speaking</div>
+          </div>
+        </div>
+
+        <!-- Real-Time Speed Monitor (Pacing Gauge) -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:.82rem;font-weight:700;color:var(--t1);">⚡ Real-Time Speed Monitor (WPM)</div>
+            <div id="pacingZoneBadge" class="badge b-blue" style="font-weight:700;font-size:.78rem;">Ready</div>
+          </div>
+          
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;">
+            <span style="font-size:2rem;font-weight:900;" id="liveWpmVal">0</span>
+            <span style="font-size:.82rem;color:var(--t2);">Words Per Minute</span>
+          </div>
+
+          <!-- Pacing Gauge Bar (3 Zones: Slow <110, Perfect 110-150, Fast >150) -->
+          <div style="height:10px;background:var(--card);border-radius:6px;position:relative;overflow:hidden;border:1px solid var(--border);">
+            <div id="wpmGaugeBar" style="width:0%;height:100%;background:var(--p);transition:width .4s ease, background .4s ease;"></div>
+          </div>
+          
+          <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--t2);margin-top:6px;">
+            <span>🐢 Too Slow (&lt;110)</span>
+            <span style="color:var(--green);font-weight:700;">🎯 Perfect (110–150 WPM)</span>
+            <span>⚡ Too Fast (&gt;150)</span>
+          </div>
+        </div>
+
+        <div style="font-size:.75rem;color:var(--t2);line-height:1.4;">
+          🔒 <strong>Privacy Note:</strong> Microphone streaming is processed strictly client-side using browser Speech APIs. No audio recordings leave your device.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIDDLE SECTION: LIVE TRANSCRIPT & FILLER WORD TRACKER DASHBOARD -->
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-bottom:24px;" class="animate d2">
+    
+    <!-- LIVE TRANSCRIPT STREAM BOX -->
+    <div class="card"><div class="card-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <p style="font-weight:700;margin:0;">📝 Live Speech-to-Text Transcript</p>
+        <span class="badge b-purple" id="transcriptWordCount">0 Words Spoken</span>
+      </div>
+      
+      <!-- Streaming text area -->
+      <div id="liveTranscriptBox" style="min-height:150px;max-height:220px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:.92rem;line-height:1.6;color:var(--t1);font-family:'Inter',sans-serif;" contenteditable="true" oninput="handleManualTranscriptInput(this)">
+        <span style="color:var(--t2);font-style:italic;" id="transcriptPlaceholder">Click "Record Answer" and start speaking into your microphone. Your spoken text will stream here in real-time...</span>
+      </div>
+    </div></div>
+
+    <!-- FILLER WORD TRACKER DASHBOARD -->
+    <div class="card"><div class="card-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <p style="font-weight:700;margin:0;">🚫 Filler Word Tracker</p>
+        <span class="badge b-green" id="clarityRatingBadge">100% Clarity</span>
+      </div>
+
+      <p style="font-size:.78rem;color:var(--t2);margin-bottom:16px;">Scans streaming transcript in real-time for hesitation words:</p>
+
+      <!-- Live Counters Grid -->
+      <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;margin-bottom:16px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:.7rem;color:var(--t2);font-weight:700;">"um"</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--red);" id="cnt-um">0</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:.7rem;color:var(--t2);font-weight:700;">"uh"</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--red);" id="cnt-uh">0</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:.7rem;color:var(--t2);font-weight:700;">"like"</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--amber);" id="cnt-like">0</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:.7rem;color:var(--t2);font-weight:700;">"so"</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--amber);" id="cnt-so">0</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:.7rem;color:var(--t2);font-weight:700;">"you know"</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--red);" id="cnt-youknow">0</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-size:.7rem;color:var(--t2);font-weight:700;">"basically"</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--amber);" id="cnt-basically">0</div>
+        </div>
+      </div>
+
+      <div style="font-size:.74rem;color:var(--t2);" id="totalFillerSummary">
+        Total Fillers Detected: <strong style="color:var(--t1);" id="totalFillerCount">0</strong> words
+      </div>
+    </div></div>
+  </div>
+
+  <!-- POST-ANSWER SUMMARY REPORT CARD -->
+  <div id="interviewSummaryCard" class="card animate d3" style="display:none;margin-bottom:24px;background:rgba(99,102,241,.04);border:1px solid rgba(99,102,241,.3);"><div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.2rem;">📊 Answer Assessment Summary</h3>
+      <button class="btn btn-ghost btn-sm" onclick="loadInterviewQuestion()">🎲 Try Next Question</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;margin-bottom:18px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:.72rem;color:var(--t2);font-weight:700;">Duration</div>
+        <div style="font-size:1.3rem;font-weight:800;color:var(--p);" id="sumDuration">00:00</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:.72rem;color:var(--t2);font-weight:700;">Words Spoken</div>
+        <div style="font-size:1.3rem;font-weight:800;color:var(--cyan);" id="sumWords">0</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:.72rem;color:var(--t2);font-weight:700;">Average Pacing</div>
+        <div style="font-size:1.3rem;font-weight:800;" id="sumPacing">0 WPM</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:.72rem;color:var(--t2);font-weight:700;">Filler Words</div>
+        <div style="font-size:1.3rem;font-weight:800;" id="sumFillers">0</div>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+      <div style="font-size:.85rem;font-weight:700;color:var(--p);margin-bottom:8px;">💡 AI Communication Feedback &amp; Recommendations</div>
+      <ul style="margin:0;padding-left:18px;font-size:.82rem;color:var(--t2);line-height:1.6;" id="sumFeedbackList">
+        <li>Great job completing your response!</li>
+      </ul>
+    </div>
+  </div></div>
 </div>
 
 <!-- ═══ LEARNING PATH ═══ -->
@@ -706,6 +918,7 @@ function showPage(id) {
   if(id==='match') { matchInit=false; initMatchPage(); }
   if(id==='resume') initResumePage();
   if(id==='quiz') initQuizPage();
+  if(id==='interview') initInterviewPage();
   if(id==='learn') initLearnPage();
 }
 
@@ -1534,6 +1747,367 @@ function updateQBar(){
     state.quizBarChartInst.update();
   } catch(e) {
     console.warn('Failed to update Chart data:', e);
+  }
+}
+
+// ─── AI MOCK INTERVIEWER ENGINE ─────────────────
+let interviewInit = false;
+let interviewState = {
+  isRecording: false,
+  recStartTime: null,
+  recTimer: null,
+  recSeconds: 0,
+  transcript: '',
+  wordCount: 0,
+  wpm: 0,
+  fillerCounts: { um:0, uh:0, like:0, so:0, youknow:0, basically:0 },
+  recognition: null,
+  activeQuestion: null
+};
+
+const INTERVIEW_QUESTIONS = {
+  Behavioral: [
+    { q: "Tell me about a time you faced a major technical challenge on a project. How did you resolve it?", manager: "Alex Morgan", role: "Senior Engineering Manager • Amazon SDE Tech Panel", tag: "STAR Format (Situation, Task, Action, Result)" },
+    { q: "Describe a situation where you had a disagreement with a team member. How did you handle it?", manager: "Sarah Jenkins", role: "Product Director • Microsoft", tag: "Conflict Resolution & Leadership" },
+    { q: "Give me an example of a goal you reached and tell me how you achieved it under a tight deadline.", manager: "David Chen", role: "Tech Lead • Google STEP", tag: "Ownership & Execution" }
+  ],
+  Technical: [
+    { q: "How do you approach optimizing a slow SQL query processing millions of records?", manager: "Alex Morgan", role: "Senior Engineering Manager • Amazon", tag: "System Performance & DB Tuning" },
+    { q: "Explain the difference between process and thread, and how race conditions occur in multithreaded applications.", manager: "Vikram Malhotra", role: "Lead Architect • TCS Digital", tag: "OS & Concurrency" },
+    { q: "How does JavaScript handle asynchronous code execution with the Event Loop?", manager: "Elena Rostova", role: "Staff Frontend Engineer • Meta", tag: "Core JS Engine & Async" }
+  ],
+  SystemDesign: [
+    { q: "How would you design a scalable real-time URL shortening service like Bitly handling 10,000 writes/sec?", manager: "Alex Morgan", role: "Senior Engineering Manager • Amazon", tag: "System Design & Caching" },
+    { q: "Explain how you would design a rate limiter to protect public API endpoints from DDoS attacks.", manager: "Marcus Vance", role: "Principal Cloud Architect • Azure", tag: "Security & API Design" }
+  ],
+  Culture: [
+    { q: "Why do you want to join our engineering team, and where do you see your technical career in 3 years?", manager: "Priya Sharma", role: "Director of Talent • Infosys", tag: "Career Alignment & Vision" },
+    { q: "What is your approach to learning a new technology or programming framework quickly on the job?", manager: "Sarah Jenkins", role: "Product Director • Microsoft", tag: "Growth Mindset" }
+  ]
+};
+
+function initInterviewPage() {
+  if (interviewInit) return;
+  interviewInit = true;
+  initSpeechRecognition();
+  loadInterviewQuestion();
+}
+
+function initSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    interviewState.recognition = new SpeechRecognition();
+    interviewState.recognition.continuous = true;
+    interviewState.recognition.interimResults = true;
+    interviewState.recognition.lang = 'en-US';
+
+    interviewState.recognition.onresult = function(event) {
+      let finalTranscript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        finalTranscript += event.results[i][0].transcript + ' ';
+      }
+      interviewState.transcript = finalTranscript.trim();
+      updateTranscriptUI(interviewState.transcript);
+      processFillerWords(interviewState.transcript);
+      updateWpmGauge();
+    };
+
+    interviewState.recognition.onerror = function(event) {
+      console.warn('Speech Recognition error:', event.error);
+      if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+        showToast('Microphone access denied. You can type directly in the transcript box for live analysis!', '⚠️');
+        stopInterviewRecord();
+      }
+    };
+
+    interviewState.recognition.onend = function() {
+      if (interviewState.isRecording) {
+        try { interviewState.recognition.start(); } catch(e){}
+      }
+    };
+  } else {
+    const badge = document.getElementById('voiceStatusBadge');
+    if(badge) badge.innerHTML = '<span>⚠️ STT Mic Native API Unavail — Manual Typing Mode Active</span>';
+  }
+}
+
+function loadInterviewQuestion() {
+  if (interviewState.isRecording) stopInterviewRecord();
+
+  const cat = document.getElementById('interviewCategory')?.value || 'Behavioral';
+  const questions = INTERVIEW_QUESTIONS[cat] || INTERVIEW_QUESTIONS.Behavioral;
+  const qObj = questions[Math.floor(Math.random() * questions.length)];
+  interviewState.activeQuestion = qObj;
+
+  document.getElementById('interviewQuestionText').textContent = qObj.q;
+  document.getElementById('managerName').textContent = qObj.manager;
+  document.getElementById('managerRole').textContent = qObj.role;
+  document.getElementById('questionTag').textContent = 'Category: ' + cat + ' • ' + qObj.tag;
+
+  resetInterviewSession();
+  setTimeout(() => speakInterviewQuestion(), 300);
+}
+
+function speakInterviewQuestion() {
+  if (!('speechSynthesis' in window)) {
+    showToast('Speech Synthesis not supported in this browser.', '⚠️');
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const qText = interviewState.activeQuestion ? interviewState.activeQuestion.q : document.getElementById('interviewQuestionText').textContent;
+  
+  const utterance = new SpeechSynthesisUtterance(qText);
+  utterance.rate = 0.95;
+  utterance.pitch = 1.0;
+
+  const pulse = document.getElementById('avatarPulse');
+  const badge = document.getElementById('voiceStatusBadge');
+
+  utterance.onstart = function() {
+    if(pulse) { pulse.style.display = 'block'; pulse.style.opacity = '1'; }
+    if(badge) badge.innerHTML = '<span style="color:var(--green);">🔊 AI Manager Speaking...</span>';
+  };
+
+  utterance.onend = function() {
+    if(pulse) pulse.style.display = 'none';
+    if(badge) badge.innerHTML = '<span>🔊 Web Speech Audio Ready</span>';
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function toggleInterviewRecord() {
+  if (interviewState.isRecording) {
+    stopInterviewRecord();
+  } else {
+    startInterviewRecord();
+  }
+}
+
+function startInterviewRecord() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  interviewState.isRecording = true;
+  interviewState.recSeconds = 0;
+  interviewState.transcript = '';
+  interviewState.fillerCounts = { um:0, uh:0, like:0, so:0, youknow:0, basically:0 };
+  
+  document.getElementById('recBtnIcon').textContent = '⏹️';
+  document.getElementById('recBtnText').textContent = 'Stop Recording';
+  document.getElementById('btnInterviewRecord').classList.replace('btn-primary', 'btn-danger');
+  document.getElementById('recStatusText').textContent = '🔴 Listening... speak your answer clearly';
+  document.getElementById('interviewSummaryCard').style.display = 'none';
+  
+  updateTranscriptUI('');
+  processFillerWords('');
+
+  interviewState.recStartTime = Date.now();
+  interviewState.recTimer = setInterval(() => {
+    interviewState.recSeconds++;
+    const mins = String(Math.floor(interviewState.recSeconds / 60)).padStart(2, '0');
+    const secs = String(interviewState.recSeconds % 60).padStart(2, '0');
+    document.getElementById('recTimerDisplay').textContent = `${mins}:${secs}`;
+    updateWpmGauge();
+  }, 1000);
+
+  if (interviewState.recognition) {
+    try {
+      interviewState.recognition.start();
+      showToast('Microphone live! Start answering.', '🎙️');
+    } catch(e) {
+      console.warn('Recognition start exception:', e);
+    }
+  } else {
+    showToast('Speech Recognition not supported — type in transcript box!', '⚠️');
+  }
+}
+
+function stopInterviewRecord() {
+  interviewState.isRecording = false;
+  clearInterval(interviewState.recTimer);
+
+  document.getElementById('recBtnIcon').textContent = '🎙️';
+  document.getElementById('recBtnText').textContent = 'Record Answer';
+  const btn = document.getElementById('btnInterviewRecord');
+  if(btn && btn.classList.contains('btn-danger')) btn.classList.replace('btn-danger', 'btn-primary');
+  document.getElementById('recStatusText').textContent = 'Recording stopped. Review your summary below.';
+
+  if (interviewState.recognition) {
+    try { interviewState.recognition.stop(); } catch(e){}
+  }
+
+  generateInterviewSummary();
+}
+
+function updateTranscriptUI(text) {
+  const box = document.getElementById('liveTranscriptBox');
+  if(!box) return;
+  if (!text) {
+    box.innerHTML = '<span style="color:var(--t2);font-style:italic;" id="transcriptPlaceholder">Click "Record Answer" and start speaking into your microphone. Your spoken text will stream here in real-time...</span>';
+    document.getElementById('transcriptWordCount').textContent = '0 Words Spoken';
+    interviewState.wordCount = 0;
+    return;
+  }
+
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  interviewState.wordCount = words.length;
+  document.getElementById('transcriptWordCount').textContent = `${words.length} Words Spoken`;
+
+  const fillerRegex = /\b(um|uh|like|so|you know|basically)\b/gi;
+  const highlightedText = text.replace(fillerRegex, match => `<mark style="background:rgba(244,63,94,.25);color:var(--red);border-radius:4px;padding:1px 4px;font-weight:700;">${match}</mark>`);
+  
+  box.innerHTML = highlightedText;
+  box.scrollTop = box.scrollHeight;
+}
+
+function handleManualTranscriptInput(el) {
+  const text = el.innerText || el.textContent;
+  interviewState.transcript = text;
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  interviewState.wordCount = words.length;
+  document.getElementById('transcriptWordCount').textContent = `${words.length} Words Spoken`;
+  processFillerWords(text);
+  updateWpmGauge();
+}
+
+function processFillerWords(text) {
+  if (!text) {
+    interviewState.fillerCounts = { um:0, uh:0, like:0, so:0, youknow:0, basically:0 };
+  } else {
+    const lower = text.toLowerCase();
+    const countOccurrences = (pattern) => (lower.match(new RegExp(pattern, 'g')) || []).length;
+
+    interviewState.fillerCounts = {
+      um: countOccurrences('\\bum\\b'),
+      uh: countOccurrences('\\buh\\b'),
+      like: countOccurrences('\\blike\\b'),
+      so: countOccurrences('\\bso\\b'),
+      youknow: countOccurrences('\\byou know\\b'),
+      basically: countOccurrences('\\bbasically\\b')
+    };
+  }
+
+  const fc = interviewState.fillerCounts;
+  if(document.getElementById('cnt-um')) document.getElementById('cnt-um').textContent = fc.um;
+  if(document.getElementById('cnt-uh')) document.getElementById('cnt-uh').textContent = fc.uh;
+  if(document.getElementById('cnt-like')) document.getElementById('cnt-like').textContent = fc.like;
+  if(document.getElementById('cnt-so')) document.getElementById('cnt-so').textContent = fc.so;
+  if(document.getElementById('cnt-youknow')) document.getElementById('cnt-youknow').textContent = fc.youknow;
+  if(document.getElementById('cnt-basically')) document.getElementById('cnt-basically').textContent = fc.basically;
+
+  const totalFillers = Object.values(fc).reduce((a, b) => a + b, 0);
+  if(document.getElementById('totalFillerCount')) document.getElementById('totalFillerCount').textContent = totalFillers;
+
+  const totalWords = Math.max(1, interviewState.wordCount);
+  const fillerRatio = totalFillers / totalWords;
+  const clarity = Math.max(0, Math.round((1 - fillerRatio * 3) * 100));
+
+  const badge = document.getElementById('clarityRatingBadge');
+  if(badge) {
+    badge.textContent = `${clarity}% Clarity`;
+    badge.className = clarity >= 85 ? 'badge b-green' : clarity >= 65 ? 'badge b-amber' : 'badge b-red';
+  }
+}
+
+function updateWpmGauge() {
+  const secs = Math.max(1, interviewState.recSeconds);
+  const words = interviewState.wordCount;
+  const wpm = Math.round((words / secs) * 60);
+  interviewState.wpm = wpm;
+
+  if(document.getElementById('liveWpmVal')) document.getElementById('liveWpmVal').textContent = wpm;
+
+  const barPct = Math.min(100, Math.max(0, Math.round((wpm / 200) * 100)));
+  const bar = document.getElementById('wpmGaugeBar');
+  const badge = document.getElementById('pacingZoneBadge');
+
+  if(bar) bar.style.width = barPct + '%';
+
+  if(badge && bar) {
+    if (wpm < 110) {
+      badge.textContent = '🐢 Too Slow (<110)';
+      badge.className = 'badge b-blue';
+      bar.style.background = 'var(--cyan)';
+    } else if (wpm <= 150) {
+      badge.textContent = '🎯 Perfect Pacing (110–150)';
+      badge.className = 'badge b-green';
+      bar.style.background = 'var(--green)';
+    } else {
+      badge.textContent = '⚡ Too Fast (>150)';
+      badge.className = 'badge b-red';
+      bar.style.background = 'var(--red)';
+    }
+  }
+}
+
+function resetInterviewSession() {
+  interviewState.recSeconds = 0;
+  interviewState.transcript = '';
+  interviewState.wordCount = 0;
+  interviewState.wpm = 0;
+  interviewState.fillerCounts = { um:0, uh:0, like:0, so:0, youknow:0, basically:0 };
+  
+  if(document.getElementById('recTimerDisplay')) document.getElementById('recTimerDisplay').textContent = '00:00';
+  if(document.getElementById('liveWpmVal')) document.getElementById('liveWpmVal').textContent = '0';
+  if(document.getElementById('wpmGaugeBar')) document.getElementById('wpmGaugeBar').style.width = '0%';
+  if(document.getElementById('pacingZoneBadge')) {
+    document.getElementById('pacingZoneBadge').textContent = 'Ready';
+    document.getElementById('pacingZoneBadge').className = 'badge b-blue';
+  }
+  if(document.getElementById('interviewSummaryCard')) document.getElementById('interviewSummaryCard').style.display = 'none';
+
+  updateTranscriptUI('');
+  processFillerWords('');
+}
+
+function generateInterviewSummary() {
+  const mins = String(Math.floor(interviewState.recSeconds / 60)).padStart(2, '0');
+  const secs = String(interviewState.recSeconds % 60).padStart(2, '0');
+  const totalFillers = Object.values(interviewState.fillerCounts).reduce((a, b) => a + b, 0);
+
+  if(document.getElementById('sumDuration')) document.getElementById('sumDuration').textContent = `${mins}:${secs}`;
+  if(document.getElementById('sumWords')) document.getElementById('sumWords').textContent = interviewState.wordCount;
+  
+  const pacingEl = document.getElementById('sumPacing');
+  if(pacingEl) {
+    pacingEl.textContent = `${interviewState.wpm} WPM`;
+    pacingEl.style.color = (interviewState.wpm >= 110 && interviewState.wpm <= 150) ? 'var(--green)' : 'var(--red)';
+  }
+
+  const fillersEl = document.getElementById('sumFillers');
+  if(fillersEl) {
+    fillersEl.textContent = totalFillers;
+    fillersEl.style.color = totalFillers <= 2 ? 'var(--green)' : 'var(--red)';
+  }
+
+  const feedback = [];
+  if (interviewState.wordCount < 20) {
+    feedback.push("⚠️ Answer was too brief. Expand using the STAR framework (Situation, Task, Action, Result) to provide comprehensive context.");
+  } else {
+    feedback.push("✅ Good answer length! You provided sufficient detail to cover your scenario.");
+  }
+
+  if (interviewState.wpm < 110) {
+    feedback.push("🐢 Speaking speed was under 110 WPM (Too Slow). Practice speaking with more energy and confidence.");
+  } else if (interviewState.wpm > 150) {
+    feedback.push("⚡ Speaking speed exceeded 150 WPM (Too Fast). Pause slightly after key technical points to allow interviewers to digest your thoughts.");
+  } else {
+    feedback.push("🎯 Excellent vocal pacing! 110–150 WPM is the ideal conversational range for senior tech interviews.");
+  }
+
+  if (totalFillers === 0) {
+    feedback.push("🌟 Zero filler words detected! Outstanding clarity and articulation.");
+  } else if (totalFillers <= 3) {
+    feedback.push(`👍 Low filler count (${totalFillers} detected). Minor hesitation is natural, keep practicing pause management.`);
+  } else {
+    feedback.push(`⚠️ Detected ${totalFillers} filler word(s) (${Object.entries(interviewState.fillerCounts).filter(([k,v])=>v>0).map(([k,v])=>`"${k}": ${v}`).join(', ')}). Try replacing hesitation words with silent 1-second pauses.`);
+  }
+
+  if(document.getElementById('sumFeedbackList')) {
+    document.getElementById('sumFeedbackList').innerHTML = feedback.map(f => `<li>${f}</li>`).join('');
+  }
+  if(document.getElementById('interviewSummaryCard')) {
+    document.getElementById('interviewSummaryCard').style.display = 'block';
   }
 }
 
