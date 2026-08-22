@@ -1454,21 +1454,61 @@ function startWeakPractice(){
 }
 
 function drawQBar(){
-  const ctx=document.getElementById('quizBarChart').getContext('2d');
-  state.quizBarChartInst=new Chart(ctx,{type:'bar',data:{labels:['Correct','Wrong','Remaining'],datasets:[{data:[0,0,5],backgroundColor:['rgba(16,185,129,.5)','rgba(244,63,94,.5)','rgba(99,102,241,.3)'],borderColor:['#10b981','#f43f5e','#6366f1'],borderWidth:2,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2744',borderColor:'rgba(99,102,241,.4)',borderWidth:1}},scales:{x:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#94a3b8'}},y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#94a3b8',stepSize:1},min:0,max:5}}}});
+  try {
+    const ctx = document.getElementById('quizBarChart').getContext('2d');
+    const maxVal = (state.quizData && state.quizData.length) ? state.quizData.length : 5;
+    state.quizBarChartInst = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Correct', 'Wrong', 'Remaining'],
+        datasets: [{
+          data: [0, 0, maxVal],
+          backgroundColor: ['rgba(16,185,129,.5)', 'rgba(244,63,94,.5)', 'rgba(99,102,241,.3)'],
+          borderColor: ['#10b981', '#f43f5e', '#6366f1'],
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1e2744', borderColor: 'rgba(99,102,241,.4)', borderWidth: 1 }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#94a3b8', stepSize: 1 }, min: 0, max: maxVal }
+        }
+      }
+    });
+  } catch(e) {
+    console.warn('Failed to draw Chart:', e);
+  }
 }
 
 function updateQBarMax(maxVal){
-  if(!state.quizBarChartInst)return;
-  state.quizBarChartInst.options.scales.y.max = maxVal;
-  updateQBar();
+  try {
+    if(!state.quizBarChartInst) return;
+    if(state.quizBarChartInst.options?.scales?.y) {
+      state.quizBarChartInst.options.scales.y.max = maxVal;
+    }
+    updateQBar();
+  } catch(e) {
+    console.warn('Failed to update Chart Max:', e);
+  }
 }
 
 function updateQBar(){
-  if(!state.quizBarChartInst)return;
-  const rem=state.quizData.length-Object.keys(state.quizAnswers).length;
-  state.quizBarChartInst.data.datasets[0].data=[qSess.c,qSess.w,rem];
-  state.quizBarChartInst.update();
+  try {
+    if(!state.quizBarChartInst) return;
+    const total = (state.quizData && state.quizData.length) ? state.quizData.length : 5;
+    const rem = total - Object.keys(state.quizAnswers).length;
+    state.quizBarChartInst.data.datasets[0].data = [qSess.c, qSess.w, rem];
+    state.quizBarChartInst.update();
+  } catch(e) {
+    console.warn('Failed to update Chart data:', e);
+  }
 }
 
 // ─── LEARNING PATH ────────────────────────────
