@@ -462,19 +462,22 @@ select option {background:#ffffff;color:var(--t1);}
 let state = { profile:null, selectedJob:null, quizData:[], currentQuestion:0, quizAnswers:{}, quizCorrect:0, radarChart:null, quizBarChartInst:null, skills:[], certs:[] };
 
 // ─── HOME FEATURES ────────────────────────
+// ─── HOME FEATURES ────────────────────────
 const HOME_FEATURES = [
-  {icon:'📄',col:'rgba(99,102,241,.15)',title:'Resume Parsing + Profile Builder',sub:'AI extracts skills, projects & experience'},
-  {icon:'🎯',col:'rgba(6,182,212,.15)',title:'Job Match + Skill Gap Radar',sub:'Real-time score vs 6 top companies'},
-  {icon:'✏️',col:'rgba(245,158,11,.15)',title:'1-Click ATS Resume Tailor',sub:'Turns weak resume lines into measurable impact statements'},
-  {icon:'🧠',col:'rgba(244,63,94,.15)',title:'Company & Year-Tagged Quizzes',sub:'TCS 2024, Amazon 2023 patterns'},
-  {icon:'📚',col:'rgba(16,185,129,.15)',title:'Curated Free Learning Roadmaps',sub:'YouTube, LeetCode, GitHub & Web resources'},
+  {title:'Resume Parsing + Profile Builder',sub:'AI extracts skills, projects & experience'},
+  {title:'Job Match + Skill Gap Radar',sub:'Real-time score vs 6 top companies'},
+  {title:'1-Click ATS Resume Tailor',sub:'Turns weak resume lines into measurable impact statements'},
+  {title:'Company & Year-Tagged Quizzes',sub:'TCS 2024, Amazon 2023 patterns'},
+  {title:'Curated Free Learning Roadmaps',sub:'YouTube, LeetCode, GitHub & Web resources'},
 ];
 
 document.getElementById('homeFeatures').innerHTML = HOME_FEATURES.map(f => `
-  <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);">
-    <div style="width:40px;height:40px;border-radius:10px;background:${f.col};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${f.icon}</div>
-    <div><div style="font-weight:600;font-size:.9rem;">${f.title}</div><div style="font-size:.75rem;color:var(--t2);">${f.sub}</div></div>
-    <span class="badge b-green" style="margin-left:auto;white-space:nowrap;">Live</span>
+  <div style="display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);">
+    <div style="width:2px;align-self:stretch;background:var(--p);flex-shrink:0;"></div>
+    <div>
+      <div style="font-weight:600;font-size:.9rem;color:var(--t1);">${f.title}</div>
+      <div style="font-size:.78rem;color:var(--t2);margin-top:2px;">${f.sub}</div>
+    </div>
   </div>
 `).join('').replace(/border-bottom[^;]+;(?=[^<]*<\/div><\/div>\s*<button)/, '');
 
