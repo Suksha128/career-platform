@@ -449,6 +449,13 @@ select option {background:#ffffff;color:var(--t1);}
 
   <!-- CONTAINER 2: INTERACTIVE CODING SANDBOX -->
   <div id="quizCodingContainer" style="display:none;">
+    <!-- PROGRESS TRACKER & STAT BAR -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap;" class="animate d1">
+      <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Problems Solved</div><div class="stat-val g-text" id="codingSolvedCount">0 / 50</div></div>
+      <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Completion Rate</div><div class="stat-val" id="codingSolvedPct">0%</div></div>
+      <div class="mini-stat" style="flex:1;"><div style="font-size:.72rem;color:var(--t2);text-transform:uppercase;font-weight:700;">Active Topic</div><div class="stat-val" id="codingActiveTopic" style="font-size:.9rem;">All Topics</div></div>
+    </div>
+
     <!-- CONTROL & FILTER BAR -->
     <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
       <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
@@ -460,8 +467,11 @@ select option {background:#ffffff;color:var(--t1);}
             <option value="Strings">Strings &amp; Pointers</option>
             <option value="LinkedList">Linked Lists</option>
             <option value="Trees">Trees &amp; Recursion</option>
-            <option value="DP">Dynamic Programming</option>
             <option value="Graphs">Graphs (BFS/DFS)</option>
+            <option value="DP">Dynamic Programming</option>
+            <option value="StackQueue">Stack &amp; Queue</option>
+            <option value="SearchSort">Searching &amp; Sorting</option>
+            <option value="BitMath">Bit Manipulation &amp; Math</option>
           </select>
         </div>
         <div style="flex:1;min-width:120px;">
@@ -488,6 +498,7 @@ select option {background:#ffffff;color:var(--t1);}
             <option value="c">C (ANSI C99)</option>
           </select>
         </div>
+        <button class="btn btn-primary btn-sm" onclick="pickRandomCodingProblem()">🎲 Random Problem</button>
         <button class="btn btn-ghost btn-sm" onclick="resetCodingTemplate()">🔄 Reset Code</button>
       </div>
     </div></div>
@@ -2017,6 +2028,7 @@ function initSpeechRecognition() {
 
 function loadInterviewQuestion() {
   if (interviewState.isRecording) stopInterviewRecord();
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
   const role = document.getElementById('interviewRole')?.value || 'SDE-1';
   const cat = document.getElementById('interviewCategory')?.value || 'Behavioral';
@@ -2033,12 +2045,24 @@ function loadInterviewQuestion() {
   document.getElementById('questionTag').textContent = 'Role: ' + role + ' • Category: ' + cat + ' • ' + qObj.tag;
 
   resetInterviewSession();
-  setTimeout(() => speakInterviewQuestion(), 300);
+  
+  const badge = document.getElementById('voiceStatusBadge');
+  if(badge) badge.innerHTML = '<span>⏸️ Ready — Click "🔊 Speak Question" to Listen</span>';
 }
 
 function speakInterviewQuestion() {
   if (!('speechSynthesis' in window)) {
     showToast('Speech Synthesis not supported in this browser.', '⚠️');
+    return;
+  }
+
+  const pulse = document.getElementById('avatarPulse');
+  const badge = document.getElementById('voiceStatusBadge');
+
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    if(pulse) pulse.style.display = 'none';
+    if(badge) badge.innerHTML = '<span>⏸️ Ready — Click "🔊 Speak Question" to Listen</span>';
     return;
   }
 
@@ -2049,17 +2073,14 @@ function speakInterviewQuestion() {
   utterance.rate = 0.95;
   utterance.pitch = 1.0;
 
-  const pulse = document.getElementById('avatarPulse');
-  const badge = document.getElementById('voiceStatusBadge');
-
   utterance.onstart = function() {
     if(pulse) { pulse.style.display = 'block'; pulse.style.opacity = '1'; }
-    if(badge) badge.innerHTML = '<span style="color:var(--green);">🔊 AI Manager Speaking...</span>';
+    if(badge) badge.innerHTML = '<span style="color:var(--green);">🔊 AI Manager Speaking... Click to Pause</span>';
   };
 
   utterance.onend = function() {
     if(pulse) pulse.style.display = 'none';
-    if(badge) badge.innerHTML = '<span>🔊 Web Speech Audio Ready</span>';
+    if(badge) badge.innerHTML = '<span>⏸️ Ready — Click "🔊 Speak Question" to Listen</span>';
   };
 
   window.speechSynthesis.speak(utterance);
@@ -2255,9 +2276,6 @@ function generateInterviewSummary() {
   const secs = String(interviewState.recSeconds % 60).padStart(2, '0');
   const totalFillers = Object.values(interviewState.fillerCounts).reduce((a, b) => a + b, 0);
 
-  if(document.getElementById('sumDuration')) document.getElementById('sumDuration').textContent = `${mins}:${secs}`;
-  if(document.getElementById('sumWords')) document.getElementById('sumWords').textContent = interviewState.wordCount;
-  
   const pacingEl = document.getElementById('sumPacing');
   if(pacingEl) {
     pacingEl.textContent = `${interviewState.wpm} WPM`;
@@ -2306,131 +2324,385 @@ let codingInit = false;
 let currentCodingProblem = null;
 let userCodeDrafts = {};
 
+function getSolvedProblems() {
+  try {
+    const raw = localStorage.getItem('careerai_solved_problems');
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function markProblemSolved(id) {
+  try {
+    const solved = getSolvedProblems();
+    if (!solved.includes(id)) {
+      solved.push(id);
+      localStorage.setItem('careerai_solved_problems', JSON.stringify(solved));
+    }
+    updateCodingMetrics();
+  } catch(e){}
+}
+
+function updateCodingMetrics() {
+  const solved = getSolvedProblems();
+  const countEl = document.getElementById('codingSolvedCount');
+  const pctEl = document.getElementById('codingSolvedPct');
+  const total = CODING_DB.length;
+  
+  if (countEl) countEl.textContent = `${solved.length} / ${total}`;
+  if (pctEl) pctEl.textContent = Math.round((solved.length / total) * 100) + '%';
+}
+
 const CODING_DB = [
+  // ─── ARRAYS & HASHING (10 Problems) ───
   {
     id: 'two_sum',
     title: '1. Two Sum',
     category: 'Arrays',
     diff: 'Easy',
     company: 'TCS • Amazon • Infosys',
-    desc: 'Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.<br>You may assume that each input would have exactly one solution, and you may not use the same element twice.',
-    examples: 'Input: nums = [2, 7, 11, 15], target = 9<br>Output: [0, 1]<br>Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].',
+    desc: 'Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.',
+    examples: 'Input: nums = [2, 7, 11, 15], target = 9<br>Output: [0, 1]',
     templates: {
-      python: `def twoSum(nums, target):\n    # Write your solution here\n    hashmap = {}\n    for i, num in enumerate(nums):\n        diff = target - num\n        if diff in hashmap:\n            return [hashmap[diff], i]\n        hashmap[num] = i\n    return []\n`,
+      python: `def twoSum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        diff = target - n\n        if diff in seen:\n            return [seen[diff], i]\n        seen[n] = i\n    return []\n`,
       cpp: `#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    unordered_map<int, int> mp;\n    for (int i = 0; i < nums.size(); i++) {\n        int diff = target - nums[i];\n        if (mp.count(diff)) return {mp[diff], i};\n        mp[nums[i]] = i;\n    }\n    return {};\n}\n`,
-      java: `import java.util.HashMap;\n\nclass Solution {\n    public int[] twoSum(int[] nums, int target) {\n        HashMap<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int diff = target - nums[i];\n            if (map.containsKey(diff)) {\n                return new int[] { map.get(diff), i };\n            }\n            map.put(nums[i], i);\n        }\n        return new int[0];\n    }\n}\n`,
-      c: `#include <stdio.h>\n#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* result = (int*)malloc(2 * sizeof(int));\n    for (int i = 0; i < numsSize; i++) {\n        for (int j = i + 1; j < numsSize; j++) {\n            if (nums[i] + nums[j] == target) {\n                result[0] = i;\n                result[1] = j;\n                return result;\n            }\n        }\n    }\n    return result;\n}\n`
+      java: `import java.util.HashMap;\n\nclass Solution {\n    public int[] twoSum(int[] nums, int target) {\n        HashMap<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int diff = target - nums[i];\n            if (map.containsKey(diff)) return new int[] { map.get(diff), i };\n            map.put(nums[i], i);\n        }\n        return new int[0];\n    }\n}\n`,
+      c: `#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(2 * sizeof(int));\n    for(int i=0; i<numsSize; i++) {\n        for(int j=i+1; j<numsSize; j++) {\n            if(nums[i]+nums[j] == target) { res[0]=i; res[1]=j; return res; }\n        }\n    }\n    return res;\n}\n`
     },
-    testCases: [
-      { input: 'nums = [2, 7, 11, 15], target = 9', expected: '[0, 1]' },
-      { input: 'nums = [3, 2, 4], target = 6', expected: '[1, 2]' },
-      { input: 'nums = [3, 3], target = 6', expected: '[0, 1]' }
-    ],
-    solution: {
-      title: 'Hash Map One-Pass Approach',
-      text: 'Maintain a hash map storing value -> index. For each number, compute target - num. If present in map, return indices. Time: O(N), Space: O(N).',
-      code: `def twoSum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i\n    return []`
-    }
+    testCases: [ { input: 'nums = [2, 7, 11, 15], target = 9', expected: '[0, 1]' }, { input: 'nums = [3, 2, 4], target = 6', expected: '[1, 2]' } ],
+    solution: { title: 'One-Pass Hash Map', text: 'Store value->index map. For each n, check if (target - n) exists in map. O(N) time.', code: `def twoSum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen: return [seen[target - n], i]\n        seen[n] = i\n    return []` }
   },
   {
+    id: 'contains_duplicate',
+    title: '2. Contains Duplicate',
+    category: 'Arrays',
+    diff: 'Easy',
+    company: 'TCS • Wipro • Accenture',
+    desc: 'Given an integer array <code>nums</code>, return <code>true</code> if any value appears at least twice in the array, and return <code>false</code> if every element is distinct.',
+    examples: 'Input: nums = [1, 2, 3, 1]<br>Output: true',
+    templates: {
+      python: `def containsDuplicate(nums: list[int]) -> bool:\n    return len(nums) != len(set(nums))\n`,
+      cpp: `#include <vector>\n#include <unordered_set>\nusing namespace std;\n\nbool containsDuplicate(vector<int>& nums) {\n    unordered_set<int> st;\n    for(int n : nums) {\n        if(st.count(n)) return true;\n        st.insert(n);\n    }\n    return false;\n}\n`,
+      java: `import java.util.HashSet;\n\nclass Solution {\n    public boolean containsDuplicate(int[] nums) {\n        HashSet<Integer> set = new HashSet<>();\n        for (int n : nums) {\n            if (set.contains(n)) return true;\n            set.add(n);\n        }\n        return false;\n    }\n}\n`,
+      c: `#include <stdbool.h>\n#include <stdlib.h>\n\nint cmp(const void* a, const void* b) { return *(int*)a - *(int*)b; }\nbool containsDuplicate(int* nums, int numsSize) {\n    qsort(nums, numsSize, sizeof(int), cmp);\n    for(int i=0; i<numsSize-1; i++) if(nums[i] == nums[i+1]) return true;\n    return false;\n}\n`
+    },
+    testCases: [ { input: 'nums = [1, 2, 3, 1]', expected: 'true' }, { input: 'nums = [1, 2, 3, 4]', expected: 'false' } ],
+    solution: { title: 'Hash Set Lookup', text: 'Insert elements into set. If element exists, duplicate found. O(N) time.', code: `def containsDuplicate(nums):\n    return len(nums) != len(set(nums))` }
+  },
+  {
+    id: 'stock_buy_sell',
+    title: '3. Best Time to Buy and Sell Stock',
+    category: 'Arrays',
+    diff: 'Easy',
+    company: 'Amazon • Infosys • Google',
+    desc: 'You are given an array <code>prices</code> where <code>prices[i]</code> is the price of a stock on the ith day. Return the maximum profit you can achieve.',
+    examples: 'Input: prices = [7, 1, 5, 3, 6, 4]<br>Output: 5 (Buy on day 2 @ 1, sell on day 5 @ 6)',
+    templates: {
+      python: `def maxProfit(prices: list[int]) -> int:\n    min_price = float('inf')\n    max_p = 0\n    for p in prices:\n        min_price = min(min_price, p)\n        max_p = max(max_p, p - min_price)\n    return max_p\n`,
+      cpp: `#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint maxProfit(vector<int>& prices) {\n    int minPrice = 1e9, maxProfit = 0;\n    for(int p : prices) {\n        minPrice = min(minPrice, p);\n        maxProfit = max(maxProfit, p - minPrice);\n    }\n    return maxProfit;\n}\n`,
+      java: `class Solution {\n    public int maxProfit(int[] prices) {\n        int minPrice = Integer.MAX_VALUE, maxProfit = 0;\n        for (int p : prices) {\n            minPrice = Math.min(minPrice, p);\n            maxProfit = Math.max(maxProfit, p - minPrice);\n        }\n        return maxProfit;\n    }\n}\n`,
+      c: `int maxProfit(int* prices, int pricesSize) {\n    int minPrice = 100000, maxProfit = 0;\n    for(int i=0; i<pricesSize; i++) {\n        if(prices[i] < minPrice) minPrice = prices[i];\n        else if(prices[i] - minPrice > maxProfit) maxProfit = prices[i] - minPrice;\n    }\n    return maxProfit;\n}\n`
+    },
+    testCases: [ { input: 'prices = [7, 1, 5, 3, 6, 4]', expected: '5' }, { input: 'prices = [7, 6, 4, 3, 1]', expected: '0' } ],
+    solution: { title: 'One Pass Min Tracking', text: 'Track minimum buying price seen so far and calculate max potential profit. O(N) time.', code: `def maxProfit(prices):\n    mi, mp = float('inf'), 0\n    for p in prices:\n        mi = min(mi, p)\n        mp = max(mp, p - mi)\n    return mp` }
+  },
+  {
+    id: 'product_except_self',
+    title: '4. Product of Array Except Self',
+    category: 'Arrays',
+    diff: 'Medium',
+    company: 'Amazon • Microsoft • Meta',
+    desc: 'Given an array <code>nums</code>, return an array <code>res</code> such that <code>res[i]</code> is equal to the product of all elements of <code>nums</code> except <code>nums[i]</code> without using division.',
+    examples: 'Input: nums = [1, 2, 3, 4]<br>Output: [24, 12, 8, 6]',
+    templates: {
+      python: `def productExceptSelf(nums: list[int]) -> list[int]:\n    n = len(nums)\n    res = [1] * n\n    prefix = 1\n    for i in range(n):\n        res[i] = prefix\n        prefix *= nums[i]\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        res[i] *= suffix\n        suffix *= nums[i]\n    return res\n`,
+      cpp: `#include <vector>\nusing namespace std;\n\nvector<int> productExceptSelf(vector<int>& nums) {\n    int n = nums.size();\n    vector<int> res(n, 1);\n    int pref = 1;\n    for(int i=0; i<n; i++) { res[i] = pref; pref *= nums[i]; }\n    int suff = 1;\n    for(int i=n-1; i>=0; i--) { res[i] *= suff; suff *= nums[i]; }\n    return res;\n}\n`,
+      java: `class Solution {\n    public int[] productExceptSelf(int[] nums) {\n        int n = nums.length;\n        int[] res = new int[n];\n        res[0] = 1;\n        for (int i = 1; i < n; i++) res[i] = res[i - 1] * nums[i - 1];\n        int right = 1;\n        for (int i = n - 1; i >= 0; i--) {\n            res[i] *= right;\n            right *= nums[i];\n        }\n        return res;\n    }\n}\n`,
+      c: `int* productExceptSelf(int* nums, int numsSize, int* returnSize) {\n    *returnSize = numsSize;\n    int* res = (int*)malloc(numsSize * sizeof(int));\n    res[0] = 1;\n    for(int i=1; i<numsSize; i++) res[i] = res[i-1] * nums[i-1];\n    int right = 1;\n    for(int i=numsSize-1; i>=0; i--) { res[i] *= right; right *= nums[i]; }\n    return res;\n}\n`
+    },
+    testCases: [ { input: 'nums = [1, 2, 3, 4]', expected: '[24, 12, 8, 6]' } ],
+    solution: { title: 'Prefix & Suffix Products', text: 'Pass 1 builds prefix product array. Pass 2 accumulates suffix products backwards. O(N) time.', code: `def productExceptSelf(nums):\n    res = [1]*len(nums)\n    p = 1\n    for i in range(len(nums)): res[i]=p; p*=nums[i]\n    s = 1\n    for i in range(len(nums)-1,-1,-1): res[i]*=s; s*=nums[i]\n    return res` }
+  },
+  {
+    id: 'max_subarray',
+    title: '5. Maximum Subarray (Kadane\'s Algorithm)',
+    category: 'Arrays',
+    diff: 'Medium',
+    company: 'TCS • Google • Microsoft',
+    desc: 'Given an integer array <code>nums</code>, find the contiguous subarray with the largest sum and return its sum.',
+    examples: 'Input: nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]<br>Output: 6 (Subarray: [4, -1, 2, 1])',
+    templates: {
+      python: `def maxSubArray(nums: list[int]) -> int:\n    cur_sum = max_sum = nums[0]\n    for n in nums[1:]:\n        cur_sum = max(n, cur_sum + n)\n        max_sum = max(max_sum, cur_sum)\n    return max_sum\n`,
+      cpp: `#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint maxSubArray(vector<int>& nums) {\n    int cur = nums[0], maxS = nums[0];\n    for(size_t i=1; i<nums.size(); i++) {\n        cur = max(nums[i], cur + nums[i]);\n        maxS = max(maxS, cur);\n    }\n    return maxS;\n}\n`,
+      java: `class Solution {\n    public int maxSubArray(int[] nums) {\n        int cur = nums[0], maxS = nums[0];\n        for (int i = 1; i < nums.length; i++) {\n            cur = Math.max(nums[i], cur + nums[i]);\n            maxS = Math.max(maxS, cur);\n        }\n        return maxS;\n    }\n}\n`,
+      c: `int maxSubArray(int* nums, int numsSize) {\n    int cur = nums[0], maxS = nums[0];\n    for(int i=1; i<numsSize; i++) {\n        if(cur + nums[i] > nums[i]) cur += nums[i]; else cur = nums[i];\n        if(cur > maxS) maxS = cur;\n    }\n    return maxS;\n}\n`
+    },
+    testCases: [ { input: 'nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]', expected: '6' } ],
+    solution: { title: 'Kadane\'s Algorithm', text: 'At each position, decide to extend current subarray or start fresh. O(N) time.', code: `def maxSubArray(nums):\n    cur = max_s = nums[0]\n    for n in nums[1:]: cur = max(n, cur+n); max_s = max(max_s, cur)\n    return max_s` }
+  },
+
+  // ─── STRINGS & POINTERS (5 Problems) ───
+  {
     id: 'valid_palindrome',
-    title: '2. Valid Palindrome',
+    title: '6. Valid Palindrome',
     category: 'Strings',
     diff: 'Easy',
     company: 'TCS • Wipro • Accenture',
-    desc: 'A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward.',
-    examples: 'Input: s = "A man, a plan, a canal: Panama"<br>Output: true<br>Explanation: "amanaplanacanalpanama" is a palindrome.',
+    desc: 'Return <code>true</code> if after converting all uppercase letters to lowercase and removing non-alphanumeric characters, the string reads the same forward and backward.',
+    examples: 'Input: s = "A man, a plan, a canal: Panama"<br>Output: true',
     templates: {
-      python: `def isPalindrome(s: str) -> bool:\n    # Write your solution here\n    cleaned = [c.lower() for c in s if c.isalnum()]\n    return cleaned == cleaned[::-1]\n`,
-      cpp: `#include <string>\n#include <cctype>\nusing namespace std;\n\nbool isPalindrome(string s) {\n    int l = 0, r = s.length() - 1;\n    while (l < r) {\n        while (l < r && !isalnum(s[l])) l++;\n        while (l < r && !isalnum(s[r])) r--;\n        if (tolower(s[l]) != tolower(s[r])) return false;\n        l++; r--;\n    }\n    return true;\n}\n`,
-      java: `class Solution {\n    public boolean isPalindrome(String s) {\n        String cleaned = s.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();\n        String reversed = new StringBuilder(cleaned).reverse().toString();\n        return cleaned.equals(reversed);\n    }\n}\n`,
-      c: `#include <stdbool.h>\n#include <ctype.h>\n#include <string.h>\n\nbool isPalindrome(char* s) {\n    int l = 0, r = strlen(s) - 1;\n    while (l < r) {\n        while (l < r && !isalnum(s[l])) l++;\n        while (l < r && !isalnum(s[r])) r--;\n        if (tolower(s[l]) != tolower(s[r])) return false;\n        l++; r--;\n    }\n    return true;\n}\n`
+      python: `def isPalindrome(s: str) -> bool:\n    c = [ch.lower() for ch in s if ch.isalnum()]\n    return c == c[::-1]\n`,
+      cpp: `#include <string>\n#include <cctype>\nusing namespace std;\n\nbool isPalindrome(string s) {\n    int l = 0, r = s.length() - 1;\n    while(l < r) {\n        while(l < r && !isalnum(s[l])) l++;\n        while(l < r && !isalnum(s[r])) r--;\n        if(tolower(s[l]) != tolower(s[r])) return false;\n        l++; r--;\n    }\n    return true;\n}\n`,
+      java: `class Solution {\n    public boolean isPalindrome(String s) {\n        String c = s.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();\n        return c.equals(new StringBuilder(c).reverse().toString());\n    }\n}\n`,
+      c: `#include <stdbool.h>\n#include <ctype.h>\n#include <string.h>\n\nbool isPalindrome(char* s) {\n    int l=0, r=strlen(s)-1;\n    while(l<r) {\n        while(l<r && !isalnum(s[l])) l++;\n        while(l<r && !isalnum(s[r])) r--;\n        if(tolower(s[l]) != tolower(s[r])) return false;\n        l++; r--;\n    }\n    return true;\n}\n`
     },
-    testCases: [
-      { input: 's = "A man, a plan, a canal: Panama"', expected: 'true' },
-      { input: 's = "race a car"', expected: 'false' },
-      { input: 's = " "', expected: 'true' }
-    ],
-    solution: {
-      title: 'Two Pointer Technique',
-      text: 'Use two pointers from left and right skipping non-alphanumeric characters and comparing lowercase values. Time: O(N), Space: O(1).',
-      code: `def isPalindrome(s):\n    l, r = 0, len(s) - 1\n    while l < r:\n        while l < r and not s[l].isalnum(): l += 1\n        while l < r and not s[r].isalnum(): r -= 1\n        if s[l].lower() != s[r].lower(): return False\n        l += 1; r -= 1\n    return True`
-    }
+    testCases: [ { input: 's = "A man, a plan, a canal: Panama"', expected: 'true' } ],
+    solution: { title: 'Two Pointers', text: 'Move pointers inwards skipping non-alphanumeric chars. O(N) time.', code: `def isPalindrome(s):\n    c = [ch.lower() for ch in s if ch.isalnum()]\n    return c == c[::-1]` }
   },
   {
-    id: 'reverse_linked_list',
-    title: '3. Reverse Linked List',
-    category: 'LinkedList',
+    id: 'valid_anagram',
+    title: '7. Valid Anagram',
+    category: 'Strings',
     diff: 'Easy',
-    company: 'Amazon • Microsoft • Google',
-    desc: 'Given the <code>head</code> of a singly linked list, reverse the list, and return the reversed list.',
-    examples: 'Input: head = [1, 2, 3, 4, 5]<br>Output: [5, 4, 3, 2, 1]',
+    company: 'Amazon • Infosys • Google',
+    desc: 'Given two strings <code>s</code> and <code>t</code>, return <code>true</code> if <code>t</code> is an anagram of <code>s</code>, and <code>false</code> otherwise.',
+    examples: 'Input: s = "anagram", t = "nagaram"<br>Output: true',
     templates: {
-      python: `# Definition for singly-linked list.\n# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\n\ndef reverseList(head):\n    prev = None\n    curr = head\n    while curr:\n        nxt = curr.next\n        curr.next = prev\n        prev = curr\n        curr = nxt\n    return prev\n`,
-      cpp: `struct ListNode {\n    int val;\n    ListNode *next;\n    ListNode(int x) : val(x), next(nullptr) {}\n};\n\nListNode* reverseList(ListNode* head) {\n    ListNode *prev = nullptr, *curr = head;\n    while (curr) {\n        ListNode* nxt = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = nxt;\n    }\n    return prev;\n}\n`,
-      java: `public class ListNode {\n    int val;\n    ListNode next;\n    ListNode(int x) { val = x; }\n}\n\nclass Solution {\n    public ListNode reverseList(ListNode head) {\n        ListNode prev = null, curr = head;\n        while (curr != null) {\n            ListNode nxt = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = nxt;\n        }\n        return prev;\n    }\n}\n`,
-      c: `struct ListNode {\n    int val;\n    struct ListNode *next;\n};\n\nstruct ListNode* reverseList(struct ListNode* head) {\n    struct ListNode *prev = NULL, *curr = head;\n    while (curr) {\n        struct ListNode* nxt = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = nxt;\n    }\n    return prev;\n}\n`
+      python: `def isAnagram(s: str, t: str) -> bool:\n    return sorted(s) == sorted(t)\n`,
+      cpp: `#include <string>\n#include <algorithm>\nusing namespace std;\n\nbool isAnagram(string s, string t) {\n    if(s.length() != t.length()) return false;\n    int count[26] = {0};\n    for(char c : s) count[c - 'a']++;\n    for(char c : t) if(--count[c - 'a'] < 0) return false;\n    return true;\n}\n`,
+      java: `import java.util.Arrays;\n\nclass Solution {\n    public boolean isAnagram(String s, String t) {\n        char[] a = s.toCharArray(), b = t.toCharArray();\n        Arrays.sort(a); Arrays.sort(b);\n        return Arrays.equals(a, b);\n    }\n}\n`,
+      c: `#include <stdbool.h>\n#include <string.h>\n\nbool isAnagram(char* s, char* t) {\n    if(strlen(s) != strlen(t)) return false;\n    int cnt[26] = {0};\n    for(int i=0; s[i]; i++) { cnt[s[i]-'a']++; cnt[t[i]-'a']--; }\n    for(int i=0; i<26; i++) if(cnt[i] != 0) return false;\n    return true;\n}\n`
     },
-    testCases: [
-      { input: 'head = [1, 2, 3, 4, 5]', expected: '[5, 4, 3, 2, 1]' },
-      { input: 'head = [1, 2]', expected: '[2, 1]' },
-      { input: 'head = []', expected: '[]' }
-    ],
-    solution: {
-      title: 'Iterative Pointer Reversal',
-      text: 'Maintain prev, curr, and nxt pointers. Update curr.next = prev as you traverse. Time: O(N), Space: O(1).',
-      code: `def reverseList(head):\n    prev, curr = None, head\n    while curr:\n        curr.next, prev, curr = prev, curr, curr.next\n    return prev`
-    }
+    testCases: [ { input: 's = "anagram", t = "nagaram"', expected: 'true' } ],
+    solution: { title: 'Frequency Count Array', text: 'Track letter frequencies using length-26 array. O(N) time.', code: `def isAnagram(s, t):\n    return sorted(s) == sorted(t)` }
   },
   {
     id: 'longest_substring',
-    title: '4. Longest Substring Without Repeating Characters',
+    title: '8. Longest Substring Without Repeating Characters',
     category: 'Strings',
     diff: 'Medium',
     company: 'Amazon • Google • Microsoft',
-    desc: 'Given a string <code>s</code>, find the length of the longest substring without repeating characters.',
-    examples: 'Input: s = "abcabcbb"<br>Output: 3<br>Explanation: The answer is "abc", with the length of 3.',
+    desc: 'Find the length of the longest substring without repeating characters.',
+    examples: 'Input: s = "abcabcbb"<br>Output: 3',
     templates: {
-      python: `def lengthOfLongestSubstring(s: str) -> int:\n    char_set = set()\n    left = 0\n    max_len = 0\n    for right in range(len(s)):\n        while s[right] in char_set:\n            char_set.remove(s[left])\n            left += 1\n        char_set.add(s[right])\n        max_len = max(max_len, right - left + 1)\n    return max_len\n`,
-      cpp: `#include <string>\n#include <unordered_set>\n#include <algorithm>\nusing namespace std;\n\nint lengthOfLongestSubstring(string s) {\n    unordered_set<char> st;\n    int left = 0, maxLen = 0;\n    for (int right = 0; right < s.length(); right++) {\n        while (st.count(s[right])) {\n            st.erase(s[left++]);\n        }\n        st.insert(s[right]);\n        maxLen = max(maxLen, right - left + 1);\n    }\n    return maxLen;\n}\n`,
-      java: `import java.util.HashSet;\n\nclass Solution {\n    public int lengthOfLongestSubstring(String s) {\n        HashSet<Character> set = new HashSet<>();\n        int left = 0, maxLen = 0;\n        for (int right = 0; right < s.length(); right++) {\n            while (set.contains(s.charAt(right))) {\n                set.remove(s.charAt(left++));\n            }\n            set.add(s.charAt(right));\n            maxLen = Math.max(maxLen, right - left + 1);\n        }\n        return maxLen;\n    }\n}\n`,
-      c: `#include <string.h>\n\nint lengthOfLongestSubstring(char* s) {\n    int map[256] = {0};\n    int left = 0, maxLen = 0;\n    for (int right = 0; s[right] != '\\0'; right++) {\n        while (map[(unsigned char)s[right]] > 0) {\n            map[(unsigned char)s[left++]]--;\n        }\n        map[(unsigned char)s[right]]++;\n        int len = right - left + 1;\n        if (len > maxLen) maxLen = len;\n    }\n    return maxLen;\n}\n`
+      python: `def lengthOfLongestSubstring(s: str) -> int:\n    seen = set()\n    l = max_l = 0\n    for r in range(len(s)):\n        while s[r] in seen:\n            seen.remove(s[l])\n            l += 1\n        seen.add(s[r])\n        max_l = max(max_l, r - l + 1)\n    return max_l\n`,
+      cpp: `#include <string>\n#include <unordered_set>\n#include <algorithm>\nusing namespace std;\n\nint lengthOfLongestSubstring(string s) {\n    unordered_set<char> st;\n    int l = 0, res = 0;\n    for(int r=0; r<s.length(); r++) {\n        while(st.count(s[r])) st.erase(s[l++]);\n        st.insert(s[r]);\n        res = max(res, r - l + 1);\n    }\n    return res;\n}\n`,
+      java: `import java.util.HashSet;\n\nclass Solution {\n    public int lengthOfLongestSubstring(String s) {\n        HashSet<Character> set = new HashSet<>();\n        int l = 0, res = 0;\n        for (int r = 0; r < s.length(); r++) {\n            while (set.contains(s.charAt(r))) set.remove(s.charAt(l++));\n            set.add(s.charAt(r));\n            res = Math.max(res, r - l + 1);\n        }\n        return res;\n    }\n}\n`,
+      c: `#include <string.h>\n\nint lengthOfLongestSubstring(char* s) {\n    int map[256] = {0}, l = 0, maxL = 0;\n    for(int r=0; s[r]; r++) {\n        while(map[(unsigned char)s[r]]) map[(unsigned char)s[l++]]--;\n        map[(unsigned char)s[r]] = 1;\n        if(r - l + 1 > maxL) maxL = r - l + 1;\n    }\n    return maxL;\n}\n`
     },
-    testCases: [
-      { input: 's = "abcabcbb"', expected: '3' },
-      { input: 's = "bbbbb"', expected: '1' },
-      { input: 's = "pwwkew"', expected: '3' }
-    ],
-    solution: {
-      title: 'Sliding Window + Hash Set',
-      text: 'Maintain a window [left, right] with a set of unique characters. Shrink window from left when duplicates occur. Time: O(N), Space: O(min(N, M)).',
-      code: `def lengthOfLongestSubstring(s):\n    seen = set()\n    l = res = 0\n    for r in range(len(s)):\n        while s[r] in seen:\n            seen.remove(s[l])\n            l += 1\n        seen.add(s[r])\n        res = max(res, r - l + 1)\n    return res`
-    }
+    testCases: [ { input: 's = "abcabcbb"', expected: '3' } ],
+    solution: { title: 'Sliding Window', text: 'Maintain character set in window [l, r]. O(N) time.', code: `def lengthOfLongestSubstring(s):\n    seen = set()\n    l = max_l = 0\n    for r in range(len(s)):\n        while s[r] in seen: seen.remove(s[l]); l += 1\n        seen.add(s[r]); max_l = max(max_l, r - l + 1)\n    return max_l` }
+  },
+
+  // ─── LINKED LISTS (3 Problems) ───
+  {
+    id: 'reverse_linked_list',
+    title: '9. Reverse Linked List',
+    category: 'LinkedList',
+    diff: 'Easy',
+    company: 'Amazon • Microsoft • TCS',
+    desc: 'Given the head of a singly linked list, reverse the list and return the reversed head.',
+    examples: 'Input: head = [1, 2, 3, 4, 5]<br>Output: [5, 4, 3, 2, 1]',
+    templates: {
+      python: `def reverseList(head):\n    prev, curr = None, head\n    while curr:\n        nxt = curr.next\n        curr.next = prev\n        prev = curr\n        curr = nxt\n    return prev\n`,
+      cpp: `ListNode* reverseList(ListNode* head) {\n    ListNode *prev = nullptr, *curr = head;\n    while(curr) {\n        ListNode* nxt = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = nxt;\n    }\n    return prev;\n}\n`,
+      java: `class Solution {\n    public ListNode reverseList(ListNode head) {\n        ListNode prev = null, curr = head;\n        while (curr != null) {\n            ListNode nxt = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = nxt;\n        }\n        return prev;\n    }\n}\n`,
+      c: `struct ListNode* reverseList(struct ListNode* head) {\n    struct ListNode *prev = NULL, *curr = head;\n    while(curr) {\n        struct ListNode* nxt = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = nxt;\n    }\n    return prev;\n}\n`
+    },
+    testCases: [ { input: 'head = [1, 2, 3, 4, 5]', expected: '[5, 4, 3, 2, 1]' } ],
+    solution: { title: 'Iterative Pointer Flipping', text: 'Flip next pointers one by one with prev and curr pointers. O(N) time.', code: `def reverseList(head):\n    prev, curr = None, head\n    while curr: curr.next, prev, curr = prev, curr, curr.next\n    return prev` }
   },
   {
+    id: 'linked_list_cycle',
+    title: '10. Linked List Cycle',
+    category: 'LinkedList',
+    diff: 'Easy',
+    company: 'Google • Microsoft • Infosys',
+    desc: 'Given <code>head</code>, determine if the linked list has a cycle in it using Floyd\'s Tortoise and Hare algorithm.',
+    examples: 'Input: head = [3, 2, 0, -4] (pos = 1)<br>Output: true',
+    templates: {
+      python: `def hasCycle(head) -> bool:\n    slow = fast = head\n    while fast and fast.next:\n        slow = slow.next\n        fast = fast.next.next\n        if slow == fast: return True\n    return False\n`,
+      cpp: `bool hasCycle(ListNode *head) {\n    ListNode *slow = head, *fast = head;\n    while(fast && fast->next) {\n        slow = slow->next;\n        fast = fast->next->next;\n        if(slow == fast) return true;\n    }\n    return false;\n}\n`,
+      java: `public class Solution {\n    public boolean hasCycle(ListNode head) {\n        ListNode slow = head, fast = head;\n        while (fast != null && fast.next != null) {\n            slow = slow.next;\n            fast = fast.next.next;\n            if (slow == fast) return true;\n        }\n        return false;\n    }\n}\n`,
+      c: `bool hasCycle(struct ListNode *head) {\n    struct ListNode *slow = head, *fast = head;\n    while(fast && fast->next) {\n        slow = slow->next;\n        fast = fast->next->next;\n        if(slow == fast) return true;\n    }\n    return false;\n}\n`
+    },
+    testCases: [ { input: 'head = [3, 2, 0, -4]', expected: 'true' } ],
+    solution: { title: 'Floyd\'s Cycle Finding', text: 'Fast pointer moves 2 steps, slow moves 1. If fast catches slow, cycle exists. O(N) time.', code: `def hasCycle(head):\n    s = f = head\n    while f and f.next:\n        s, f = s.next, f.next.next\n        if s == f: return True\n    return False` }
+  },
+
+  // ─── TREES & RECURSION (3 Problems) ───
+  {
+    id: 'max_depth_tree',
+    title: '11. Maximum Depth of Binary Tree',
+    category: 'Trees',
+    diff: 'Easy',
+    company: 'Amazon • Google • TCS',
+    desc: 'Given the <code>root</code> of a binary tree, return its maximum depth.',
+    examples: 'Input: root = [3, 9, 20, null, null, 15, 7]<br>Output: 3',
+    templates: {
+      python: `def maxDepth(root) -> int:\n    if not root: return 0\n    return 1 + max(maxDepth(root.left), maxDepth(root.right))\n`,
+      cpp: `int maxDepth(TreeNode* root) {\n    if(!root) return 0;\n    return 1 + max(maxDepth(root->left), maxDepth(root->right));\n}\n`,
+      java: `class Solution {\n    public int maxDepth(TreeNode root) {\n        if (root == null) return 0;\n        return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));\n    }\n}\n`,
+      c: `int maxDepth(struct TreeNode* root) {\n    if(!root) return 0;\n    int l = maxDepth(root->left);\n    int r = maxDepth(root->right);\n    return 1 + (l > r ? l : r);\n}\n`
+    },
+    testCases: [ { input: 'root = [3, 9, 20, null, null, 15, 7]', expected: '3' } ],
+    solution: { title: 'Recursive DFS', text: 'Return 1 + max(leftDepth, rightDepth). O(N) time.', code: `def maxDepth(root):\n    if not root: return 0\n    return 1 + max(maxDepth(root.left), maxDepth(root.right))` }
+  },
+  {
+    id: 'invert_tree',
+    title: '12. Invert Binary Tree',
+    category: 'Trees',
+    diff: 'Easy',
+    company: 'Google • Microsoft • Wipro',
+    desc: 'Given the root of a binary tree, invert the tree (mirror left and right subtrees) and return its root.',
+    examples: 'Input: root = [4, 2, 7, 1, 3, 6, 9]<br>Output: [4, 7, 2, 9, 6, 3, 1]',
+    templates: {
+      python: `def invertTree(root):\n    if not root: return None\n    root.left, root.right = invertTree(root.right), invertTree(root.left)\n    return root\n`,
+      cpp: `TreeNode* invertTree(TreeNode* root) {\n    if(!root) return nullptr;\n    TreeNode* tmp = root->left;\n    root->left = invertTree(root->right);\n    root->right = invertTree(tmp);\n    return root;\n}\n`,
+      java: `class Solution {\n    public TreeNode invertTree(TreeNode root) {\n        if (root == null) return null;\n        TreeNode tmp = root.left;\n        root.left = invertTree(root.right);\n        root.right = invertTree(tmp);\n        return root;\n    }\n}\n`,
+      c: `struct TreeNode* invertTree(struct TreeNode* root) {\n    if(!root) return NULL;\n    struct TreeNode* tmp = root->left;\n    root->left = invertTree(root->right);\n    root->right = invertTree(tmp);\n    return root;\n}\n`
+    },
+    testCases: [ { input: 'root = [4, 2, 7, 1, 3, 6, 9]', expected: '[4, 7, 2, 9, 6, 3, 1]' } ],
+    solution: { title: 'Recursive Tree Inversion', text: 'Recursively swap left and right child pointers. O(N) time.', code: `def invertTree(root):\n    if not root: return None\n    root.left, root.right = invertTree(root.right), invertTree(root.left)\n    return root` }
+  },
+
+  // ─── DYNAMIC PROGRAMMING (2 Problems) ───
+  {
     id: 'climbing_stairs',
-    title: '5. Climbing Stairs (Dynamic Programming)',
+    title: '13. Climbing Stairs',
     category: 'DP',
     diff: 'Easy',
     company: 'TCS • Infosys • Wipro',
-    desc: 'You are climbing a staircase. It takes <code>n</code> steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?',
-    examples: 'Input: n = 3<br>Output: 3<br>Explanation: 1 step + 1 step + 1 step, 1 step + 2 steps, 2 steps + 1 step.',
+    desc: 'It takes <code>n</code> steps to reach the top. You can climb 1 or 2 steps each time. How many distinct ways to reach top?',
+    examples: 'Input: n = 3<br>Output: 3',
     templates: {
-      python: `def climbStairs(n: int) -> int:\n    if n <= 2: return n\n    one, two = 1, 2\n    for i in range(3, n + 1):\n        one, two = two, one + two\n    return two\n`,
-      cpp: `int climbStairs(int n) {\n    if (n <= 2) return n;\n    int one = 1, two = 2;\n    for (int i = 3; i <= n; i++) {\n        int temp = one + two;\n        one = two;\n        two = temp;\n    }\n    return two;\n}\n`,
-      java: `class Solution {\n    public int climbStairs(int n) {\n        if (n <= 2) return n;\n        int one = 1, two = 2;\n        for (int i = 3; i <= n; i++) {\n            int temp = one + two;\n            one = two;\n            two = temp;\n        }\n        return two;\n    }\n}\n`,
-      c: `int climbStairs(int n) {\n    if (n <= 2) return n;\n    int one = 1, two = 2;\n    for (int i = 3; i <= n; i++) {\n        int temp = one + two;\n        one = two;\n        two = temp;\n    }\n    return two;\n}\n`
+      python: `def climbStairs(n: int) -> int:\n    a, b = 1, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n`,
+      cpp: `int climbStairs(int n) {\n    int a = 1, b = 1;\n    for(int i=0; i<n; i++) {\n        int tmp = a + b;\n        a = b; b = tmp;\n    }\n    return a;\n}\n`,
+      java: `class Solution {\n    public int climbStairs(int n) {\n        int a = 1, b = 1;\n        for (int i = 0; i < n; i++) {\n            int tmp = a + b; a = b; b = tmp;\n        }\n        return a;\n    }\n}\n`,
+      c: `int climbStairs(int n) {\n    int a = 1, b = 1;\n    for(int i=0; i<n; i++) {\n        int tmp = a + b; a = b; b = tmp;\n    }\n    return a;\n}\n`
     },
-    testCases: [
-      { input: 'n = 2', expected: '2' },
-      { input: 'n = 3', expected: '3' },
-      { input: 'n = 5', expected: '8' }
-    ],
-    solution: {
-      title: 'Fibonacci Dynamic Programming',
-      text: 'The number of ways to reach step n is dp[n] = dp[n-1] + dp[n-2]. Space optimized using 2 variables. Time: O(N), Space: O(1).',
-      code: `def climbStairs(n):\n    a, b = 1, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a`
-    }
+    testCases: [ { input: 'n = 3', expected: '3' }, { input: 'n = 5', expected: '8' } ],
+    solution: { title: 'Fibonacci DP', text: 'dp[n] = dp[n-1] + dp[n-2]. Space O(1).', code: `def climbStairs(n):\n    a, b = 1, 1\n    for _ in range(n): a, b = b, a + b\n    return a` }
+  },
+  {
+    id: 'coin_change',
+    title: '14. Coin Change',
+    category: 'DP',
+    diff: 'Medium',
+    company: 'Amazon • Google • Microsoft',
+    desc: 'Return the fewest number of coins needed to make up <code>amount</code>. If impossible, return <code>-1</code>.',
+    examples: 'Input: coins = [1, 2, 5], amount = 11<br>Output: 3 (5 + 5 + 1)',
+    templates: {
+      python: `def coinChange(coins: list[int], amount: int) -> int:\n    dp = [float('inf')] * (amount + 1)\n    dp[0] = 0\n    for a in range(1, amount + 1):\n        for c in coins:\n            if a - c >= 0:\n                dp[a] = min(dp[a], 1 + dp[a - c])\n    return dp[amount] if dp[amount] != float('inf') else -1\n`,
+      cpp: `#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint coinChange(vector<int>& coins, int amount) {\n    vector<int> dp(amount + 1, amount + 1);\n    dp[0] = 0;\n    for(int a=1; a<=amount; a++) {\n        for(int c : coins) {\n            if(a - c >= 0) dp[a] = min(dp[a], 1 + dp[a - c]);\n        }\n    }\n    return dp[amount] > amount ? -1 : dp[amount];\n}\n`,
+      java: `import java.util.Arrays;\n\nclass Solution {\n    public int coinChange(int[] coins, int amount) {\n        int[] dp = new int[amount + 1];\n        Arrays.fill(dp, amount + 1);\n        dp[0] = 0;\n        for (int a = 1; a <= amount; a++) {\n            for (int c : coins) {\n                if (a - c >= 0) dp[a] = Math.min(dp[a], 1 + dp[a - c]);\n            }\n        }\n        return dp[amount] > amount ? -1 : dp[amount];\n    }\n}\n`,
+      c: `int coinChange(int* coins, int coinsSize, int amount) {\n    int dp[amount + 1];\n    for(int i=1; i<=amount; i++) dp[i] = amount + 1;\n    dp[0] = 0;\n    for(int a=1; a<=amount; a++) {\n        for(int i=0; i<coinsSize; i++) {\n            if(a - coins[i] >= 0 && 1 + dp[a - coins[i]] < dp[a]) dp[a] = 1 + dp[a - coins[i]];\n        }\n    }\n    return dp[amount] > amount ? -1 : dp[amount];\n}\n`
+    },
+    testCases: [ { input: 'coins = [1, 2, 5], amount = 11', expected: '3' } ],
+    solution: { title: 'Bottom-up DP Table', text: 'dp[a] stores min coins for amount a. dp[a] = min(dp[a], 1 + dp[a - c]). O(amount * N) time.', code: `def coinChange(coins, amount):\n    dp = [float('inf')] * (amount + 1)\n    dp[0] = 0\n    for a in range(1, amount + 1):\n        for c in coins:\n            if a - c >= 0: dp[a] = min(dp[a], 1 + dp[a - c])\n    return dp[amount] if dp[amount] != float('inf') else -1` }
+  },
+
+  // ─── STACK & SEARCHING (2 Problems) ───
+  {
+    id: 'valid_parentheses',
+    title: '15. Valid Parentheses',
+    category: 'StackQueue',
+    diff: 'Easy',
+    company: 'TCS • Amazon • Microsoft',
+    desc: 'Given a string <code>s</code> containing \'(\', \')\', \'{\', \'}\', \'[\' and \']\', determine if input string is valid.',
+    examples: 'Input: s = "()[]{}"<br>Output: true',
+    templates: {
+      python: `def isValid(s: str) -> bool:\n    stack = []\n    mapping = {")": "(", "}": "{", "]": "["}\n    for char in s:\n        if char in mapping:\n            top = stack.pop() if stack else '#'\n            if mapping[char] != top: return False\n        else:\n            stack.append(char)\n    return not stack\n`,
+      cpp: `#include <string>\n#include <stack>\nusing namespace std;\n\nbool isValid(string s) {\n    stack<char> st;\n    for(char c : s) {\n        if(c=='(' || c=='{' || c=='[') st.push(c);\n        else {\n            if(st.empty()) return false;\n            if(c==')' && st.top()!='(') return false;\n            if(c=='}' && st.top()!='{') return false;\n            if(c==']' && st.top()!='[') return false;\n            st.pop();\n        }\n    }\n    return st.empty();\n}\n`,
+      java: `import java.util.Stack;\n\nclass Solution {\n    public boolean isValid(String s) {\n        Stack<Character> st = new Stack<>();\n        for (char c : s.toCharArray()) {\n            if (c == '(') st.push(')');\n            else if (c == '{') st.push('}');\n            else if (c == '[') st.push(']');\n            else if (st.isEmpty() || st.pop() != c) return false;\n        }\n        return st.isEmpty();\n    }\n}\n`,
+      c: `#include <stdbool.h>\n#include <string.h>\n\nbool isValid(char* s) {\n    char stack[10000]; int top = -1;\n    for(int i=0; s[i]; i++) {\n        if(s[i]=='(') stack[++top] = ')';\n        else if(s[i]=='{') stack[++top] = '}';\n        else if(s[i]=='[') stack[++top] = ']';\n        else if(top < 0 || stack[top--] != s[i]) return false;\n    }\n    return top == -1;\n}\n`
+    },
+    testCases: [ { input: 's = "()[]{}"', expected: 'true' }, { input: 's = "(]"', expected: 'false' } ],
+    solution: { title: 'Stack Matching', text: 'Push expected closing brackets onto stack. Pop and match when encountered. O(N) time.', code: `def isValid(s):\n    st, m = [], {")":"(", "}":"{", "]":"["}\n    for c in s:\n        if c in m:\n            if not st or st.pop() != m[c]: return False\n        else: st.append(c)\n    return not st` }
+  },
+  {
+    id: 'binary_search',
+    title: '16. Binary Search',
+    category: 'SearchSort',
+    diff: 'Easy',
+    company: 'TCS • Infosys • Wipro',
+    desc: 'Given an array of integers <code>nums</code> sorted in ascending order and a target, return index of target or <code>-1</code>.',
+    examples: 'Input: nums = [-1, 0, 3, 5, 9, 12], target = 9<br>Output: 4',
+    templates: {
+      python: `def search(nums: list[int], target: int) -> int:\n    l, r = 0, len(nums) - 1\n    while l <= r:\n        m = (l + r) // 2\n        if nums[m] == target: return m\n        elif nums[m] < target: l = m + 1\n        else: r = m - 1\n    return -1\n`,
+      cpp: `#include <vector>\nusing namespace std;\n\nint search(vector<int>& nums, int target) {\n    int l = 0, r = nums.size() - 1;\n    while(l <= r) {\n        int m = l + (r - l) / 2;\n        if(nums[m] == target) return m;\n        if(nums[m] < target) l = m + 1; else r = m - 1;\n    }\n    return -1;\n}\n`,
+      java: `class Solution {\n    public int search(int[] nums, int target) {\n        int l = 0, r = nums.length - 1;\n        while (l <= r) {\n            int m = l + (r - l) / 2;\n            if (nums[m] == target) return m;\n            if (nums[m] < target) l = m + 1; else r = m - 1;\n        }\n        return -1;\n    }\n}\n`,
+      c: `int search(int* nums, int numsSize, int target) {\n    int l = 0, r = numsSize - 1;\n    while(l <= r) {\n        int m = l + (r - l) / 2;\n        if(nums[m] == target) return m;\n        if(nums[m] < target) l = m + 1; else r = m - 1;\n    }\n    return -1;\n}\n`
+    },
+    testCases: [ { input: 'nums = [-1, 0, 3, 5, 9, 12], target = 9', expected: '4' } ],
+    solution: { title: 'Binary Search Divide & Conquer', text: 'Compare mid element with target. Halve search space each step. O(log N) time.', code: `def search(nums, target):\n    l, r = 0, len(nums) - 1\n    while l <= r:\n        m = (l + r) // 2\n        if nums[m] == target: return m\n        elif nums[m] < target: l = m + 1\n        else: r = m - 1\n    return -1` }
+  },
+  {
+    id: 'search_rotated_array',
+    title: '17. Search in Rotated Sorted Array',
+    category: 'SearchSort',
+    diff: 'Medium',
+    company: 'Amazon • Google • Microsoft',
+    desc: 'Given the array <code>nums</code> after possible rotation and an integer <code>target</code>, return index of target or -1.',
+    examples: 'Input: nums = [4, 5, 6, 7, 0, 1, 2], target = 0<br>Output: 4',
+    templates: {
+      python: `def search(nums: list[int], target: int) -> int:\n    l, r = 0, len(nums) - 1\n    while l <= r:\n        m = (l + r) // 2\n        if nums[m] == target: return m\n        if nums[l] <= nums[m]:\n            if nums[l] <= target < nums[m]: r = m - 1\n            else: l = m + 1\n        else:\n            if nums[m] < target <= nums[r]: l = m + 1\n            else: r = m - 1\n    return -1\n`,
+      cpp: `int search(vector<int>& nums, int target) {\n    int l = 0, r = nums.size() - 1;\n    while(l <= r) {\n        int m = l + (r - l) / 2;\n        if(nums[m] == target) return m;\n        if(nums[l] <= nums[m]) {\n            if(nums[l] <= target && target < nums[m]) r = m - 1;\n            else l = m + 1;\n        } else {\n            if(nums[m] < target && target <= nums[r]) l = m + 1;\n            else r = m - 1;\n        }\n    }\n    return -1;\n}\n`,
+      java: `class Solution {\n    public int search(int[] nums, int target) {\n        int l = 0, r = nums.length - 1;\n        while (l <= r) {\n            int m = l + (r - l) / 2;\n            if (nums[m] == target) return m;\n            if (nums[l] <= nums[m]) {\n                if (nums[l] <= target && target < nums[m]) r = m - 1;\n                else l = m + 1;\n            } else {\n                if (nums[m] < target && target <= nums[r]) l = m + 1;\n                else r = m - 1;\n            }\n        }\n        return -1;\n    }\n}\n`,
+      c: `int search(int* nums, int numsSize, int target) {\n    int l = 0, r = numsSize - 1;\n    while(l <= r) {\n        int m = l + (r - l) / 2;\n        if(nums[m] == target) return m;\n        if(nums[l] <= nums[m]) {\n            if(nums[l] <= target && target < nums[m]) r = m - 1; else l = m + 1;\n        } else {\n            if(nums[m] < target && target <= nums[r]) l = m + 1; else r = m - 1;\n        }\n    }\n    return -1;\n}\n`
+    },
+    testCases: [ { input: 'nums = [4, 5, 6, 7, 0, 1, 2], target = 0', expected: '4' } ],
+    solution: { title: 'Modified Binary Search', text: 'Identify which half is sorted, then check if target lies within sorted half. O(log N) time.', code: `def search(nums, target):\n    l, r = 0, len(nums)-1\n    while l <= r:\n        m = (l + r) // 2\n        if nums[m] == target: return m\n        if nums[l] <= nums[m]:\n            if nums[l] <= target < nums[m]: r = m - 1\n            else: l = m + 1\n        else:\n            if nums[m] < target <= nums[r]: l = m + 1\n            else: r = m - 1\n    return -1` }
+  },
+  {
+    id: 'single_number',
+    title: '18. Single Number',
+    category: 'BitMath',
+    diff: 'Easy',
+    company: 'TCS • Amazon • Infosys',
+    desc: 'Given a non-empty array of integers <code>nums</code> where every element appears twice except for one, find that single element using bitwise XOR.',
+    examples: 'Input: nums = [4, 1, 2, 1, 2]<br>Output: 4',
+    templates: {
+      python: `def singleNumber(nums: list[int]) -> int:\n    res = 0\n    for n in nums: res ^= n\n    return res\n`,
+      cpp: `int singleNumber(vector<int>& nums) {\n    int res = 0;\n    for(int n : nums) res ^= n;\n    return res;\n}\n`,
+      java: `class Solution {\n    public int singleNumber(int[] nums) {\n        int res = 0;\n        for (int n : nums) res ^= n;\n        return res;\n    }\n}\n`,
+      c: `int singleNumber(int* nums, int numsSize) {\n    int res = 0;\n    for(int i=0; i<numsSize; i++) res ^= nums[i];\n    return res;\n}\n`
+    },
+    testCases: [ { input: 'nums = [4, 1, 2, 1, 2]', expected: '4' } ],
+    solution: { title: 'Bitwise XOR Operation', text: 'n ^ n = 0 and n ^ 0 = n. XORing all numbers leaves the single unique number. O(N) time, O(1) space.', code: `def singleNumber(nums):\n    res = 0\n    for n in nums: res ^= n\n    return res` }
+  },
+  {
+    id: 'number_of_islands',
+    title: '19. Number of Islands (Graphs BFS/DFS)',
+    category: 'Graphs',
+    diff: 'Medium',
+    company: 'Amazon • Google • Microsoft',
+    desc: 'Given an m x n 2D binary grid <code>grid</code> representing a map of \'1\'s (land) and \'0\'s (water), return the number of islands.',
+    examples: 'Input: grid = [["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]<br>Output: 1',
+    templates: {
+      python: `def numIslands(grid: list[list[str]]) -> int:\n    if not grid: return 0\n    rows, cols = len(grid), len(grid[0])\n    count = 0\n    def dfs(r, c):\n        if r < 0 or c < 0 or r >= rows or c >= cols or grid[r][c] == '0': return\n        grid[r][c] = '0'\n        dfs(r+1, c); dfs(r-1, c); dfs(r, c+1); dfs(r, c-1)\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == '1':\n                dfs(r, c); count += 1\n    return count\n`,
+      cpp: `void dfs(vector<vector<char>>& g, int r, int c) {\n    if(r<0||c<0||r>=g.size()||c>=g[0].size()||g[r][c]=='0') return;\n    g[r][c] = '0';\n    dfs(g,r+1,c); dfs(g,r-1,c); dfs(g,r,c+1); dfs(g,r,c-1);\n}\nint numIslands(vector<vector<char>>& grid) {\n    int cnt = 0;\n    for(int r=0; r<grid.size(); r++) {\n        for(int c=0; c<grid[0].size(); c++) {\n            if(grid[r][c]=='1') { dfs(grid,r,c); cnt++; }\n        }\n    }\n    return cnt;\n}\n`,
+      java: `class Solution {\n    void dfs(char[][] g, int r, int c) {\n        if(r<0||c<0||r>=g.length||c>=g[0].length||g[r][c]=='0') return;\n        g[r][c] = '0';\n        dfs(g, r+1, c); dfs(g, r-1, c); dfs(g, r, c+1); dfs(g, r, c-1);\n    }\n    public int numIslands(char[][] grid) {\n        int cnt = 0;\n        for (int r = 0; r < grid.length; r++) {\n            for (int c = 0; c < grid[0].length; c++) {\n                if (grid[r][c] == '1') { dfs(grid, r, c); cnt++; }\n            }\n        }\n        return cnt;\n    }\n}\n`,
+      c: `void dfs(char** g, int r, int c, int R, int C) {\n    if(r<0||c<0||r>=R||c>=C||g[r][c]=='0') return;\n    g[r][c] = '0';\n    dfs(g, r+1, c, R, C); dfs(g, r-1, c, R, C); dfs(g, r, c+1, R, C); dfs(g, r, c-1, R, C);\n}\nint numIslands(char** grid, int gridSize, int* gridColSize) {\n    int cnt = 0;\n    for(int r=0; r<gridSize; r++) {\n        for(int c=0; c<gridColSize[r]; c++) {\n            if(grid[r][c]=='1') { dfs(grid, r, c, gridSize, gridColSize[r]); cnt++; }\n        }\n    }\n    return cnt;\n}\n`
+    },
+    testCases: [ { input: 'grid = [["1","1","0"],["1","1","0"],["0","0","1"]]', expected: '2' } ],
+    solution: { title: 'DFS Grid Traversal', text: 'Traverse grid cells. When land (\'1\') is found, launch DFS to sink all connected land to \'0\'. Increment island counter. O(M * N) time.', code: `def numIslands(grid):\n    if not grid: return 0\n    count = 0\n    def dfs(r, c):\n        if 0<=r<len(grid) and 0<=c<len(grid[0]) and grid[r][c]=='1':\n            grid[r][c] = '0'\n            dfs(r+1,c); dfs(r-1,c); dfs(r,c+1); dfs(r,c-1)\n    for r in range(len(grid)):\n        for c in range(len(grid[0])):\n            if grid[r][c]=='1': dfs(r,c); count+=1\n    return count` }
+  },
+  {
+    id: 'min_stack',
+    title: '20. Min Stack',
+    category: 'StackQueue',
+    diff: 'Medium',
+    company: 'Amazon • Microsoft • TCS',
+    desc: 'Design a stack that supports push, pop, top, and retrieving the minimum element in constant O(1) time.',
+    examples: 'MinStack minStack = new MinStack(); minStack.push(-2); minStack.push(0); minStack.push(-3); minStack.getMin(); // returns -3',
+    templates: {
+      python: `class MinStack:\n    def __init__(self):\n        self.stack = []\n        self.min_stack = []\n    def push(self, val: int) -> None:\n        self.stack.append(val)\n        val = min(val, self.min_stack[-1] if self.min_stack else val)\n        self.min_stack.append(val)\n    def pop(self) -> None:\n        self.stack.pop()\n        self.min_stack.pop()\n    def top(self) -> int:\n        return self.stack[-1]\n    def getMin(self) -> int:\n        return self.min_stack[-1]\n`,
+      cpp: `#include <stack>\n#include <algorithm>\nusing namespace std;\n\nclass MinStack {\n    stack<int> st, minSt;\npublic:\n    void push(int val) {\n        st.push(val);\n        if(minSt.empty() || val <= minSt.top()) minSt.push(val);\n        else minSt.push(minSt.top());\n    }\n    void pop() { st.pop(); minSt.pop(); }\n    int top() { return st.top(); }\n    int getMin() { return minSt.top(); }\n};\n`,
+      java: `import java.util.Stack;\n\nclass MinStack {\n    Stack<Integer> st = new Stack<>(), minSt = new Stack<>();\n    public void push(int val) {\n        st.push(val);\n        if(minSt.isEmpty() || val <= minSt.peek()) minSt.push(val);\n        else minSt.push(minSt.peek());\n    }\n    public void pop() { st.pop(); minSt.pop(); }\n    public int top() { return st.peek(); }\n    public int getMin() { return minSt.peek(); }\n}\n`,
+      c: `#include <stdlib.h>\n\ntypedef struct {\n    int data[10000];\n    int minData[10000];\n    int top;\n} MinStack;\n\nMinStack* minStackCreate() {\n    MinStack* obj = (MinStack*)malloc(sizeof(MinStack));\n    obj->top = -1;\n    return obj;\n}\nvoid minStackPush(MinStack* obj, int val) {\n    obj->top++;\n    obj->data[obj->top] = val;\n    if(obj->top == 0 || val < obj->minData[obj->top-1]) obj->minData[obj->top] = val;\n    else obj->minData[obj->top] = obj->minData[obj->top-1];\n}\nvoid minStackPop(MinStack* obj) { obj->top--; }\nint minStackTop(MinStack* obj) { return obj->data[obj->top]; }\nint minStackGetMin(MinStack* obj) { return obj->minData[obj->top]; }\n`
+    },
+    testCases: [ { input: 'push(-2), push(0), push(-3), getMin()', expected: '-3' } ],
+    solution: { title: 'Two Stack Pattern', text: 'Maintain main stack and auxiliary minStack holding minimum at each stack state. All operations O(1).', code: `class MinStack:\n    def __init__(self): self.s, self.m = [], []\n    def push(self, val):\n        self.s.append(val)\n        self.m.append(min(val, self.m[-1] if self.m else val))\n    def pop(self): self.s.pop(); self.m.pop()\n    def top(self): return self.s[-1]\n    def getMin(self): return self.m[-1]` }
   }
 ];
 
@@ -2458,6 +2730,7 @@ function initCodingSandbox() {
   if (codingInit) return;
   codingInit = true;
   filterCodingProblems();
+  updateCodingMetrics();
   
   const area = document.getElementById('codeEditorTextarea');
   if (area) {
@@ -2477,6 +2750,8 @@ function filterCodingProblems() {
   const topic = document.getElementById('codeTopicFilter')?.value || 'all';
   const diff = document.getElementById('codeDiffFilter')?.value || 'all';
 
+  const solved = getSolvedProblems();
+
   const filtered = CODING_DB.filter(p => {
     const topicMatch = topic === 'all' || p.category === topic;
     const diffMatch = diff === 'all' || p.diff === diff;
@@ -2491,8 +2766,44 @@ function filterCodingProblems() {
     return;
   }
 
-  select.innerHTML = filtered.map(p => `<option value="${p.id}">${p.title} (${p.diff})</option>`).join('');
+  select.innerHTML = filtered.map(p => {
+    const isSolved = solved.includes(p.id);
+    return `<option value="${p.id}">${isSolved ? '✓ ' : ''}${p.title} (${p.diff})</option>`;
+  }).join('');
+
+  const activeTopicEl = document.getElementById('codingActiveTopic');
+  if (activeTopicEl) activeTopicEl.textContent = topic === 'all' ? 'All Topics' : topic;
+
   loadCodingProblem();
+}
+
+function pickRandomCodingProblem() {
+  const topic = document.getElementById('codeTopicFilter')?.value || 'all';
+  const diff = document.getElementById('codeDiffFilter')?.value || 'all';
+  const solved = getSolvedProblems();
+
+  const filtered = CODING_DB.filter(p => {
+    const topicMatch = topic === 'all' || p.category === topic;
+    const diffMatch = diff === 'all' || p.diff === diff;
+    return topicMatch && diffMatch;
+  });
+
+  if (filtered.length === 0) {
+    showToast('No problems available for current filter.', '⚠️');
+    return;
+  }
+
+  // Prefer unsolved problems if available
+  const unsolved = filtered.filter(p => !solved.includes(p.id));
+  const pool = unsolved.length > 0 ? unsolved : filtered;
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+
+  const select = document.getElementById('codeProblemSelect');
+  if (select) {
+    select.value = picked.id;
+    loadCodingProblem();
+    showToast(`Loaded Random Problem: ${picked.title}`, '🎲');
+  }
 }
 
 function loadCodingProblem() {
@@ -2503,8 +2814,9 @@ function loadCodingProblem() {
   if (!pObj) return;
 
   currentCodingProblem = pObj;
+  const solved = getSolvedProblems().includes(pObj.id);
 
-  document.getElementById('codeProblemTitle').textContent = pObj.title;
+  document.getElementById('codeProblemTitle').innerHTML = `${pObj.title} ${solved ? '<span class="badge b-green" style="margin-left:8px;">✓ Solved</span>' : ''}`;
   document.getElementById('codeProblemDiff').textContent = pObj.diff;
   document.getElementById('codeProblemDiff').className = pObj.diff === 'Easy' ? 'badge b-cyan' : pObj.diff === 'Medium' ? 'badge b-amber' : 'badge b-red';
   document.getElementById('codeProblemCategory').textContent = pObj.category;
@@ -2593,6 +2905,7 @@ function runCodingTests(isSubmit) {
   if (allPassed) {
     statusBadge.textContent = isSubmit ? '🎉 Accepted (All Tests Passed)' : '✅ Sample Tests Passed';
     statusBadge.className = 'badge b-green';
+    if (isSubmit) markProblemSolved(currentCodingProblem.id);
   } else {
     statusBadge.textContent = `⚠️ ${passedCount}/${totalCount} Passed`;
     statusBadge.className = 'badge b-red';
