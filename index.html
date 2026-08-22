@@ -484,7 +484,7 @@ select option {background:#ffffff;color:var(--t1);}
           </div>
           <div>
             <div style="font-weight:800;font-size:1.1rem;font-family:'Outfit',sans-serif;" id="managerName">Alex Morgan</div>
-            <div style="font-size:.82rem;color:var(--t2);" id="managerRole">Senior Hiring Manager • Amazon SDE Tech Panel</div>
+            <div style="font-size:.82rem;color:var(--t2);" id="managerRole">Senior Hiring Manager • Technical Interview Panel</div>
             <div style="margin-top:6px;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);font-size:.72rem;font-weight:600;color:var(--p);" id="voiceStatusBadge">
               <span>🔊 Web Speech Audio Ready</span>
             </div>
@@ -1758,6 +1758,7 @@ let interviewState = {
   recTimer: null,
   recSeconds: 0,
   transcript: '',
+  finalTranscriptBuffer: '',
   wordCount: 0,
   wpm: 0,
   fillerCounts: { um:0, uh:0, like:0, so:0, youknow:0, basically:0 },
@@ -1766,24 +1767,74 @@ let interviewState = {
 };
 
 const INTERVIEW_QUESTIONS = {
-  Behavioral: [
-    { q: "Tell me about a time you faced a major technical challenge on a project. How did you resolve it?", manager: "Alex Morgan", role: "Senior Engineering Manager • Amazon SDE Tech Panel", tag: "STAR Format (Situation, Task, Action, Result)" },
-    { q: "Describe a situation where you had a disagreement with a team member. How did you handle it?", manager: "Sarah Jenkins", role: "Product Director • Microsoft", tag: "Conflict Resolution & Leadership" },
-    { q: "Give me an example of a goal you reached and tell me how you achieved it under a tight deadline.", manager: "David Chen", role: "Tech Lead • Google STEP", tag: "Ownership & Execution" }
-  ],
-  Technical: [
-    { q: "How do you approach optimizing a slow SQL query processing millions of records?", manager: "Alex Morgan", role: "Senior Engineering Manager • Amazon", tag: "System Performance & DB Tuning" },
-    { q: "Explain the difference between process and thread, and how race conditions occur in multithreaded applications.", manager: "Vikram Malhotra", role: "Lead Architect • TCS Digital", tag: "OS & Concurrency" },
-    { q: "How does JavaScript handle asynchronous code execution with the Event Loop?", manager: "Elena Rostova", role: "Staff Frontend Engineer • Meta", tag: "Core JS Engine & Async" }
-  ],
-  SystemDesign: [
-    { q: "How would you design a scalable real-time URL shortening service like Bitly handling 10,000 writes/sec?", manager: "Alex Morgan", role: "Senior Engineering Manager • Amazon", tag: "System Design & Caching" },
-    { q: "Explain how you would design a rate limiter to protect public API endpoints from DDoS attacks.", manager: "Marcus Vance", role: "Principal Cloud Architect • Azure", tag: "Security & API Design" }
-  ],
-  Culture: [
-    { q: "Why do you want to join our engineering team, and where do you see your technical career in 3 years?", manager: "Priya Sharma", role: "Director of Talent • Infosys", tag: "Career Alignment & Vision" },
-    { q: "What is your approach to learning a new technology or programming framework quickly on the job?", manager: "Sarah Jenkins", role: "Product Director • Microsoft", tag: "Growth Mindset" }
-  ]
+  'SDE-1': {
+    Behavioral: [
+      { q: "Tell me about a complex feature you built end-to-end. What technical trade-offs did you evaluate between speed and scalability?", manager: "Alex Morgan", role: "Senior Hiring Manager • SDE Tech Evaluation Panel", tag: "STAR Method (Situation, Task, Action, Result)" },
+      { q: "Describe a situation where a critical production deployment caused an unintended bug. How did you debug and resolve it under pressure?", manager: "Sarah Jenkins", role: "Engineering Director • SDE Panel", tag: "Incident Response & Debugging" }
+    ],
+    Technical: [
+      { q: "How do you approach optimizing a slow SQL query processing millions of records with JOINs and GROUP BY operations?", manager: "David Chen", role: "Staff Software Engineer • Backend Systems", tag: "Database Performance & Indexing" },
+      { q: "Explain the difference between a process and a thread, and how race conditions occur in multithreaded applications.", manager: "Vikram Malhotra", role: "Lead Systems Architect • Core Platform", tag: "OS & Concurrency" }
+    ],
+    SystemDesign: [
+      { q: "How would you design a scalable URL shortening service (like Bitly) handling 10,000 write requests per second with low latency?", manager: "Alex Morgan", role: "Senior Hiring Manager • System Design Board", tag: "Distributed Systems & Caching" },
+      { q: "Explain how you would design a rate limiter to protect public API endpoints from DDoS attacks and abusive traffic.", manager: "Marcus Vance", role: "Principal Architect • Cloud Security", tag: "API Gateway & Security" }
+    ],
+    Culture: [
+      { q: "How do you maintain high code quality, test coverage, and documentation standards while pushing features under tight deadlines?", manager: "Priya Sharma", role: "Director of Technical Talent & Culture", tag: "Engineering Excellence" }
+    ]
+  },
+  'Frontend': {
+    Behavioral: [
+      { q: "Tell me about a time you had to balance pixel-perfect UI design requirements with strict web performance metrics like LCP and CLS.", manager: "Elena Rostova", role: "Staff Frontend Architect • UI/UX Panel", tag: "Core Web Vitals & UX" },
+      { q: "Describe how you resolved a complex cross-browser rendering or state management bug in a large single-page web application.", manager: "Sarah Jenkins", role: "Engineering Director • Frontend Panel", tag: "Debugging & State Management" }
+    ],
+    Technical: [
+      { q: "How does JavaScript's Event Loop handle microtasks vs macrotasks, and how does asynchronous code execution work under the hood?", manager: "Elena Rostova", role: "Staff Frontend Architect • JS Engine Specialist", tag: "JS Internals & Async" },
+      { q: "Explain the differences between Client-Side Rendering (CSR), Server-Side Rendering (SSR), and Static Site Generation (SSG).", manager: "David Chen", role: "Staff Software Engineer • Web Platform", tag: "Rendering Strategies" }
+    ],
+    SystemDesign: [
+      { q: "How would you design a real-time collaborative text editor or chat UI with WebSocket syncing and optimistic state updates?", manager: "Elena Rostova", role: "Staff Frontend Architect • Real-Time Systems", tag: "WebSockets & UI Architecture" },
+      { q: "Explain your strategy for code splitting, bundle size reduction, asset caching, and lazy loading in modern web frameworks.", manager: "Marcus Vance", role: "Principal Web Architect", tag: "Web Performance Optimization" }
+    ],
+    Culture: [
+      { q: "How do you advocate for web accessibility (WCAG compliance) and responsive design when building shared design systems?", manager: "Priya Sharma", role: "Director of Technical Talent & Culture", tag: "Accessibility & Standards" }
+    ]
+  },
+  'DataScientist': {
+    Behavioral: [
+      { q: "Describe a machine learning project where your model initially suffered from severe overfitting. How did you diagnose and fix it?", manager: "Dr. Aris Thorne", role: "Lead AI Researcher • Data Science Board", tag: "Model Validation & Debugging" },
+      { q: "Tell me about a time you had to explain complex model predictions and metrics (AUC-ROC, F1-score) to non-technical business stakeholders.", manager: "Sarah Jenkins", role: "Engineering Director • AI/ML Panel", tag: "Stakeholder Communication" }
+    ],
+    Technical: [
+      { q: "Explain the trade-off between Bias and Variance, and how L1 (Lasso) vs L2 (Ridge) regularization methods impact model weights.", manager: "Dr. Aris Thorne", role: "Lead AI Researcher • Statistical Learning", tag: "ML Fundamentals & Regularization" },
+      { q: "How do Transformer architectures and Self-Attention mechanisms differ from traditional Recurrent Neural Networks (RNNs)?", manager: "David Chen", role: "Staff AI Engineer • NLP & LLMs", tag: "Deep Learning & Transformers" }
+    ],
+    SystemDesign: [
+      { q: "How would you design an end-to-end real-time recommendation engine microservice processing millions of user activity events daily?", manager: "Dr. Aris Thorne", role: "Lead AI Researcher • ML Systems", tag: "ML Pipeline & Recommendation Systems" },
+      { q: "Explain how you set up MLOps pipelines for automated model retraining, data drift detection, and canary deployment in production.", manager: "Marcus Vance", role: "Principal Cloud Architect • MLOps", tag: "MLOps & CI/CD" }
+    ],
+    Culture: [
+      { q: "How do you evaluate data privacy, algorithmic fairness, and ethical considerations when training predictive models on sensitive user data?", manager: "Priya Sharma", role: "Director of Technical Talent & Culture", tag: "AI Ethics & Privacy" }
+    ]
+  },
+  'DevOps': {
+    Behavioral: [
+      { q: "Describe a critical infrastructure outage or downtime incident you responded to. What root cause analysis and preventive measures did you take?", manager: "Marcus Vance", role: "Principal Cloud & Reliability Architect", tag: "Incident Response & Post-Mortem" },
+      { q: "Tell me about a time you migrated legacy infrastructure to Infrastructure as Code (IaC) or containerized microservices under zero-downtime constraints.", manager: "Alex Morgan", role: "Senior Hiring Manager • Infrastructure Panel", tag: "IaC & Cloud Migration" }
+    ],
+    Technical: [
+      { q: "Explain the architectural differences between Docker container isolation and Virtual Machines, and how Kubernetes handles pod scheduling.", manager: "Marcus Vance", role: "Principal Cloud & Reliability Architect", tag: "Containerization & Kubernetes" },
+      { q: "How do Blue-Green and Canary deployment strategies minimize risk during high-volume production software releases?", manager: "Vikram Malhotra", role: "Lead Systems Architect • Deployment Pipeline", tag: "Continuous Delivery Strategies" }
+    ],
+    SystemDesign: [
+      { q: "How would you design a resilient, multi-region CI/CD pipeline with automated vulnerability scanning, integration testing, and rollback capability?", manager: "Marcus Vance", role: "Principal Cloud & Reliability Architect", tag: "CI/CD & Multi-Region Resilience" },
+      { q: "Explain how you set up centralized logging, Prometheus metric collection, and automated alert routing for a Kubernetes cluster.", manager: "David Chen", role: "Staff Infrastructure Engineer", tag: "Observability & Alerting" }
+    ],
+    Culture: [
+      { q: "How do you foster a DevSecOps culture where security controls and automated compliance checks are integrated early into development workflows?", manager: "Priya Sharma", role: "Director of Technical Talent & Culture", tag: "DevSecOps & Culture" }
+    ]
+  }
 };
 
 function initInterviewPage() {
@@ -1802,13 +1853,20 @@ function initSpeechRecognition() {
     interviewState.recognition.lang = 'en-US';
 
     interviewState.recognition.onresult = function(event) {
-      let finalTranscript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        finalTranscript += event.results[i][0].transcript + ' ';
+      let interimTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcriptChunk = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          interviewState.finalTranscriptBuffer += transcriptChunk + ' ';
+        } else {
+          interimTranscript += transcriptChunk;
+        }
       }
-      interviewState.transcript = finalTranscript.trim();
-      updateTranscriptUI(interviewState.transcript);
-      processFillerWords(interviewState.transcript);
+      
+      const fullText = (interviewState.finalTranscriptBuffer + interimTranscript).trim();
+      interviewState.transcript = fullText;
+      updateTranscriptUI(fullText);
+      processFillerWords(fullText);
       updateWpmGauge();
     };
 
@@ -1834,15 +1892,19 @@ function initSpeechRecognition() {
 function loadInterviewQuestion() {
   if (interviewState.isRecording) stopInterviewRecord();
 
+  const role = document.getElementById('interviewRole')?.value || 'SDE-1';
   const cat = document.getElementById('interviewCategory')?.value || 'Behavioral';
-  const questions = INTERVIEW_QUESTIONS[cat] || INTERVIEW_QUESTIONS.Behavioral;
-  const qObj = questions[Math.floor(Math.random() * questions.length)];
+
+  const roleQuestions = INTERVIEW_QUESTIONS[role] || INTERVIEW_QUESTIONS['SDE-1'];
+  const catQuestions = roleQuestions[cat] || roleQuestions.Behavioral;
+  
+  const qObj = catQuestions[Math.floor(Math.random() * catQuestions.length)];
   interviewState.activeQuestion = qObj;
 
   document.getElementById('interviewQuestionText').textContent = qObj.q;
   document.getElementById('managerName').textContent = qObj.manager;
   document.getElementById('managerRole').textContent = qObj.role;
-  document.getElementById('questionTag').textContent = 'Category: ' + cat + ' • ' + qObj.tag;
+  document.getElementById('questionTag').textContent = 'Role: ' + role + ' • Category: ' + cat + ' • ' + qObj.tag;
 
   resetInterviewSession();
   setTimeout(() => speakInterviewQuestion(), 300);
@@ -1890,6 +1952,7 @@ function startInterviewRecord() {
   interviewState.isRecording = true;
   interviewState.recSeconds = 0;
   interviewState.transcript = '';
+  interviewState.finalTranscriptBuffer = '';
   interviewState.fillerCounts = { um:0, uh:0, like:0, so:0, youknow:0, basically:0 };
   
   document.getElementById('recBtnIcon').textContent = '⏹️';
@@ -2043,6 +2106,7 @@ function updateWpmGauge() {
 function resetInterviewSession() {
   interviewState.recSeconds = 0;
   interviewState.transcript = '';
+  interviewState.finalTranscriptBuffer = '';
   interviewState.wordCount = 0;
   interviewState.wpm = 0;
   interviewState.fillerCounts = { um:0, uh:0, like:0, so:0, youknow:0, basically:0 };
