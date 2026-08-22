@@ -370,9 +370,16 @@ select option {background:#ffffff;color:var(--t1);}
   <div class="section-title animate">✏️ AI <span class="g-text">Resume Tailor</span></div>
   <div class="section-sub animate">AI rewrites your weak resume bullets into strong, results-driven lines with numbers and impact — so recruiters notice you instantly.</div>
   <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
-    <div class="g2" style="align-items:flex-end;">
-      <div><label>Target Company</label><select id="tailorCompany" onchange="tailorResume()"><option>Amazon</option><option>TCS</option><option>Infosys</option><option>Wipro</option><option>Microsoft</option><option>Google</option></select></div>
-      <div><label>Target Role</label><select id="tailorRole"><option>SDE-1</option><option>Systems Engineer</option><option>Graduate Trainee</option><option>Software Engineer</option></select></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="flex:1;min-width:140px;">
+        <label>Target Company</label>
+        <select id="tailorCompany" onchange="tailorResume()"><option>Amazon</option><option>TCS</option><option>Infosys</option><option>Wipro</option><option>Microsoft</option><option>Google</option></select>
+      </div>
+      <div style="flex:1;min-width:140px;">
+        <label>Target Role</label>
+        <select id="tailorRole"><option>SDE-1</option><option>Systems Engineer</option><option>Graduate Trainee</option><option>Software Engineer</option></select>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="exportTailoredResumePDF()">📄 Export Resume PDF</button>
     </div>
   </div></div>
   <div class="ats-meter animate d1" style="margin-bottom:24px;">
@@ -1598,6 +1605,110 @@ function tailorResume(){
     </div>`).join('');
   document.getElementById('atsKeywords').innerHTML=d.keywords.map(k=>'<span class="badge b-purple">🔑 '+k+'</span>').join('');
   document.getElementById('tailorTips').innerHTML=d.tips.map((t,i)=>`<div style="display:flex;gap:10px;margin-bottom:10px;font-size:.85rem;"><span style="color:var(--amber);flex-shrink:0;">${i+1}.</span><span>${t}</span></div>`).join('');
+}
+
+function exportTailoredResumePDF() {
+  const p = state.profile || {
+    name: "Rahul Verma",
+    email: "rahul.verma@gmail.com",
+    cgpa: "8.4 CGPA",
+    domain: "Software Development (SDE)",
+    exp: "0",
+    location: "Bangalore",
+    skills: ["Python", "Java", "React", "SQL", "Node.js"],
+    projects: [
+      { name: "E-Commerce Web Application", desc: "Developed shopping portal using React." },
+      { name: "Sentiment Analysis Classifier", desc: "Implemented NLP classifier model in Python." }
+    ],
+    certs: ["AWS Certified Cloud Practitioner", "Google Data Analytics Certificate"]
+  };
+
+  const co = document.getElementById('tailorCompany')?.value || 'Amazon';
+  const role = document.getElementById('tailorRole')?.value || 'SDE-1';
+  const d = RESUME_DATA[co] || RESUME_DATA.Amazon;
+
+  const printWindow = window.open('', '_blank');
+  if(!printWindow) {
+    showToast('Popup blocked! Please allow popups to export your resume.', '⚠️');
+    return;
+  }
+  
+  let projectsHtml = '';
+  if (p.projects && p.projects.length > 0) {
+    projectsHtml = '<h3>PROJECTS & EXPERIENCE</h3>';
+    p.projects.forEach((proj, idx) => {
+      let bulletText = proj.desc || '';
+      if (d.bullets && d.bullets[idx]) {
+        bulletText = d.bullets[idx].new;
+      }
+      projectsHtml += `
+        <div style="margin-bottom: 12px;">
+          <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>${proj.name || 'Personal Project'}</span>
+          </div>
+          <p style="margin: 4px 0 0 0; font-size: 13px; line-height: 1.4; text-align: justify;">• ${bulletText}</p>
+        </div>
+      `;
+    });
+  }
+
+  let certsHtml = '';
+  const certList = p.certs || [];
+  if (certList.length > 0) {
+    certsHtml = `
+      <h3>CERTIFICATIONS</h3>
+      <ul style="margin: 4px 0; padding-left: 20px; font-size: 13px;">
+        ${certList.map(c => `<li style="margin-bottom:2px;">${c.name || c}</li>`).join('')}
+      </ul>
+    `;
+  }
+
+  const skillsList = [...(p.skills || []), ...(d.keywords || [])];
+  const uniqueSkills = [...new Set(skillsList)];
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>${p.name || 'Resume'} - Tailored for ${co}</title>
+      <style>
+        body { font-family: "Arial", sans-serif; color: #333; margin: 40px; line-height: 1.5; }
+        h1 { text-align: center; margin-bottom: 4px; font-size: 26px; text-transform: uppercase; }
+        .contact-info { text-align: center; font-size: 13px; color: #666; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h3 { border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 20px; margin-bottom: 8px; font-size: 16px; color: #111; }
+        p, li { font-size: 13px; color: #444; }
+        .skill-tag { display: inline-block; background: #f0f0f0; border-radius: 4px; padding: 2px 6px; margin: 2px; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <h1>${(p.name || 'Candidate Name').toUpperCase()}</h1>
+      <div class="contact-info">
+        ${p.email || 'email@domain.com'} | ${p.location || 'India'} | Target: ${role} at ${co} | CGPA: ${p.cgpa || 'N/A'}
+      </div>
+
+      <h3>PROFESSIONAL SUMMARY</h3>
+      <p style="text-align: justify; margin: 4px 0;">${d.summary}</p>
+
+      ${projectsHtml}
+
+      <h3>TECHNICAL SKILLS & KEYWORDS</h3>
+      <div style="margin: 4px 0;">
+        ${uniqueSkills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
+      </div>
+
+      ${certsHtml}
+
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      </script>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
 }
 
 // ─── QUIZ ────────────────────────────────────
