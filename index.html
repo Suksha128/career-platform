@@ -611,7 +611,7 @@ const QUIZ_DB = {
 const LP = [
   {skill:'Data Structures & Algorithms',priority:'Critical',hours:40,diff:'Advanced',col:'#f43f5e',icon:'🔴',
    why:'Required for ALL product company interviews (Amazon, Google, Microsoft)',
-   mods:[{t:'Arrays, Strings, Hashing',h:6,r:'NeetCode 150 Playlist',u:'https://www.youtube.com/watch?v=3OamzN90kPg',p:'YouTube'},{t:'Linked Lists & Stacks',h:5,r:'Abdul Bari DSA Course',u:'https://www.youtube.com/watch?v=zLnJcAt1UbM',p:'YouTube'},{t:'Trees & Binary Search Trees',h:8,r:'William Fiset — Trees',u:'https://www.youtube.com/watch?v=oSWTXtMglKE',p:'YouTube'},{t:'Graphs: BFS, DFS, Dijkstra',h:8,r:'Striver A2Z DSA Sheet',u:'https://takeuforward.org/strivers-a2z-dsa-course/',p:'Website'},{t:'Dynamic Programming',h:10,r:'Aditya Verma DP Playlist',u:'https://www.youtube.com/playlist?list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go',p:'YouTube'},{t:'LeetCode Top 150 Practice',h:3,r:'LeetCode Study Plan',u:'https://leetcode.com/studyplan/top-interview-150/',p:'LeetCode'}]},
+   mods:[{t:'Arrays, Strings, Hashing',h:6,r:'NeetCode 150 Playlist',u:'https://www.youtube.com/watch?v=3OamzN90kPg',p:'YouTube'},{t:'Linked Lists & Stacks',h:5,r:'Abdul Bari DSA Course',u:'https://www.youtube.com/watch?v=zLnJcAt1UbM',p:'YouTube'},{t:'Trees & Binary Search Trees',h:8,r:'William Fiset — Trees',u:'https://www.youtube.com/watch?v=oSWTXtMglKE',p:'YouTube'},{t:'Graphs: BFS, DFS, Dijkstra',h:8,r:'William Fiset — Graph Algorithms',u:'https://www.youtube.com/watch?v=0t4k_B3wMew',p:'YouTube'},{t:'Dynamic Programming',h:10,r:'Aditya Verma DP Playlist',u:'https://www.youtube.com/playlist?list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go',p:'YouTube'},{t:'LeetCode Top 150 Practice',h:3,r:'LeetCode Study Plan',u:'https://leetcode.com/studyplan/top-interview-150/',p:'LeetCode'}]},
   {skill:'System Design',priority:'High',hours:20,diff:'Advanced',col:'#f59e0b',icon:'🟡',
    why:'Essential for SDE-1+ roles at all product companies',
    mods:[{t:'Fundamentals: Scaling, Caching, Load Balancing',h:4,r:'System Design Primer (GitHub)',u:'https://github.com/donnemartin/system-design-primer',p:'GitHub'},{t:'Database Design & Sharding',h:4,r:'Gaurav Sen — System Design',u:'https://www.youtube.com/watch?v=xpDnVSmNFX0',p:'YouTube'},{t:'Microservices Architecture',h:5,r:'TechDummies System Design',u:'https://www.youtube.com/watch?v=y8OnoxKotPQ',p:'YouTube'},{t:'Case Studies: Design Twitter, YouTube',h:7,r:'Alex Xu DDIA Summary',u:'https://www.youtube.com/watch?v=vvhC64hQZMk',p:'YouTube'}]},
@@ -972,65 +972,96 @@ function filterDomain(d){
 
 // ─── DYNAMIC ACCURATE SKILL MATCHING ENGINE ───
 function getDynamicRoleMatch(role) {
-  // Candidate skills (normalized)
+  // 1. Candidate Skills Extraction
   const candidateSkills = (state.skills && state.skills.length > 0) 
     ? state.skills 
     : (state.profile?.skills && state.profile.skills.length > 0)
       ? state.profile.skills
       : ['Python', 'SQL', 'Git', 'React', 'REST APIs'];
 
-  const normCandidate = candidateSkills.map(s => s.toLowerCase().replace(/[^a-z0-9]/g, ''));
+  const normCandidate = candidateSkills.map(s => s.toLowerCase().trim().replace(/[^a-z0-9]/g, ''));
   
-  // All skills required for this role
+  // 2. Aggregate Required Skills for Role
   const allRoleSkills = Array.from(new Set([
     ...(role.matched || []),
     ...(role.missing || []),
     ...(role.radar ? role.radar.map(r => r.s) : [])
   ]));
 
+  let weightedMatchScore = 0;
+  let totalWeight = 0;
+
   const matched = [];
   const missing = [];
 
   allRoleSkills.forEach(reqSkill => {
-    const normReq = reqSkill.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const isMatched = normCandidate.some(cand => {
-      if (cand === normReq) return true;
-      if (cand.length >= 3 && normReq.length >= 3 && (cand.includes(normReq) || normReq.includes(cand))) return true;
-      if ((cand === 'js' && normReq === 'javascript') || (cand === 'javascript' && normReq === 'js')) return true;
-      if ((cand === 'py' && normReq === 'python') || (cand === 'python' && normReq === 'py')) return true;
-      if (cand.includes('react') && normReq.includes('react')) return true;
-      if (cand.includes('node') && normReq.includes('node')) return true;
-      if (cand.includes('ml') && normReq.includes('ml')) return true;
-      if (cand.includes('ai') && normReq.includes('ai')) return true;
-      if (cand.includes('sql') && normReq.includes('sql')) return true;
-      return false;
+    const normReq = reqSkill.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    
+    // Core high-weight skills vs regular skills
+    const isCoreSkill = ['dsa', 'datastructures', 'algorithms', 'systemdesign', 'pytorch', 'tensorflow', 'react', 'node', 'aws', 'sql', 'python', 'java', 'c', 'kotlin', 'swift'].includes(normReq);
+    const weight = isCoreSkill ? 2.5 : 1.0;
+    totalWeight += weight;
+
+    // Advanced Multi-level Fuzzy & Synonym Match
+    let matchQuality = 0; // 0 = none, 1 = full, 0.85 = partial
+
+    normCandidate.forEach(cand => {
+      if (cand === normReq) {
+        matchQuality = 1.0;
+      } else if (cand.length >= 3 && normReq.length >= 3 && (cand.includes(normReq) || normReq.includes(cand))) {
+        matchQuality = Math.max(matchQuality, 0.85);
+      } else if (
+        (cand === 'js' && normReq === 'javascript') || (cand === 'javascript' && normReq === 'js') ||
+        (cand === 'py' && normReq === 'python') || (cand === 'python' && normReq === 'py') ||
+        (cand.includes('react') && normReq.includes('react')) ||
+        (cand.includes('node') && normReq.includes('node')) ||
+        (cand.includes('ml') && normReq.includes('ml')) ||
+        (cand.includes('ai') && normReq.includes('ai')) ||
+        (cand.includes('sql') && normReq.includes('sql')) ||
+        (cand.includes('git') && normReq.includes('git'))
+      ) {
+        matchQuality = Math.max(matchQuality, 0.9);
+      }
     });
 
-    if (isMatched) {
+    if (matchQuality > 0) {
       matched.push(reqSkill);
+      weightedMatchScore += weight * matchQuality;
     } else {
       missing.push(reqSkill);
     }
   });
 
-  const total = allRoleSkills.length || 1;
-  const matchPct = Math.min(98, Math.max(18, Math.round((matched.length / total) * 100)));
+  // 3. Project & Certification Competency Multipliers
+  let projectBonus = 0;
+  const projects = state.profile?.projects || [];
+  if (projects.length >= 1) projectBonus += 3;
+  if (projects.length >= 3) projectBonus += 5;
 
+  let certBonus = 0;
+  const certs = state.profile?.certs || [];
+  if (certs.length >= 1) certBonus += 2;
+
+  // 4. Calculate Final Multi-Factor Match Score
+  const rawScore = totalWeight > 0 ? (weightedMatchScore / totalWeight) * 100 : 50;
+  const finalMatchPct = Math.min(96, Math.max(15, Math.round(rawScore + projectBonus + certBonus)));
+
+  // 5. Dynamic Radar Generation
   const dynamicRadar = (role.radar || []).map(item => {
     const normItem = item.s.toLowerCase().replace(/[^a-z0-9]/g, '');
     const hasSkill = normCandidate.some(c => c.includes(normItem) || normItem.includes(c));
     return {
       s: item.s,
-      c: hasSkill ? Math.min(95, Math.max(70, item.r + 5)) : Math.min(30, item.c),
+      c: hasSkill ? Math.min(95, Math.max(70, item.r + 5)) : Math.min(25, item.c),
       r: item.r
     };
   });
 
   return {
     ...role,
-    match: matchPct,
-    matched: matched.length > 0 ? matched : (role.matched || []),
-    missing: missing.length > 0 ? missing : (role.missing || []),
+    match: finalMatchPct,
+    matched: matched,
+    missing: missing,
     radar: dynamicRadar
   };
 }
