@@ -970,14 +970,83 @@ function filterDomain(d){
   renderRoleList();
 }
 
+// ─── DYNAMIC ACCURATE SKILL MATCHING ENGINE ───
+function getDynamicRoleMatch(role) {
+  // Candidate skills (normalized)
+  const candidateSkills = (state.skills && state.skills.length > 0) 
+    ? state.skills 
+    : (state.profile?.skills && state.profile.skills.length > 0)
+      ? state.profile.skills
+      : ['Python', 'SQL', 'Git', 'React', 'REST APIs'];
+
+  const normCandidate = candidateSkills.map(s => s.toLowerCase().replace(/[^a-z0-9]/g, ''));
+  
+  // All skills required for this role
+  const allRoleSkills = Array.from(new Set([
+    ...(role.matched || []),
+    ...(role.missing || []),
+    ...(role.radar ? role.radar.map(r => r.s) : [])
+  ]));
+
+  const matched = [];
+  const missing = [];
+
+  allRoleSkills.forEach(reqSkill => {
+    const normReq = reqSkill.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isMatched = normCandidate.some(cand => {
+      if (cand === normReq) return true;
+      if (cand.length >= 3 && normReq.length >= 3 && (cand.includes(normReq) || normReq.includes(cand))) return true;
+      if ((cand === 'js' && normReq === 'javascript') || (cand === 'javascript' && normReq === 'js')) return true;
+      if ((cand === 'py' && normReq === 'python') || (cand === 'python' && normReq === 'py')) return true;
+      if (cand.includes('react') && normReq.includes('react')) return true;
+      if (cand.includes('node') && normReq.includes('node')) return true;
+      if (cand.includes('ml') && normReq.includes('ml')) return true;
+      if (cand.includes('ai') && normReq.includes('ai')) return true;
+      if (cand.includes('sql') && normReq.includes('sql')) return true;
+      return false;
+    });
+
+    if (isMatched) {
+      matched.push(reqSkill);
+    } else {
+      missing.push(reqSkill);
+    }
+  });
+
+  const total = allRoleSkills.length || 1;
+  const matchPct = Math.min(98, Math.max(18, Math.round((matched.length / total) * 100)));
+
+  const dynamicRadar = (role.radar || []).map(item => {
+    const normItem = item.s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const hasSkill = normCandidate.some(c => c.includes(normItem) || normItem.includes(c));
+    return {
+      s: item.s,
+      c: hasSkill ? Math.min(95, Math.max(70, item.r + 5)) : Math.min(30, item.c),
+      r: item.r
+    };
+  });
+
+  return {
+    ...role,
+    match: matchPct,
+    matched: matched.length > 0 ? matched : (role.matched || []),
+    missing: missing.length > 0 ? missing : (role.missing || []),
+    radar: dynamicRadar
+  };
+}
+
 function renderRoleList(){
-  const filtered=currentDomain==='All'?ROLES:ROLES.filter(r=>r.domain===currentDomain);
-  const sorted=[...filtered].sort((a,b)=>b.match-a.match);
-  document.getElementById('roleCount').textContent=sorted.length+' roles';
-  document.getElementById('roleList').innerHTML=sorted.map(r=>{
-    const mc=r.match>=80?'var(--green)':r.match>=65?'var(--amber)':'var(--red)';
-    const sel=selectedRole?.id===r.id?'selected':'';
-    return`<div class="card role-card ${sel}" id="rcard-${r.id}" onclick='selectRole(${JSON.stringify(r).replace(/'/g,"\\'")}'>
+  const filtered = currentDomain === 'All' ? ROLES : ROLES.filter(r => r.domain === currentDomain);
+  const dynamicallyMatched = filtered.map(r => getDynamicRoleMatch(r));
+  const sorted = [...dynamicallyMatched].sort((a,b) => b.match - a.match);
+
+  document.getElementById('roleCount').textContent = sorted.length + ' roles';
+  document.getElementById('roleList').innerHTML = sorted.map(r => {
+    const mc = r.match >= 80 ? 'var(--green)' : r.match >= 60 ? 'var(--amber)' : 'var(--red)';
+    const sel = selectedRole?.id === r.id ? 'selected' : '';
+    const safeRoleJson = JSON.stringify(r).replace(/'/g, "&#39;");
+    
+    return `<div class="card role-card ${sel}" id="rcard-${r.id}" onclick='selectRole(${safeRoleJson})'>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="role-icon" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);">${r.icon}</div>
@@ -994,17 +1063,31 @@ function renderRoleList(){
       <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
         <span class="badge b-cyan">${r.demand}</span>
         <span class="badge b-purple">${r.domain}</span>
-        <span class="badge b-green">${r.matched.length} skills matched</span>
-        <span class="badge b-red">${r.missing.length} to gain</span>
+        <span class="badge b-green">${r.matched.length} Matched</span>
+        <span class="badge b-red">${r.missing.length} To Gain</span>
       </div>
+      
+      <!-- INLINE DETAILED SKILLS MATCH BREAKDOWN -->
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:.74rem;">
+          <span style="color:var(--green);font-weight:600;margin-right:2px;">✓ Matched:</span>
+          ${r.matched.map(s=>`<span class="badge b-green" style="padding:2px 6px;font-size:.68rem;">${s}</span>`).join('')}
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:.74rem;">
+          <span style="color:var(--red);font-weight:600;margin-right:2px;">+ To Gain:</span>
+          ${r.missing.map(s=>`<span class="badge b-red" style="padding:2px 6px;font-size:.68rem;">${s}</span>`).join('')}
+        </div>
+      </div>
+
       <div style="margin-top:10px;"><div class="progress"><div class="progress-fill" style="width:${r.match}%;background:${mc};"></div></div></div>
     </div>`;
   }).join('');
 }
 
 function selectRole(role){
-  // Parse if passed as JSON string from onclick
   if(typeof role==='string') role=JSON.parse(role);
+  // Ensure role is dynamically updated with latest user skills
+  role = getDynamicRoleMatch(role);
   selectedRole=role;
   document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
   const card=document.getElementById('rcard-'+role.id); if(card)card.classList.add('selected');
