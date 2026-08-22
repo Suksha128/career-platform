@@ -230,7 +230,7 @@ select option {background:#ffffff;color:var(--t1);}
         <div class="g2">
           <div class="form-group">
             <label>Full Name</label>
-            <input type="text" id="inp-name" placeholder="Arjun Sharma" />
+            <input type="text" id="inp-name" placeholder="e.g. Rahul Verma" />
           </div>
           <div class="form-group">
             <label>Email / Gmail</label>
@@ -303,10 +303,10 @@ select option {background:#ffffff;color:var(--t1);}
 
   <!-- Profile chip -->
   <div class="profile-chip animate" id="matchProfileChip">
-    <div class="avatar" id="matchAvatar">A</div>
-    <div><div style="font-weight:700;" id="matchName">Arjun Sharma</div><div style="font-size:.78rem;color:var(--t2);" id="matchDomain">Software Development • Bangalore • Fresher</div></div>
-    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;" id="matchBadges"><span class="badge b-blue">9 Skills</span><span class="badge b-purple">3 Projects</span></div>
-    <button class="btn btn-ghost btn-sm" onclick="openChatbot('Which companies are actively hiring right now?')">💬 Ask Chatbot</button>
+    <div class="avatar" id="matchAvatar">👤</div>
+    <div><div style="font-weight:700;" id="matchName">Candidate Profile</div><div style="font-size:.78rem;color:var(--t2);" id="matchDomain">No Profile Saved Yet • Complete your profile in the Profile tab</div></div>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;" id="matchBadges"><span class="badge b-amber">0 Skills</span><span class="badge b-purple">0 Projects</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="showPage('onboard')">📋 Edit Profile</button>
   </div>
 
   <!-- Domain filter tabs -->
@@ -772,8 +772,6 @@ function removeTag(val,boxId,inpId,el){const arr=boxId==='skillBox'?state.skills
 function quickAddSkill(s){if(!state.skills.includes(s))addTag(s,'skillBox','skillInput');}
 
 // ─── SAVE PROFILE ────────────────────────────
-const DEFAULT = {name:'Arjun Sharma',email:'arjun.sharma@gmail.com',domain:'Software Development (SDE)',exp:'0',location:'Bangalore',cgpa:'8.4',skills:['Python','React','JavaScript','Node.js','SQL','Git','REST APIs'],certs:['AWS Cloud Practitioner'],projects:[{t:'E-Commerce Web App',tech:'React, Node.js, PostgreSQL'},{t:'ML Sentiment Analyzer',tech:'Python, scikit-learn, Flask'}]};
-
 function saveProfile(){
   const name = document.getElementById('inp-name').value || 'Student';
   const email = document.getElementById('inp-email').value.trim();
@@ -789,29 +787,29 @@ function saveProfile(){
   }
 
   const parsedProjects = projectList.map((p, idx) => {
-    const t = document.getElementById(`proj-title-${idx}`)?.value || p.title || `Project ${idx+1}`;
-    const tech = document.getElementById(`proj-tech-${idx}`)?.value || p.tech || 'React, Python, SQL';
-    return { t, tech };
-  }).filter(p => p.t.trim() !== '');
+    const t = document.getElementById(`proj-title-${idx}`)?.value || p.title;
+    const tech = document.getElementById(`proj-tech-${idx}`)?.value || p.tech;
+    return { t: t ? t.trim() : '', tech: tech ? tech.trim() : '' };
+  }).filter(p => p.t !== '');
 
   const parsedCerts = certList.map((c, idx) => {
-    const title = document.getElementById(`cert-title-${idx}`)?.value || c.title || `Certification ${idx+1}`;
-    const org = document.getElementById(`cert-org-${idx}`)?.value || c.org || 'Coursera / AWS';
-    return { title, org };
-  }).filter(c => c.title.trim() !== '');
+    const title = document.getElementById(`cert-title-${idx}`)?.value || c.title;
+    const org = document.getElementById(`cert-org-${idx}`)?.value || c.org;
+    return { title: title ? title.trim() : '', org: org ? org.trim() : '' };
+  }).filter(c => c.title !== '');
 
   state.profile = {
     name,
-    email: email || 'student@gmail.com',
+    email: email || 'candidate@gmail.com',
     domain: document.getElementById('inp-domain').value,
     exp: document.getElementById('inp-exp').value,
     location: document.getElementById('inp-location').value || 'Bangalore',
-    cgpa: cgpa || '8.4',
-    github: github || 'github.com/student',
+    cgpa: cgpa || '',
+    github: github || '',
     skills: [...state.skills],
     certs: parsedCerts.map(c => c.title),
     certDetails: parsedCerts,
-    projects: parsedProjects.length > 0 ? parsedProjects : [{ t: 'Full-Stack Web App', tech: 'React, Node.js, SQL' }]
+    projects: parsedProjects
   };
   
   document.getElementById('profileBadge').style.display = 'flex';
@@ -820,18 +818,24 @@ function saveProfile(){
   setTimeout(() => showPage('match'), 1200);
 }
 
-
-
 // ─── JOB MATCH (ROLE-CENTRIC) ─────────────────
 let matchInit=false, currentDomain='All', selectedRole=null;
 
 function initMatchPage(){
-  if(matchInit)return; matchInit=true;
-  const p=state.profile||DEFAULT;
-  document.getElementById('matchName').textContent=p.name||'Demo User';
-  document.getElementById('matchDomain').textContent=(p.domain||'SDE')+' • '+(p.location||'Bangalore')+' • '+(p.exp==0?'Fresher':p.exp+' yr(s)');
-  document.getElementById('matchAvatar').textContent=(p.name||'D')[0].toUpperCase();
-  document.getElementById('matchBadges').innerHTML='<span class="badge b-blue">'+(p.skills||[]).length+' Skills</span><span class="badge b-purple">'+(p.projects||[]).length+' Projects</span>';
+  if(matchInit) return; 
+  matchInit=true;
+  const p = state.profile;
+  if(p && p.name) {
+    document.getElementById('matchName').textContent = p.name;
+    document.getElementById('matchDomain').textContent = (p.domain||'Software Development') + ' • ' + (p.location||'Bangalore') + ' • ' + (p.exp == 0 ? 'Fresher' : p.exp + ' yr(s)');
+    document.getElementById('matchAvatar').textContent = p.name[0].toUpperCase();
+    document.getElementById('matchBadges').innerHTML = '<span class="badge b-blue">' + (p.skills||[]).length + ' Skills</span><span class="badge b-purple">' + (p.projects||[]).length + ' Projects</span>';
+  } else {
+    document.getElementById('matchName').textContent = 'Candidate Profile';
+    document.getElementById('matchDomain').textContent = 'No Profile Saved Yet • Complete your details in the Profile tab';
+    document.getElementById('matchAvatar').textContent = '👤';
+    document.getElementById('matchBadges').innerHTML = '<span class="badge b-amber">0 Skills</span><span class="badge b-purple">0 Projects</span>';
+  }
   renderDomainFilters();
   renderRoleList();
   selectRole(ROLES.sort((a,b)=>b.match-a.match)[0]);
@@ -1562,7 +1566,7 @@ function showAuthModal(isSignUp = false){
         
         <div class="form-group" style="margin-bottom:12px;">
           <label style="font-size:.78rem;font-weight:600;">Full Name</label>
-          <input type="text" id="authRegName" placeholder="Arjun Sharma" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;box-sizing:border-box;" />
+          <input type="text" id="authRegName" placeholder="e.g. Rahul Verma" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;box-sizing:border-box;" />
         </div>
         <div class="form-group" style="margin-bottom:12px;">
           <label style="font-size:.78rem;font-weight:600;">Email / Gmail</label>
