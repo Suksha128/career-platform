@@ -512,9 +512,41 @@ const ROLES = [
    matched:['SQL','Python','Communication','REST APIs'],missing:['Requirement Gathering','JIRA','Process Modeling (BPMN)'],
    insight:'BA roles bridge tech and business. Your SQL + communication skills are exactly what is needed. Added benefit: many service companies (Infosys, Wipro, Accenture) have mass BA openings for freshers year-round.',
    radar:[{s:'SQL',c:70,r:80},{s:'Python',c:75,r:60},{s:'Communication',c:75,r:90},{s:'JIRA',c:20,r:75},{s:'Analytics',c:55,r:75},{s:'Process',c:20,r:70},{s:'Docs',c:50,r:75}]},
+  {id:'r9',icon:'🌐',domain:'Full Stack',title:'Full Stack Developer (MERN/MEAN)',level:'Entry–Mid',type:'Remote Friendly',salary:'₹8–28 LPA',demand:'🔥 Very High',match:79,
+   matched:['React','Node.js','JavaScript','MongoDB','REST APIs','Git'],missing:['TypeScript','Docker','CI/CD','Redis'],
+   insight:'Full Stack is the most in-demand profile for startups in 2024–25. Your MERN stack is production-ready. Adding TypeScript and Docker gives you a 40–50% salary jump in product startup hiring.',
+   radar:[{s:'React',c:80,r:85},{s:'Node.js',c:65,r:80},{s:'MongoDB',c:55,r:75},{s:'TypeScript',c:30,r:80},{s:'Docker',c:20,r:70},{s:'SQL',c:70,r:65},{s:'Git',c:72,r:70}]},
+  {id:'r10',icon:'📱',domain:'Mobile',title:'Android / iOS Developer',level:'Entry',type:'Hybrid',salary:'₹7–24 LPA',demand:'🔶 High',match:42,
+   matched:['Java','JavaScript','Git','REST APIs'],missing:['Kotlin','Swift/React Native','Android SDK','App Store Deployment'],
+   insight:'Mobile development is a focused niche with strong demand from fintech and consumer apps. Java gives you a solid Android base — Kotlin is the modern replacement and takes 2–3 weeks to pick up. React Native is a cross-platform shortcut.',
+   radar:[{s:'Java',c:40,r:75},{s:'Kotlin',c:10,r:85},{s:'Swift',c:5,r:70},{s:'React Native',c:25,r:75},{s:'APIs',c:72,r:80},{s:'Firebase',c:35,r:70},{s:'UI/UX',c:45,r:65}]},
+  {id:'r11',icon:'🔐',domain:'Security',title:'Cybersecurity Analyst',level:'Entry',type:'On-Site',salary:'₹6–20 LPA',demand:'🔥 Very High',match:38,
+   matched:['Python','Linux','Git','SQL'],missing:['Network Security','Ethical Hacking','SIEM Tools','CEH/CompTIA Cert'],
+   insight:'Cybersecurity is India\'s fastest-growing shortage domain with 0.5M+ unfilled roles. Your Python scripting is a strong base for automation of security tasks. A 90-day structured path (TryHackMe + CEH) can open well-paying government and banking sector roles.',
+   radar:[{s:'Python',c:75,r:80},{s:'Linux',c:40,r:90},{s:'Networking',c:20,r:85},{s:'SIEM',c:5,r:75},{s:'Hacking',c:10,r:80},{s:'Compliance',c:15,r:70},{s:'SQL',c:70,r:60}]},
+  {id:'r12',icon:'🗄️',domain:'Data',title:'Database Administrator (DBA)',level:'Entry',type:'Hybrid',salary:'₹5–16 LPA',demand:'🔷 Medium',match:62,
+   matched:['SQL','Python','Linux','Git'],missing:['PostgreSQL Admin','Oracle/MySQL DBA','Query Tuning','Backup & Recovery'],
+   insight:'DBAs are a stable, evergreen role in large enterprises and government projects. Your SQL foundation is directly applicable. Specializing in PostgreSQL (free) or Oracle (certification valued in PSUs) can fast-track your career.',
+   radar:[{s:'SQL',c:70,r:95},{s:'PostgreSQL',c:40,r:85},{s:'Performance',c:20,r:80},{s:'Python',c:75,r:60},{s:'Linux',c:40,r:75},{s:'Backup/Rec',c:10,r:80},{s:'Monitoring',c:15,r:70}]},
+  {id:'r13',icon:'🎮',domain:'Other',title:'Game Developer (Unity / Unreal)',level:'Entry',type:'On-Site',salary:'₹4–18 LPA',demand:'🔷 Medium',match:31,
+   matched:['C++','Python','Git','OOP'],missing:['Unity (C#)','Unreal Engine','3D Math','Physics Engines','Game AI'],
+   insight:'India\'s gaming industry is growing 30% YoY. Your C++ and OOP knowledge gives you a direct path to Unreal Engine. Unity with C# is learnable in 6–8 weeks. Game dev offers creative satisfaction with strong export job opportunities.',
+   radar:[{s:'C++',c:40,r:80},{s:'C#/Unity',c:10,r:85},{s:'3D Math',c:15,r:80},{s:'OOP',c:55,r:85},{s:'Game AI',c:5,r:70},{s:'Physics',c:10,r:75},{s:'Python',c:75,r:45}]},
+  {id:'r14',icon:'☎️',domain:'Other',title:'Technical Support Engineer',level:'Entry',type:'Hybrid',salary:'₹4–12 LPA',demand:'🔶 High',match:72,
+   matched:['Python','SQL','Linux','REST APIs','Communication','Git'],missing:['Ticketing Systems (ServiceNow)','ITIL','Networking Basics'],
+   insight:'Technical Support is a high-volume entry point into product companies like Zoho, Freshworks, and Atlassian. Your Python + SQL is above average for this role and creates fast-track opportunities to move into SDE after 1 year.',
+   radar:[{s:'Communication',c:75,r:90},{s:'Python',c:75,r:70},{s:'SQL',c:70,r:65},{s:'Linux',c:40,r:75},{s:'Ticketing',c:10,r:80},{s:'ITIL',c:5,r:70},{s:'APIs',c:72,r:65}]},
+  {id:'r15',icon:'⚡',domain:'Embedded',title:'Embedded Systems / IoT Engineer',level:'Entry',type:'On-Site',salary:'₹5–18 LPA',demand:'🔷 Medium',match:28,
+   matched:['C','Python','Git','Linux'],missing:['C Microcontrollers','RTOS','Arduino/Raspberry Pi','Embedded C','Hardware Protocols (I2C/SPI)'],
+   insight:'Embedded systems roles dominate in automotive (Bosch, Continental), defence (DRDO), and IoT. Your C programming is the single most critical prerequisite — combine with Arduino hands-on projects for 8–12 weeks to be interview ready.',
+   radar:[{s:'C',c:40,r:95},{s:'Embedded C',c:10,r:90},{s:'RTOS',c:5,r:85},{s:'Python',c:75,r:60},{s:'Hardware',c:10,r:85},{s:'Linux',c:40,r:75},{s:'Protocols',c:5,r:80}]},
+  {id:'r16',icon:'🧩',domain:'SDE',title:'Product Manager (APM / Associate PM)',level:'Entry',type:'Hybrid',salary:'₹10–30 LPA',demand:'🔥 Very High',match:55,
+   matched:['Python','SQL','Communication','REST APIs'],missing:['Product Thinking','User Research','Roadmap Tools (Jira/Linear)','A/B Testing','Metrics (DAU/MAU)'],
+   insight:'APM programs (Flipkart, Amazon, Google) are among the highest-paying entry paths in tech. Your technical background in Python + APIs is a massive differentiator for PM roles. Focus on product case studies and metric-driven thinking.',
+   radar:[{s:'Product Sense',c:40,r:90},{s:'SQL/Analytics',c:70,r:85},{s:'Communication',c:75,r:90},{s:'User Research',c:25,r:85},{s:'Tech Depth',c:75,r:80},{s:'A/B Testing',c:15,r:75},{s:'Roadmapping',c:20,r:80}]},
 ];
 
-const DOMAINS = ['All','SDE','AI/ML','Frontend','Backend','DevOps','Data','Other'];
+const DOMAINS = ['All','SDE','Full Stack','AI/ML','Frontend','Backend','Mobile','DevOps','Data','Security','Embedded','Other'];
 
 // ─── RESUME DATA ───────────────────────────
 const RESUME_DATA = {
