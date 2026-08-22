@@ -227,16 +227,33 @@ select option {background:#ffffff;color:var(--t1);}
       <div class="card animate d2"><div class="card-body">
         <p style="font-weight:700;margin-bottom:16px;">👤 Personal Details</p>
         <div class="g2">
-          <div class="form-group"><label>Full Name</label><input type="text" id="inp-name" placeholder="Arjun Sharma" /></div>
-          <div class="form-group"><label>Email</label><input type="email" id="inp-email" placeholder="arjun@college.edu" /></div>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="inp-name" placeholder="Arjun Sharma" />
+          </div>
+          <div class="form-group">
+            <label>Email / Gmail</label>
+            <input type="email" id="inp-email" placeholder="arjun.sharma@gmail.com" oninput="validateEmailInput(this)" />
+            <div id="email-val-msg" style="font-size:.73rem;margin-top:4px;"></div>
+          </div>
         </div>
         <div class="g2">
           <div class="form-group"><label>Location</label><select id="inp-location"><option value="">Select city...</option><option>Bangalore</option><option>Hyderabad</option><option>Chennai</option><option>Pune</option><option>Mumbai</option><option>Delhi NCR</option><option>Remote / Any</option></select></div>
           <div class="form-group"><label>Experience</label><select id="inp-exp"><option value="0">Fresher (0 years)</option><option value="1">0–1 Year</option><option value="2">1–2 Years</option><option value="3">2–3 Years</option></select></div>
         </div>
         <div class="form-group"><label>Target Domain</label><select id="inp-domain"><option>Software Development (SDE)</option><option>Data Science &amp; ML</option><option>Frontend Development</option><option>Backend Development</option><option>DevOps &amp; Cloud</option><option>Business Analyst</option></select></div>
-        <div class="form-group"><label>CGPA / Percentage</label><input type="text" id="inp-cgpa" placeholder="8.4 CGPA / 84%" /></div>
-        <div class="form-group"><label>GitHub / Portfolio URL</label><input type="url" id="inp-github" placeholder="https://github.com/yourusername" /></div>
+        <div class="g2">
+          <div class="form-group">
+            <label>CGPA / Percentage</label>
+            <input type="text" id="inp-cgpa" placeholder="8.4 CGPA or 84%" oninput="validateCgpaInput(this)" />
+            <div id="cgpa-val-msg" style="font-size:.73rem;margin-top:4px;"></div>
+          </div>
+          <div class="form-group">
+            <label>GitHub / Portfolio URL</label>
+            <input type="text" id="inp-github" placeholder="github.com/yourusername" oninput="validateUrlInput(this)" />
+            <div id="url-val-msg" style="font-size:.73rem;margin-top:4px;"></div>
+          </div>
+        </div>
       </div></div>
     </div>
     <div>
@@ -267,10 +284,11 @@ select option {background:#ffffff;color:var(--t1);}
         <div id="projectContainer"></div>
       </div></div>
       <div class="card animate d4" style="margin-bottom:16px;"><div class="card-body">
-        <p style="font-weight:700;margin-bottom:16px;">🏅 Certifications</p>
-        <div class="tag-box" id="certBox" onclick="document.getElementById('certInput').focus()">
-          <input class="tag-input" id="certInput" placeholder="AWS Cloud Practitioner..." onkeydown="handleTagKey(event,'certBox','certInput')" />
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <p style="font-weight:700;margin:0;">🏅 Certifications</p>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addCertBlock()" style="font-size:.8rem;padding:4px 12px;">+ Add Certification</button>
         </div>
+        <div id="certContainer"></div>
       </div></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:16px;" onclick="saveProfile()">🤖 Analyze Profile with AI →</button>
     </div>
@@ -630,10 +648,82 @@ function addProjectBlock(title='', tech='') {
   renderProjectBlocks();
 }
 
-function removeProjectBlock(idx) {
-  if(projectList.length > 1) {
-    projectList.splice(idx, 1);
-    renderProjectBlocks();
+// ─── DYNAMIC CERTIFICATION MANAGEMENT ────────
+let certList = [{ title: 'AWS Certified Cloud Practitioner', org: 'Amazon Web Services' }];
+
+function renderCertBlocks() {
+  const container = document.getElementById('certContainer');
+  if(!container) return;
+  
+  container.innerHTML = certList.map((c, idx) => `
+    <div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;position:relative;background:var(--bg2);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:.78rem;font-weight:700;color:var(--t2);">Certification ${idx + 1}</span>
+        ${certList.length > 1 ? `<button type="button" onclick="removeCertBlock(${idx})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.8rem;font-weight:700;">✕ Remove</button>` : ''}
+      </div>
+      <div class="g2" style="margin-bottom:0;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:.72rem;">Certification Name</label>
+          <input type="text" id="cert-title-${idx}" value="${c.title}" placeholder="e.g. AWS Cloud Practitioner" oninput="certList[${idx}].title=this.value" />
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label style="font-size:.72rem;">Issuing Organization</label>
+          <input type="text" id="cert-org-${idx}" value="${c.org}" placeholder="e.g. AWS / Coursera / NPTEL" oninput="certList[${idx}].org=this.value" />
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addCertBlock(title='', org='') {
+  certList.push({ title, org });
+  renderCertBlocks();
+}
+
+function removeCertBlock(idx) {
+  if(certList.length > 1) {
+    certList.splice(idx, 1);
+    renderCertBlocks();
+  }
+}
+
+// ─── LIVE PATTERN VALIDATION HELPERS ──────────
+function validateEmailInput(input) {
+  const val = input.value.trim();
+  const msgEl = document.getElementById('email-val-msg');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!val) {
+    msgEl.innerHTML = '';
+  } else if (emailRegex.test(val)) {
+    msgEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ Valid Email Pattern</span>';
+  } else {
+    msgEl.innerHTML = '<span style="color:var(--red);font-weight:600;">⚠️ Enter valid email (e.g. student@gmail.com)</span>';
+  }
+}
+
+function validateCgpaInput(input) {
+  const val = input.value.trim();
+  const msgEl = document.getElementById('cgpa-val-msg');
+  const cgpaRegex = /^([0-9](\.[0-9]{1,2})?|10(\.0{1,2})?|[0-9]{1,2}(\.[0-9]{1,2})?%?)$/;
+  if (!val) {
+    msgEl.innerHTML = '';
+  } else if (cgpaRegex.test(val.replace(/\s*(cgpa|%)\s*/i, ''))) {
+    msgEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ Valid Score Format</span>';
+  } else {
+    msgEl.innerHTML = '<span style="color:var(--amber);font-weight:600;">⚠️ Enter CGPA (e.g. 8.4) or % (e.g. 84%)</span>';
+  }
+}
+
+function validateUrlInput(input) {
+  const val = input.value.trim();
+  const msgEl = document.getElementById('url-val-msg');
+  const urlRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/;
+  if (!val) {
+    msgEl.innerHTML = '';
+  } else if (urlRegex.test(val)) {
+    msgEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ Valid URL Pattern</span>';
+  } else {
+    msgEl.innerHTML = '<span style="color:var(--amber);font-weight:600;">⚠️ Enter link (e.g. github.com/username)</span>';
   }
 }
 
@@ -645,24 +735,33 @@ function setFile(f){
   document.getElementById('dzTitle').textContent = f.name;
   document.getElementById('dzSub').textContent = (f.size/1024).toFixed(1)+' KB — Resume loaded & parsed by AI';
   
-  // AI Resume Parser: Auto-extracts detected projects from resume and renders matching project blocks
+  // AI Resume Parser: Auto-extracts detected projects & certifications from resume
   const sampleParsedProjects = [
     { title: 'Full-Stack E-Commerce Platform', tech: 'React.js, Node.js, PostgreSQL' },
     { title: 'AI Sentiment Analysis Microservice', tech: 'Python, Scikit-Learn, Flask' }
   ];
   
+  const sampleParsedCerts = [
+    { title: 'AWS Certified Cloud Practitioner', org: 'Amazon Web Services' },
+    { title: 'Meta Front-End Developer Specialization', org: 'Coursera' }
+  ];
+  
   projectList = sampleParsedProjects;
+  certList = sampleParsedCerts;
+  
   renderProjectBlocks();
+  renderCertBlocks();
   
   // Auto-populate extracted skills
   ['Python', 'React', 'JavaScript', 'Node.js', 'SQL', 'Git', 'REST APIs'].forEach(s => quickAddSkill(s));
   
-  showToast(f.name + ' uploaded! Extracted ' + projectList.length + ' projects & skills.', '📄');
+  showToast(f.name + ' uploaded! Extracted projects, certs & skills.', '📄');
 }
 
-// Initialize default single project block on page load
+// Initialize default single project & cert blocks on page load
 document.addEventListener('DOMContentLoaded', () => {
   renderProjectBlocks();
+  renderCertBlocks();
 });
 
 // ─── TAG INPUT ───────────────────────────────
@@ -672,25 +771,45 @@ function removeTag(val,boxId,inpId,el){const arr=boxId==='skillBox'?state.skills
 function quickAddSkill(s){if(!state.skills.includes(s))addTag(s,'skillBox','skillInput');}
 
 // ─── SAVE PROFILE ────────────────────────────
-const DEFAULT = {name:'Arjun Sharma',email:'arjun@college.edu',domain:'Software Development (SDE)',exp:'0',location:'Bangalore',cgpa:'8.4',skills:['Python','React','JavaScript','Node.js','SQL','Git','REST APIs'],certs:['AWS Cloud Practitioner'],projects:[{t:'E-Commerce Web App',tech:'React, Node.js, PostgreSQL'},{t:'ML Sentiment Analyzer',tech:'Python, scikit-learn, Flask'}]};
+const DEFAULT = {name:'Arjun Sharma',email:'arjun.sharma@gmail.com',domain:'Software Development (SDE)',exp:'0',location:'Bangalore',cgpa:'8.4',skills:['Python','React','JavaScript','Node.js','SQL','Git','REST APIs'],certs:['AWS Cloud Practitioner'],projects:[{t:'E-Commerce Web App',tech:'React, Node.js, PostgreSQL'},{t:'ML Sentiment Analyzer',tech:'Python, scikit-learn, Flask'}]};
 
 function saveProfile(){
   const name = document.getElementById('inp-name').value || 'Student';
+  const email = document.getElementById('inp-email').value.trim();
+  const cgpa = document.getElementById('inp-cgpa').value.trim();
+  const github = document.getElementById('inp-github').value.trim();
   
+  // Pattern Validation Checks
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(email && !emailRegex.test(email)) {
+    showToast('Please enter a valid email pattern (e.g. candidate@gmail.com)', '⚠️');
+    document.getElementById('inp-email').focus();
+    return;
+  }
+
   const parsedProjects = projectList.map((p, idx) => {
     const t = document.getElementById(`proj-title-${idx}`)?.value || p.title || `Project ${idx+1}`;
     const tech = document.getElementById(`proj-tech-${idx}`)?.value || p.tech || 'React, Python, SQL';
     return { t, tech };
   }).filter(p => p.t.trim() !== '');
 
+  const parsedCerts = certList.map((c, idx) => {
+    const title = document.getElementById(`cert-title-${idx}`)?.value || c.title || `Certification ${idx+1}`;
+    const org = document.getElementById(`cert-org-${idx}`)?.value || c.org || 'Coursera / AWS';
+    return { title, org };
+  }).filter(c => c.title.trim() !== '');
+
   state.profile = {
     name,
-    email: document.getElementById('inp-email').value,
+    email: email || 'student@gmail.com',
     domain: document.getElementById('inp-domain').value,
     exp: document.getElementById('inp-exp').value,
     location: document.getElementById('inp-location').value || 'Bangalore',
+    cgpa: cgpa || '8.4',
+    github: github || 'github.com/student',
     skills: [...state.skills],
-    certs: [...state.certs],
+    certs: parsedCerts.map(c => c.title),
+    certDetails: parsedCerts,
     projects: parsedProjects.length > 0 ? parsedProjects : [{ t: 'Full-Stack Web App', tech: 'React, Node.js, SQL' }]
   };
   
