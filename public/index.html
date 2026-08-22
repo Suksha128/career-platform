@@ -242,17 +242,10 @@ select option {background:#ffffff;color:var(--t1);}
           <div class="form-group"><label>Experience</label><select id="inp-exp"><option value="0">Fresher (0 years)</option><option value="1">0–1 Year</option><option value="2">1–2 Years</option><option value="3">2–3 Years</option></select></div>
         </div>
         <div class="form-group"><label>Target Domain</label><select id="inp-domain"><option>Software Development (SDE)</option><option>Data Science &amp; ML</option><option>Frontend Development</option><option>Backend Development</option><option>DevOps &amp; Cloud</option><option>Business Analyst</option></select></div>
-        <div class="g2">
-          <div class="form-group">
-            <label>CGPA / Percentage</label>
-            <input type="text" id="inp-cgpa" placeholder="8.4 CGPA or 84%" oninput="validateCgpaInput(this)" />
-            <div id="cgpa-val-msg" style="font-size:.73rem;margin-top:4px;"></div>
-          </div>
-          <div class="form-group">
-            <label>GitHub / Portfolio URL</label>
-            <input type="text" id="inp-github" placeholder="github.com/yourusername" oninput="validateUrlInput(this)" />
-            <div id="url-val-msg" style="font-size:.73rem;margin-top:4px;"></div>
-          </div>
+        <div class="form-group">
+          <label>CGPA / Percentage</label>
+          <input type="text" id="inp-cgpa" placeholder="8.4 CGPA or 84%" oninput="validateCgpaInput(this)" />
+          <div id="cgpa-val-msg" style="font-size:.73rem;margin-top:4px;"></div>
         </div>
       </div></div>
     </div>
@@ -290,7 +283,12 @@ select option {background:#ffffff;color:var(--t1);}
         </div>
         <div id="certContainer"></div>
       </div></div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:16px;" onclick="saveProfile()">🤖 Analyze Profile with AI →</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:16px;margin-bottom:12px;" onclick="saveProfile()">🤖 Analyze Profile with AI →</button>
+      <div style="display:flex;gap:12px;width:100%;">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:.8rem;padding:10px;" onclick="exportProfileJSON()">📥 Export Backup (JSON)</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center;font-size:.8rem;padding:10px;" onclick="document.getElementById('importFile').click()">📤 Import Backup (JSON)</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importProfileJSON(event)" />
+      </div>
     </div>
   </div>
 </div>
@@ -695,9 +693,10 @@ function removeCertBlock(idx) {
 function validateEmailInput(input) {
   const val = input.value.trim();
   const msgEl = document.getElementById('email-val-msg');
+  if(!msgEl) return;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!val) {
-    msgEl.innerHTML = '';
+    msgEl.innerHTML = '<span style="color:var(--red);font-weight:600;">⚠️ Email address is required</span>';
   } else if (emailRegex.test(val)) {
     msgEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ Valid Email Pattern</span>';
   } else {
@@ -718,18 +717,6 @@ function validateCgpaInput(input) {
   }
 }
 
-function validateUrlInput(input) {
-  const val = input.value.trim();
-  const msgEl = document.getElementById('url-val-msg');
-  const urlRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/;
-  if (!val) {
-    msgEl.innerHTML = '';
-  } else if (urlRegex.test(val)) {
-    msgEl.innerHTML = '<span style="color:var(--green);font-weight:600;">✓ Valid URL Pattern</span>';
-  } else {
-    msgEl.innerHTML = '<span style="color:var(--amber);font-weight:600;">⚠️ Enter link (e.g. github.com/username)</span>';
-  }
-}
 
 // ─── FILE UPLOAD & AI PARSING ─────────────────
 function handleDrop(e){e.preventDefault();document.getElementById('dropzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)setFile(f);}
@@ -776,15 +763,19 @@ function quickAddSkill(s){if(!state.skills.includes(s))addTag(s,'skillBox','skil
 
 // ─── SAVE PROFILE ────────────────────────────
 function saveProfile(){
-  const name = document.getElementById('inp-name').value || 'Student';
+  const name = document.getElementById('inp-name').value.trim();
   const email = document.getElementById('inp-email').value.trim();
   const cgpa = document.getElementById('inp-cgpa').value.trim();
-  const github = document.getElementById('inp-github').value.trim();
   
-  // Pattern Validation Checks
+  if(!name) {
+    showToast('Please enter your Full Name', '⚠️');
+    document.getElementById('inp-name').focus();
+    return;
+  }
+  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if(email && !emailRegex.test(email)) {
-    showToast('Please enter a valid email pattern (e.g. candidate@gmail.com)', '⚠️');
+  if(!email || !emailRegex.test(email)) {
+    showToast('Please enter a valid email address (e.g. name@gmail.com)', '⚠️');
     document.getElementById('inp-email').focus();
     return;
   }
@@ -803,22 +794,95 @@ function saveProfile(){
 
   state.profile = {
     name,
-    email: email || 'candidate@gmail.com',
+    email,
     domain: document.getElementById('inp-domain').value,
     exp: document.getElementById('inp-exp').value,
     location: document.getElementById('inp-location').value || 'Bangalore',
     cgpa: cgpa || '',
-    github: github || '',
     skills: [...state.skills],
     certs: parsedCerts.map(c => c.title),
     certDetails: parsedCerts,
     projects: parsedProjects
   };
+
+  // Synchronize profile directly into the logged-in user account if signed in
+  const authUser = getAuthUser();
+  if(authUser) {
+    authUser.profile = state.profile;
+    authUser.skills = [...state.skills];
+    setAuthUser(authUser);
+  } else {
+    // Save to generic guest local storage
+    localStorage.setItem('careerai_guest_profile', JSON.stringify(state.profile));
+  }
   
   document.getElementById('profileBadge').style.display = 'flex';
   document.getElementById('profileName').textContent = name.split(' ')[0] + ' ' + (name.split(' ')[1]?.[0] || '.') + '.';
-  showToast('Profile saved! Analyzing ' + state.skills.length + ' skills vs 6 companies...', '🤖');
+  showToast('Profile saved & synchronized! Analyzing match score...', '🤖');
   setTimeout(() => showPage('match'), 1200);
+}
+
+// ─── EXPORT & IMPORT BACKUP (STORE DATA SECURELY) ───
+function exportProfileJSON(){
+  const data = {
+    profile: state.profile,
+    skills: state.skills,
+    certs: state.certs
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `careerai_profile_${state.profile?.name?.replace(/\s+/g, '_') || 'backup'}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Profile backup exported successfully! 📥', '✅');
+}
+
+function importProfileJSON(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data.profile) {
+        showToast('Invalid backup file structure.', '⚠️');
+        return;
+      }
+      
+      // Load into state
+      state.profile = data.profile;
+      state.skills = data.skills || [];
+      
+      // Populate inputs in onboarding form
+      document.getElementById('inp-name').value = data.profile.name || '';
+      document.getElementById('inp-email').value = data.profile.email || '';
+      document.getElementById('inp-cgpa').value = data.profile.cgpa || '';
+      document.getElementById('inp-domain').value = data.profile.domain || '';
+      document.getElementById('inp-exp').value = data.profile.exp || '0';
+      document.getElementById('inp-location').value = data.profile.location || '';
+      
+      // Repopulate tags
+      const skillBox = document.getElementById('skillBox');
+      skillBox.querySelectorAll('.tag').forEach(t => t.remove());
+      state.skills.forEach(s => {
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.innerHTML = s + `<span class="tag-del" onclick="removeTag('${s}','skillBox','skillInput',this)">✕</span>`;
+        skillBox.insertBefore(tag, document.getElementById('skillInput'));
+      });
+      
+      // Save profile
+      saveProfile();
+      showToast('Profile imported and restored successfully! 📤', '✅');
+    } catch(err) {
+      showToast('Error parsing backup JSON file.', '⚠️');
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ─── JOB MATCH (ROLE-CENTRIC) ─────────────────
