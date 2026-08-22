@@ -194,7 +194,6 @@ select option {background:#ffffff;color:var(--t1);}
       </p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;" class="animate d3">
         <button class="btn btn-primary" onclick="showPage('onboard')">🚀 Start Your Journey</button>
-        <button class="btn btn-ghost" onclick="loadDemoProfile()">👁 View Live Demo</button>
       </div>
 
     </div>
@@ -509,30 +508,53 @@ const RESUME_DATA = {
 };
 
 // ─── QUIZ DATA ─────────────────────────────
+// ─── QUIZ DATA (EXPANDED DYNAMIC PYQ DATABASE) ─────────────────────────────
 const QUIZ_DB = {
   TCS:[
-    {id:1,year:'TCS NQT 2024',cat:'Aptitude',diff:'Easy',q:'A train 125 m long passes a pole in 5 seconds. Speed in km/hr?',opts:['72 km/hr','90 km/hr','100 km/hr','54 km/hr'],ans:1,exp:'Speed = 125/5 = 25 m/s. Convert: 25 × (18/5) = 90 km/hr. Multiply m/s by 18/5 to get km/hr. This formula appears in virtually every TCS aptitude paper.'},
-    {id:2,year:'TCS NQT 2023',cat:'Coding',diff:'Easy',q:'What is the output?\n\nx = [1, 2, 3, 4, 5]\nprint(x[-2:])',opts:['[4, 5]','[3, 4, 5]','[1, 2, 3]','[5]'],ans:0,exp:'Negative slicing: x[-2:] starts from the 2nd-last element (index -2 = value 4) to the end. Result: [4, 5]. Negative indexing and slicing are TCS NQT staples.'},
-    {id:3,year:'TCS Digital 2024',cat:'SQL',diff:'Medium',q:'Which SQL clause filters groups AFTER a GROUP BY aggregation?',opts:['WHERE','HAVING','FILTER','LIMIT'],ans:1,exp:'HAVING filters aggregated groups AFTER GROUP BY (e.g., HAVING COUNT(*) > 5). WHERE filters individual rows BEFORE grouping. This distinction is asked in nearly every TCS Digital SQL round.'},
-    {id:4,year:'TCS NQT 2022',cat:'Verbal',diff:'Easy',q:"Choose the best word:\n\"The scientist's _____ approach helped uncover solutions others overlooked.\"",opts:['methodical','haphazard','complacent','dismissive'],ans:0,exp:"'Methodical' = proceeding in a systematic, organized way — the only positive option fitting the context. The others (haphazard, complacent, dismissive) are negative traits."},
-    {id:5,year:'TCS Digital 2023',cat:'Data Structures',diff:'Medium',q:'Time complexity of searching in a BALANCED Binary Search Tree?',opts:['O(n)','O(log n)','O(n log n)','O(1)'],ans:1,exp:'In a balanced BST, each comparison eliminates half the tree. Height = log(n), so search = O(log n). An unbalanced BST degrades to O(n). Balance is key!'},
+    {id:'tcs1',year:'TCS NQT 2024',cat:'Aptitude',diff:'Easy',q:'A train 125 m long passes a pole in 5 seconds. Speed in km/hr?',opts:['72 km/hr','90 km/hr','100 km/hr','54 km/hr'],ans:1,exp:'Speed = 125/5 = 25 m/s. Convert: 25 × (18/5) = 90 km/hr. Multiply m/s by 18/5 to get km/hr.'},
+    {id:'tcs2',year:'TCS NQT 2024',cat:'Coding',diff:'Easy',q:'What is the output of Python: x = [1, 2, 3, 4, 5]; print(x[-2:])?',opts:['[4, 5]','[3, 4, 5]','[1, 2, 3]','[5]'],ans:0,exp:'Negative slicing: x[-2:] starts from the 2nd-last element (index -2 = value 4) to the end. Result: [4, 5].'},
+    {id:'tcs3',year:'TCS Digital 2024',cat:'SQL',diff:'Medium',q:'Which SQL clause filters groups AFTER a GROUP BY aggregation?',opts:['WHERE','HAVING','FILTER','LIMIT'],ans:1,exp:'HAVING filters aggregated groups AFTER GROUP BY (e.g., HAVING COUNT(*) > 5). WHERE filters individual rows BEFORE grouping.'},
+    {id:'tcs4',year:'TCS NQT 2023',cat:'Verbal',diff:'Easy',q:"Choose the best word: \"The scientist's _____ approach helped uncover solutions others overlooked.\"",opts:['methodical','haphazard','complacent','dismissive'],ans:0,exp:"'Methodical' = proceeding in a systematic, organized way — the only positive option fitting the context."},
+    {id:'tcs5',year:'TCS Digital 2023',cat:'Data Structures',diff:'Medium',q:'Time complexity of searching in a BALANCED Binary Search Tree?',opts:['O(n)','O(log n)','O(n log n)','O(1)'],ans:1,exp:'In a balanced BST, each comparison eliminates half the tree. Height = log(n), so search = O(log n).'},
+    {id:'tcs6',year:'TCS NQT 2024',cat:'Aptitude',diff:'Medium',q:'Two pipes A and B fill a tank in 12 mins and 15 mins. If both open together, how long to fill?',opts:['6.67 mins','8 mins','10 mins','5.5 mins'],ans:0,exp:'Combined rate = (1/12 + 1/15) = (5+4)/60 = 9/60 = 3/20 tank/min. Time = 20/3 = 6.67 minutes.'},
+    {id:'tcs7',year:'TCS Digital 2024',cat:'Coding',diff:'Hard',q:'Sum of primary diagonal elements in a square matrix A[N][N]?',opts:['for i: sum += A[i][i]','for i,j: sum += A[i][j]','for i: sum += A[i][N-i-1]','for i: sum += A[i][0]'],ans:0,exp:'Primary diagonal elements have equal row and column indices (i == j), requiring a single loop over A[i][i] in O(N) time.'},
   ],
   Amazon:[
-    {id:1,year:'Amazon SDE-1 2024',cat:'Data Structures',diff:'Medium',q:'Find two numbers in an array that sum to a target. Most efficient approach?',opts:['O(n²) nested loop','Sort + binary search — O(n log n)','Hash map single pass — O(n)','Two pointer after sorting'],ans:2,exp:"Hash map approach: iterate once, check if (target - current) exists in map. O(n) time, O(n) space. Classic Two Sum (LeetCode #1) — Amazon's most frequently tested question type."},
-    {id:2,year:'Amazon SDE-1 2023',cat:'OOP',diff:'Easy',q:'Which SOLID principle states a class should have only ONE reason to change?',opts:['Open/Closed Principle','Single Responsibility Principle','Liskov Substitution','Interface Segregation'],ans:1,exp:'Single Responsibility Principle (SRP): A class should do one thing and have one reason to change. Amazon LLD rounds focus heavily on SOLID principles — SRP prevents bloated God classes.'},
-    {id:3,year:'Amazon Intern 2023',cat:'System Design',diff:'Hard',q:"Since Dec 2020, what consistency model does Amazon S3 provide?",opts:['Eventual consistency only','Strong read-after-write for ALL objects','Weak consistency for GET after PUT','No consistency guarantees'],ans:1,exp:'Since December 2020, S3 provides strong read-after-write consistency for all operations. Amazon tests this in system design to see if candidates are current with cloud developments.'},
-    {id:4,year:'Amazon SDE-1 2024',cat:'Coding',diff:'Medium',q:'Output of this Python code?\n\ndef f(x, lst=[]):\n    lst.append(x)\n    return lst\n\nprint(f(1))\nprint(f(2))',opts:['[1] then [2]','[1] then [1, 2]','[1, 2] then [1, 2]','Error'],ans:1,exp:"Python mutable default argument trap! The default list [] is created ONCE and shared across calls. f(1) gives [1], then f(2) appends to same list giving [1, 2]. Classic Amazon Python gotcha."},
-    {id:5,year:'Amazon Intern 2024',cat:'Data Structures',diff:'Hard',q:'HashMap internal structure and worst-case get() complexity?',opts:['Array — O(1) always','Linked List — O(n) always','Array of linked lists — O(n) worst case','Tree — O(log n) always'],ans:2,exp:"HashMap = array of buckets, each with a linked list. Average get() = O(1). Worst case O(n) with all hash collisions. Java 8+ switches to red-black trees for O(log n) worst case."},
+    {id:'amz1',year:'Amazon SDE-1 2024',cat:'Data Structures',diff:'Medium',q:'Find two numbers in an array that sum to a target. Most efficient time complexity?',opts:['O(n²) nested loop','O(n log n) sort','O(n) Hash Map single pass','O(n³) brute force'],ans:2,exp:"Hash map approach: iterate once, check if (target - current) exists in map. O(n) time, O(n) space. Classic Two Sum (LeetCode #1)."},
+    {id:'amz2',year:'Amazon SDE-1 2023',cat:'OOP',diff:'Easy',q:'Which SOLID principle states a class should have only ONE reason to change?',opts:['Open/Closed Principle','Single Responsibility Principle','Liskov Substitution','Interface Segregation'],ans:1,exp:'Single Responsibility Principle (SRP): A class should do one thing and have one reason to change.'},
+    {id:'amz3',year:'Amazon Intern 2024',cat:'System Design',diff:'Hard',q:"Since Dec 2020, what consistency model does Amazon S3 provide for GET/PUT?",opts:['Eventual consistency only','Strong read-after-write consistency','Weak consistency','No guarantees'],ans:1,exp:'Since Dec 2020, Amazon S3 provides strong read-after-write consistency for PUT and DELETE operations of objects.'},
+    {id:'amz4',year:'Amazon SDE-1 2024',cat:'Coding',diff:'Medium',q:'Output of: def f(x, lst=[]): lst.append(x); return lst\nprint(f(1)); print(f(2))',opts:['[1] then [2]','[1] then [1, 2]','[1, 2] then [1, 2]','Error'],ans:1,exp:"Python mutable default argument trap! The default list [] is created ONCE and shared across calls. f(1) gives [1], then f(2) appends to same list giving [1, 2]."},
+    {id:'amz5',year:'Amazon SDE-1 2024',cat:'Data Structures',diff:'Hard',q:'Data structure best suited for implementing an LRU Cache with O(1) get and put?',opts:['Array + Stack','HashMap + Doubly Linked List','Priority Queue + Tree','Binary Search Tree'],ans:1,exp:'HashMap gives O(1) key lookup; Doubly Linked List gives O(1) deletion and insertion at head/tail.'},
   ],
   Infosys:[
-    {id:1,year:'Infosys InfyTQ 2024',cat:'Java',diff:'Medium',q:'Output of:\n\nSystem.out.println(10 + 20 + "Hello" + 10 + 20)',opts:['30Hello30','30Hello1020','1020Hello1020','Compile error'],ans:1,exp:"Java evaluates left-to-right: 10+20=30 (int), then 30+'Hello'='30Hello' (string concat begins), then '30Hello'+10='30Hello10', then '30Hello10'+20='30Hello1020'."},
-    {id:2,year:'Infosys 2023',cat:'Aptitude',diff:'Easy',q:'8 workers complete a job in 12 days. How many days for 12 workers?',opts:['6 days','8 days','10 days','16 days'],ans:1,exp:"Total work = 8 × 12 = 96 worker-days (constant). With 12 workers: 96 ÷ 12 = 8 days. Classic 'men × days = constant work' formula — heavy in Infosys aptitude rounds."},
-    {id:3,year:'Infosys 2023',cat:'Reasoning',diff:'Easy',q:'If CLOUD = DMPVE, how is RAIN coded?',opts:['SBJO','TCJO','SBJP','SBIO'],ans:0,exp:"Each letter shifts +1: C→D, L→M, O→P, U→V, D→E. Apply: R→S, A→B, I→J, N→O = SBJO. Caesar cipher +1 — very common Infosys reasoning pattern."},
-    {id:4,year:'Infosys 2022',cat:'SQL',diff:'Medium',q:'Which SQL statement retrieves data from multiple tables via a related column?',opts:['UNION','JOIN','MERGE','INTERSECT'],ans:1,exp:"JOIN combines rows from tables based on a related column (foreign key). UNION stacks result sets vertically. JOIN is the fundamental multi-table query operation in relational databases."},
-    {id:5,year:'Infosys 2024',cat:'OOP',diff:'Easy',q:'Which OOP concept allows inheriting from multiple parent classes?',opts:['Polymorphism','Encapsulation','Multiple Inheritance','Abstraction'],ans:2,exp:"Multiple Inheritance = inheriting from more than one parent class. Python supports it natively. Java does NOT (uses interfaces instead) to avoid the Diamond Problem."},
+    {id:'inf1',year:'Infosys InfyTQ 2024',cat:'Java',diff:'Medium',q:'Output of System.out.println(10 + 20 + "Hello" + 10 + 20)?',opts:['30Hello30','30Hello1020','1020Hello1020','Compile error'],ans:1,exp:"Java evaluates left-to-right: 10+20=30 (int), then 30+'Hello'='30Hello' (string concat), then +10='30Hello10', +20='30Hello1020'."},
+    {id:'inf2',year:'Infosys 2023',cat:'Aptitude',diff:'Easy',q:'8 workers complete a job in 12 days. How many days for 12 workers at same rate?',opts:['6 days','8 days','10 days','16 days'],ans:1,exp:"Total work = 8 × 12 = 96 worker-days. With 12 workers: 96 ÷ 12 = 8 days."},
+    {id:'inf3',year:'Infosys 2023',cat:'Reasoning',diff:'Easy',q:'If CLOUD is coded as DMPVE (+1 shift), how is RAIN coded?',opts:['SBJO','TCJO','SBJP','SBIO'],ans:0,exp:"Each letter shifts +1: R→S, A→B, I→J, N→O = SBJO."},
+    {id:'inf4',year:'Infosys InfyTQ 2024',cat:'SQL',diff:'Medium',q:'Which SQL statement combines rows from multiple tables based on a related column?',opts:['UNION','JOIN','MERGE','INTERSECT'],ans:1,exp:"JOIN combines rows from tables based on a related key column."},
+    {id:'inf5',year:'Infosys 2024',cat:'Coding',diff:'Medium',q:'Check if a number is Palindrome in Python: n == int(str(n)[::-1]). Output for 12321?',opts:['True','False','None','Error'],ans:0,exp:'str(12321)[::-1] reverses string "12321" → "12321", int("12321") == 12321, returns True.'},
   ],
+  Wipro:[
+    {id:'wip1',year:'Wipro Elite 2024',cat:'Aptitude',diff:'Easy',q:'Principal ₹5000 at 10% Simple Interest per annum for 3 years. Total Interest?',opts:['₹1200','₹1500','₹1800','₹2000'],ans:1,exp:'SI = (P × R × T) / 100 = (5000 × 10 × 3) / 100 = ₹1500.'},
+    {id:'wip2',year:'Wipro NLTH 2024',cat:'Coding',diff:'Medium',q:'In C, if int *p points to integer 5, what does (*p)++ do?',opts:['Increments the address in p','Increments the integer value pointed by p','Compile error','Decrements value'],ans:1,exp:'(*p)++ dereferences pointer p and increments the value stored at that memory location.'},
+    {id:'wip3',year:'Wipro 2024',cat:'Reasoning',diff:'Easy',q:'Complete series: 3, 7, 15, 31, ?',opts:['63','45','55','60'],ans:0,exp:'Pattern: (n × 2) + 1. 3×2+1=7, 7×2+1=15, 15×2+1=31, 31×2+1=63.'},
+    {id:'wip4',year:'Wipro Elite 2023',cat:'Data Structures',diff:'Easy',q:'Which Data Structure follows LIFO (Last In First Out)?',opts:['Queue','Stack','LinkedList','Tree'],ans:1,exp:'Stack follows LIFO (Last In, First Out). Queue follows FIFO.'},
+  ],
+  Microsoft:[
+    {id:'ms1',year:'Microsoft SDE-1 2024',cat:'Coding',diff:'Medium',q:'Bitwise operation to check if integer N is a power of 2?',opts:['(N & (N - 1)) == 0','N % 2 == 0','(N | (N - 1)) == 0','N ^ 2 == 0'],ans:0,exp:'A power of 2 has only 1 set bit. N & (N - 1) unsets the rightmost set bit, leaving 0.'},
+    {id:'ms2',year:'Microsoft 2024',cat:'Data Structures',diff:'Medium',q:'Find Lowest Common Ancestor (LCA) in a BST for values p and q. Condition to go left?',opts:['p < root.val and q < root.val','p > root.val and q > root.val','p == root.val','p + q < root.val'],ans:0,exp:'In a BST, if both p and q are smaller than current root value, LCA must lie in the left subtree.'},
+    {id:'ms3',year:'Microsoft 2023',cat:'System Design',diff:'Hard',q:'Which protocol provides full-duplex persistent communication for real-time apps?',opts:['HTTP/1.1','WebSocket','REST','GraphQL'],ans:1,exp:'WebSockets establish a persistent, low-latency, full-duplex TCP connection.'},
+  ],
+  Google:[
+    {id:'goog1',year:'Google STEP 2024',cat:'Coding',diff:'Hard',q:'Time complexity of finding Median of Two Sorted Arrays of sizes M and N?',opts:['O(M + N)','O(log(min(M, N)))','O(M * N)','O(1)'],ans:1,exp:'Binary search on smaller array partitions both arrays into equal halves in O(log(min(M,N))) time.'},
+    {id:'goog2',year:'Google 2024',cat:'Data Structures',diff:'Hard',q:'Which data structure efficiently supports Prefix Search / Auto-complete?',opts:['HashTable','Trie (Prefix Tree)','Heap','Graph'],ans:1,exp:'Trie stores characters along nodes, allowing O(L) time prefix lookup where L is word length.'},
+    {id:'goog3',year:'Google 2024',cat:'Aptitude',diff:'Hard',q:'Shortest path algorithm for graph with NON-NEGATIVE edge weights?',opts:['Bellman-Ford','Dijkstra Algorithm','Floyd-Warshall','Kruskal'],ans:1,exp:'Dijkstra finds shortest paths in O((V+E)logV) with non-negative edge weights.'},
+  ],
+  Accenture:[
+    {id:'acc1',year:'Accenture ASE 2024',cat:'Coding',diff:'Easy',q:'Single non-repeating number in array where every other element appears twice. Best operator?',opts:['Bitwise AND (&)','Bitwise XOR (^)','Bitwise OR (|)','Modulo (%)'],ans:1,exp:'XORing a number with itself returns 0 (A ^ A = 0). XORing all elements leaves the single non-repeating element.'},
+    {id:'acc2',year:'Accenture 2024',cat:'Aptitude',diff:'Easy',q:'In how many ways can 5 distinct books be arranged on a shelf?',opts:['25','120','60','24'],ans:1,exp:'Number of permutations = 5! = 5 × 4 × 3 × 2 × 1 = 120.'},
+    {id:'acc3',year:'Accenture 2024',cat:'Reasoning',diff:'Medium',q:'Find missing term: A, C, F, J, O, ?',opts:['U','T','V','W'],ans:0,exp:'Letter differences increase by +1: A(+2)C(+3)F(+4)J(+5)O(+6)U. Result: U.'},
+  ]
 };
-['Wipro','Microsoft','Google','Accenture'].forEach(c => QUIZ_DB[c] = QUIZ_DB.TCS.map(q => ({...q,year:`${c} 2024`})));
 
 // ─── LEARNING PATH DATA ────────────────────
 const LP = [
@@ -601,13 +623,7 @@ function saveProfile(){
   setTimeout(()=>showPage('match'),1200);
 }
 
-function loadDemoProfile(){
-  state.profile=DEFAULT;state.skills=[...DEFAULT.skills];state.certs=[...DEFAULT.certs];
-  document.getElementById('profileBadge').style.display='flex';
-  document.getElementById('profileName').textContent='Arjun S.';
-  showToast('Demo profile loaded! Exploring all 5 features...','🎭');
-  setTimeout(()=>showPage('match'),800);
-}
+
 
 // ─── JOB MATCH (ROLE-CENTRIC) ─────────────────
 let matchInit=false, currentDomain='All', selectedRole=null;
@@ -729,11 +745,45 @@ function initQuizPage(){
   drawQBar();
 }
 
+// ─── DYNAMIC VARIATION GENERATOR ─────────────
+function generateDynamicVariation(q, vIndex){
+  const copy = JSON.parse(JSON.stringify(q));
+  copy.id = q.id + '_var_' + vIndex;
+  
+  // Numerical Aptitude variation pattern (e.g. train speed / pipe fill / worker days)
+  if(q.q.includes('train 125 m long')){
+    const distances = [150, 180, 200, 250];
+    const times = [6, 9, 10, 12];
+    const dist = distances[vIndex % distances.length];
+    const time = times[vIndex % times.length];
+    const speedMs = dist / time;
+    const speedKmh = Math.round(speedMs * 3.6);
+    copy.q = `A train ${dist} m long passes a pole in ${time} seconds. Speed in km/hr?`;
+    copy.opts = [`${speedKmh - 18} km/hr`, `${speedKmh} km/hr`, `${speedKmh + 18} km/hr`, `${speedKmh + 36} km/hr`].sort(()=>Math.random() - 0.5);
+    copy.ans = copy.opts.indexOf(`${speedKmh} km/hr`);
+    copy.exp = `Speed = ${dist}/${time} = ${speedMs} m/s. Convert to km/hr: ${speedMs} × (18/5) = ${speedKmh} km/hr.`;
+  } else if(q.q.includes('workers complete a job')){
+    const workers = [6, 10, 15, 20];
+    const days = [10, 15, 18, 24];
+    const w1 = workers[vIndex % workers.length];
+    const d1 = days[vIndex % days.length];
+    const w2 = w1 + 5;
+    const targetDays = Math.round((w1 * d1) / w2);
+    copy.q = `${w1} workers complete a job in ${d1} days. How many days for ${w2} workers at the same rate?`;
+    copy.opts = [`${targetDays} days`, `${targetDays + 4} days`, `${targetDays - 2} days`, `${targetDays + 8} days`].sort(()=>Math.random() - 0.5);
+    copy.ans = copy.opts.indexOf(`${targetDays} days`);
+    copy.exp = `Total work = ${w1} × ${d1} = ${w1 * d1} worker-days. With ${w2} workers: ${w1 * d1} ÷ ${w2} ≈ ${targetDays} days.`;
+  }
+  return copy;
+}
+
 function loadQuiz(){
   const co=document.getElementById('quizCompany')?.value||'TCS';
   const cat=document.getElementById('quizCategory')?.value||'all';
   const sizeInput = parseInt(document.getElementById('quizCount')?.value) || 5;
   const size = Math.max(5, Math.min(15, sizeInput)); // Clamp 5-15
+  
+  if(!state.seenQuestions) state.seenQuestions = new Set();
   
   let baseData = QUIZ_DB[co] || QUIZ_DB.TCS;
   
@@ -742,19 +792,47 @@ function loadQuiz(){
     baseData = baseData.filter(q => q.cat.toLowerCase() === cat.toLowerCase());
   }
   
-  // Slice to selected count
-  state.quizData = baseData.slice(0, size);
-  
-  // If we don't have enough questions for category, fallback
-  if(state.quizData.length === 0){
-    state.quizData = (QUIZ_DB[co] || QUIZ_DB.TCS).slice(0, size);
-    showToast('No questions in this category, loading default set.','⚠️');
+  // Fallback to full company dataset if category is empty
+  if(baseData.length === 0){
+    baseData = QUIZ_DB[co] || QUIZ_DB.TCS;
+    showToast('No static questions in category, loading full set.','⚠️');
   }
-  
-  state.currentQuestion=0;
-  state.quizAnswers={};
-  state.quizCorrect=0;
-  qSess={c:0, w:0};
+
+  // Fisher-Yates Random Shuffle
+  let pool = [...baseData];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  // Separate unseen questions from seen questions to prevent repetition
+  let unseen = pool.filter(q => !state.seenQuestions.has(q.id));
+  if (unseen.length < size) {
+    // Reset seen set if pool exhausted
+    state.seenQuestions.clear();
+    unseen = pool;
+  }
+
+  // Generate dynamic variations if size is larger than pool
+  let selected = [];
+  let varIdx = 1;
+  while (selected.length < size) {
+    if (unseen.length > 0) {
+      const q = unseen.pop();
+      state.seenQuestions.add(q.id);
+      selected.push(q);
+    } else {
+      // Dynamic pattern variation
+      const baseQ = pool[selected.length % pool.length];
+      selected.push(generateDynamicVariation(baseQ, varIdx++));
+    }
+  }
+
+  state.quizData = selected;
+  state.currentQuestion = 0;
+  state.quizAnswers = {};
+  state.quizCorrect = 0;
+  qSess = {c:0, w:0};
   
   // Hide weak area alert at start of new quiz
   document.getElementById('weakAreaAlert').style.display = 'none';
