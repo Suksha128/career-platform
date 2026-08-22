@@ -1044,6 +1044,7 @@ function loadQuiz(){
   updateQStats();
   renderQ();
   updateQBarMax(state.quizData.length);
+  showToast(`Quiz loaded: ${state.quizData.length} questions ready!`, '🎯');
 }
 
 function renderQ(){
@@ -1080,10 +1081,10 @@ function answerQ(i){
   if(i===q.ans){
     state.quizCorrect++;
     qSess.c++;
-    showToast('Correct! Well done! 🎯','✅');
+    showToast('Correct! Well done!','✅');
   } else {
     qSess.w++;
-    showToast('Not quite — read explanation below! 📖','❌');
+    showToast('Not quite — read explanation below!','❌');
   }
   
   updateQStats();
@@ -1094,6 +1095,15 @@ function answerQ(i){
   const totalAnswers = Object.keys(state.quizAnswers).length;
   if(totalAnswers >= state.quizData.length){
     detectWeakCategory();
+  } else {
+    // Auto-advance to next question after 1.5s
+    setTimeout(()=>{
+      if(state.currentQuestion < state.quizData.length - 1){
+        state.currentQuestion++;
+        renderQ();
+        updateQStats();
+      }
+    }, 1500);
   }
 }
 
