@@ -1219,6 +1219,18 @@ function initQuizPage(){
 
 // ─── DYNAMIC VARIATION GENERATOR ─────────────
 function generateDynamicVariation(q, vIndex){
+  if(!q) {
+    return {
+      id: 'fallback_var_' + vIndex,
+      year: 'General 2024',
+      cat: 'Aptitude',
+      diff: 'Easy',
+      q: 'Which data structure is typically used for FIFO (First In First Out) operations?',
+      opts: ['Queue', 'Stack', 'Tree', 'Graph'],
+      ans: 0,
+      exp: 'A Queue follows FIFO (First In, First Out).'
+    };
+  }
   const copy = JSON.parse(JSON.stringify(q));
   copy.id = q.id + '_var_' + vIndex;
   
@@ -1392,7 +1404,7 @@ function updateQStats(){
   const answered=Object.keys(state.quizAnswers).length;
   const total=state.quizData.length;
   document.getElementById('quizScore').textContent=state.quizCorrect+' / '+total;
-  document.getElementById('quizQNum').textContent=(state.currentQuestion+1)+' / '+total;
+  document.getElementById('quizQNum').textContent=(state.currentQuestion+1)+' of '+total;
   document.getElementById('quizAccuracy').textContent=answered>0?Math.round(state.quizCorrect/answered*100)+'%':'—';
   // Status: Not Started → Answering (n/total) → Complete
   if(answered===0) document.getElementById('quizStatus').textContent='Not Started';
