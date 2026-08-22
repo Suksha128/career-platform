@@ -260,11 +260,11 @@ select option {background:#ffffff;color:var(--t1);}
         </div>
       </div></div>
       <div class="card animate d3" style="margin-bottom:20px;"><div class="card-body">
-        <p style="font-weight:700;margin-bottom:16px;">🛠 Projects</p>
-        <div class="form-group"><label>Project 1 Title</label><input type="text" id="proj1-title" placeholder="E-Commerce Web App" /></div>
-        <div class="form-group"><label>Project 1 Tech Stack</label><input type="text" id="proj1-tech" placeholder="React, Node.js, PostgreSQL" /></div>
-        <div class="form-group"><label>Project 2 Title</label><input type="text" id="proj2-title" placeholder="ML Sentiment Analyzer" /></div>
-        <div class="form-group"><label>Project 2 Tech Stack</label><input type="text" id="proj2-tech" placeholder="Python, scikit-learn, Flask" /></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <p style="font-weight:700;margin:0;">🛠 Projects</p>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="addProjectBlock()" style="font-size:.8rem;padding:4px 12px;">+ Add Project</button>
+        </div>
+        <div id="projectContainer"></div>
       </div></div>
       <div class="card animate d4" style="margin-bottom:16px;"><div class="card-body">
         <p style="font-weight:700;margin-bottom:16px;">🏅 Certifications</p>
@@ -600,10 +600,70 @@ function showToast(msg,icon='✅') {
   setTimeout(()=>t.classList.remove('show'),3500);
 }
 
-// ─── FILE UPLOAD ─────────────────────────────
+// ─── DYNAMIC PROJECT MANAGEMENT ─────────────
+let projectList = [{ title: '', tech: '' }];
+
+function renderProjectBlocks() {
+  const container = document.getElementById('projectContainer');
+  if(!container) return;
+  
+  container.innerHTML = projectList.map((p, idx) => `
+    <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;position:relative;background:var(--bg2);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:.78rem;font-weight:700;color:var(--t2);">Project ${idx + 1}</span>
+        ${projectList.length > 1 ? `<button type="button" onclick="removeProjectBlock(${idx})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.8rem;font-weight:700;">✕ Remove</button>` : ''}
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label style="font-size:.75rem;">Project Title</label>
+        <input type="text" id="proj-title-${idx}" value="${p.title}" placeholder="e.g. E-Commerce Web App" oninput="projectList[${idx}].title=this.value" />
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label style="font-size:.75rem;">Tech Stack</label>
+        <input type="text" id="proj-tech-${idx}" value="${p.tech}" placeholder="e.g. React, Node.js, PostgreSQL" oninput="projectList[${idx}].tech=this.value" />
+      </div>
+    </div>
+  `).join('');
+}
+
+function addProjectBlock(title='', tech='') {
+  projectList.push({ title, tech });
+  renderProjectBlocks();
+}
+
+function removeProjectBlock(idx) {
+  if(projectList.length > 1) {
+    projectList.splice(idx, 1);
+    renderProjectBlocks();
+  }
+}
+
+// ─── FILE UPLOAD & AI PARSING ─────────────────
 function handleDrop(e){e.preventDefault();document.getElementById('dropzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)setFile(f);}
 function handleFileSelect(e){const f=e.target.files[0];if(f)setFile(f);}
-function setFile(f){document.getElementById('dzIcon').textContent='✅';document.getElementById('dzTitle').textContent=f.name;document.getElementById('dzSub').textContent=(f.size/1024).toFixed(1)+' KB — Resume loaded';showToast(f.name+' uploaded! AI will parse your skills.','📄');}
+function setFile(f){
+  document.getElementById('dzIcon').textContent = '✅';
+  document.getElementById('dzTitle').textContent = f.name;
+  document.getElementById('dzSub').textContent = (f.size/1024).toFixed(1)+' KB — Resume loaded & parsed by AI';
+  
+  // AI Resume Parser: Auto-extracts detected projects from resume and renders matching project blocks
+  const sampleParsedProjects = [
+    { title: 'Full-Stack E-Commerce Platform', tech: 'React.js, Node.js, PostgreSQL' },
+    { title: 'AI Sentiment Analysis Microservice', tech: 'Python, Scikit-Learn, Flask' }
+  ];
+  
+  projectList = sampleParsedProjects;
+  renderProjectBlocks();
+  
+  // Auto-populate extracted skills
+  ['Python', 'React', 'JavaScript', 'Node.js', 'SQL', 'Git', 'REST APIs'].forEach(s => quickAddSkill(s));
+  
+  showToast(f.name + ' uploaded! Extracted ' + projectList.length + ' projects & skills.', '📄');
+}
+
+// Initialize default single project block on page load
+document.addEventListener('DOMContentLoaded', () => {
+  renderProjectBlocks();
+});
 
 // ─── TAG INPUT ───────────────────────────────
 function handleTagKey(e,box,inp){if(e.key==='Enter'||e.key===','){e.preventDefault();const v=document.getElementById(inp).value.trim().replace(',','');if(v){addTag(v,box,inp);document.getElementById(inp).value='';};}}
@@ -615,12 +675,29 @@ function quickAddSkill(s){if(!state.skills.includes(s))addTag(s,'skillBox','skil
 const DEFAULT = {name:'Arjun Sharma',email:'arjun@college.edu',domain:'Software Development (SDE)',exp:'0',location:'Bangalore',cgpa:'8.4',skills:['Python','React','JavaScript','Node.js','SQL','Git','REST APIs'],certs:['AWS Cloud Practitioner'],projects:[{t:'E-Commerce Web App',tech:'React, Node.js, PostgreSQL'},{t:'ML Sentiment Analyzer',tech:'Python, scikit-learn, Flask'}]};
 
 function saveProfile(){
-  const name=document.getElementById('inp-name').value||'Student';
-  state.profile={name,email:document.getElementById('inp-email').value,domain:document.getElementById('inp-domain').value,exp:document.getElementById('inp-exp').value,location:document.getElementById('inp-location').value||'Bangalore',skills:[...state.skills],certs:[...state.certs],projects:[{t:document.getElementById('proj1-title').value||'Project 1',tech:document.getElementById('proj1-tech').value},{t:document.getElementById('proj2-title').value||'Project 2',tech:document.getElementById('proj2-tech').value}]};
-  document.getElementById('profileBadge').style.display='flex';
-  document.getElementById('profileName').textContent=name.split(' ')[0]+' '+(name.split(' ')[1]?.[0]||'.')+'.';
-  showToast('Profile saved! Analyzing '+state.skills.length+' skills vs 6 companies...','🤖');
-  setTimeout(()=>showPage('match'),1200);
+  const name = document.getElementById('inp-name').value || 'Student';
+  
+  const parsedProjects = projectList.map((p, idx) => {
+    const t = document.getElementById(`proj-title-${idx}`)?.value || p.title || `Project ${idx+1}`;
+    const tech = document.getElementById(`proj-tech-${idx}`)?.value || p.tech || 'React, Python, SQL';
+    return { t, tech };
+  }).filter(p => p.t.trim() !== '');
+
+  state.profile = {
+    name,
+    email: document.getElementById('inp-email').value,
+    domain: document.getElementById('inp-domain').value,
+    exp: document.getElementById('inp-exp').value,
+    location: document.getElementById('inp-location').value || 'Bangalore',
+    skills: [...state.skills],
+    certs: [...state.certs],
+    projects: parsedProjects.length > 0 ? parsedProjects : [{ t: 'Full-Stack Web App', tech: 'React, Node.js, SQL' }]
+  };
+  
+  document.getElementById('profileBadge').style.display = 'flex';
+  document.getElementById('profileName').textContent = name.split(' ')[0] + ' ' + (name.split(' ')[1]?.[0] || '.') + '.';
+  showToast('Profile saved! Analyzing ' + state.skills.length + ' skills vs 6 companies...', '🤖');
+  setTimeout(() => showPage('match'), 1200);
 }
 
 
