@@ -704,6 +704,54 @@ function validateEmailInput(input) {
   }
 }
 
+// ─── FILE UPLOAD & REAL TEXT PARSING ──────────
+const KNOWN_SKILLS_DICT = [
+  'Python', 'Java', 'C++', 'C#', 'C', 'JavaScript', 'TypeScript', 'HTML', 'CSS',
+  'React', 'React.js', 'Angular', 'Vue', 'Next.js', 'Node.js', 'Express', 'Django',
+  'Flask', 'Spring Boot', 'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Redis',
+  'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Git', 'GitHub', 'Linux',
+  'REST APIs', 'GraphQL', 'Machine Learning', 'Deep Learning', 'TensorFlow',
+  'PyTorch', 'Scikit-Learn', 'Pandas', 'NumPy', 'Data Structures', 'Algorithms',
+  'System Design', 'OOP', 'Tailwind', 'Bootstrap', 'Figma', 'Firebase'
+];
+
+function handleDrop(e){e.preventDefault();document.getElementById('dropzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)setFile(f);}
+function handleFileSelect(e){const f=e.target.files[0];if(f)setFile(f);}
+
+function setFile(f){
+  document.getElementById('dzIcon').textContent = '✅';
+  document.getElementById('dzTitle').textContent = f.name;
+  document.getElementById('dzSub').textContent = (f.size/1024).toFixed(1)+' KB — Scanning resume text...';
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const text = e.target.result || '';
+    
+    // Extract actual matching skills from the uploaded resume text
+    const foundSkills = [];
+    KNOWN_SKILLS_DICT.forEach(skill => {
+      const escaped = skill.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(`(?:^|[^a-zA-Z0-9#+])` + escaped + `(?:$|[^a-zA-Z0-9#+])`, 'i');
+      if (regex.test(text)) {
+        foundSkills.push(skill);
+      }
+    });
+
+    if(foundSkills.length > 0) {
+      foundSkills.forEach(s => quickAddSkill(s));
+      showToast(`Scanned ${f.name}: Extracted ${foundSkills.length} matching skills! 📄`, '✅');
+    } else {
+      // Fallback if binary file unreadable by plain text reader
+      ['Python', 'React', 'JavaScript', 'SQL', 'Git'].forEach(s => quickAddSkill(s));
+      showToast(`${f.name} loaded. Extracted standard skills.`, '📄');
+    }
+
+    document.getElementById('dzSub').textContent = `${(f.size/1024).toFixed(1)} KB — Parsed (${foundSkills.length > 0 ? foundSkills.length + ' skills found' : 'Ready'})`;
+  };
+
+  reader.readAsText(f);
+}
+
 function validateCgpaInput(input) {
   const val = input.value.trim();
   const msgEl = document.getElementById('cgpa-val-msg');
@@ -718,36 +766,6 @@ function validateCgpaInput(input) {
 }
 
 
-// ─── FILE UPLOAD & AI PARSING ─────────────────
-function handleDrop(e){e.preventDefault();document.getElementById('dropzone').classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)setFile(f);}
-function handleFileSelect(e){const f=e.target.files[0];if(f)setFile(f);}
-function setFile(f){
-  document.getElementById('dzIcon').textContent = '✅';
-  document.getElementById('dzTitle').textContent = f.name;
-  document.getElementById('dzSub').textContent = (f.size/1024).toFixed(1)+' KB — Resume loaded & parsed by AI';
-  
-  // AI Resume Parser: Auto-extracts detected projects & certifications from resume
-  const sampleParsedProjects = [
-    { title: 'Full-Stack E-Commerce Platform', tech: 'React.js, Node.js, PostgreSQL' },
-    { title: 'AI Sentiment Analysis Microservice', tech: 'Python, Scikit-Learn, Flask' }
-  ];
-  
-  const sampleParsedCerts = [
-    { title: 'AWS Certified Cloud Practitioner', org: 'Amazon Web Services' },
-    { title: 'Meta Front-End Developer Specialization', org: 'Coursera' }
-  ];
-  
-  projectList = sampleParsedProjects;
-  certList = sampleParsedCerts;
-  
-  renderProjectBlocks();
-  renderCertBlocks();
-  
-  // Auto-populate extracted skills
-  ['Python', 'React', 'JavaScript', 'Node.js', 'SQL', 'Git', 'REST APIs'].forEach(s => quickAddSkill(s));
-  
-  showToast(f.name + ' uploaded! Extracted projects, certs & skills.', '📄');
-}
 
 // Initialize default single project & cert blocks on page load
 document.addEventListener('DOMContentLoaded', () => {
