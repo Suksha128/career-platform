@@ -569,6 +569,9 @@ const QUIZ_DB = {
     {id:'tcs5',year:'TCS Digital 2023',cat:'Data Structures',diff:'Medium',q:'Time complexity of searching in a BALANCED Binary Search Tree?',opts:['O(n)','O(log n)','O(n log n)','O(1)'],ans:1,exp:'In a balanced BST, each comparison eliminates half the tree. Height = log(n), so search = O(log n).'},
     {id:'tcs6',year:'TCS NQT 2024',cat:'Aptitude',diff:'Medium',q:'Two pipes A and B fill a tank in 12 mins and 15 mins. If both open together, how long to fill?',opts:['6.67 mins','8 mins','10 mins','5.5 mins'],ans:0,exp:'Combined rate = (1/12 + 1/15) = (5+4)/60 = 9/60 = 3/20 tank/min. Time = 20/3 = 6.67 minutes.'},
     {id:'tcs7',year:'TCS Digital 2024',cat:'Coding',diff:'Hard',q:'Sum of primary diagonal elements in a square matrix A[N][N]?',opts:['for i: sum += A[i][i]','for i,j: sum += A[i][j]','for i: sum += A[i][N-i-1]','for i: sum += A[i][0]'],ans:0,exp:'Primary diagonal elements have equal row and column indices (i == j), requiring a single loop over A[i][i] in O(N) time.'},
+    {id:'tcs8',year:'TCS NQT 2024',cat:'Aptitude',diff:'Medium',q:'A sum doubles itself in 8 years at Simple Interest. What is the rate of interest per annum?',opts:['12.5%','10%','15%','8%'],ans:0,exp:'SI = Principal P. SI = (P * R * 8)/100 => P = (P * R * 8)/100 => R = 100/8 = 12.5%.'},
+    {id:'tcs9',year:'TCS Digital 2024',cat:'OOP',diff:'Medium',q:'Which C++ feature supports Compile-Time Polymorphism?',opts:['Function Overloading','Virtual Functions','Abstract Classes','Late Binding'],ans:0,exp:'Function and Operator Overloading resolve function signatures at compile time (Static Polymorphism).'},
+    {id:'tcs10',year:'TCS NQT 2023',cat:'SQL',diff:'Easy',q:'Which SQL command removes all records from a table without logging individual row deletions?',opts:['DELETE','TRUNCATE','DROP','REMOVE'],ans:1,exp:'TRUNCATE is a DDL command that quickly deallocates table pages and cannot be rolled back easily in some DBMS.'}
   ],
   Amazon:[
     {id:'amz1',year:'Amazon SDE-1 2024',cat:'Data Structures',diff:'Medium',q:'Find two numbers in an array that sum to a target. Most efficient time complexity?',opts:['O(n²) nested loop','O(n log n) sort','O(n) Hash Map single pass','O(n³) brute force'],ans:2,exp:"Hash map approach: iterate once, check if (target - current) exists in map. O(n) time, O(n) space. Classic Two Sum (LeetCode #1)."},
@@ -576,6 +579,11 @@ const QUIZ_DB = {
     {id:'amz3',year:'Amazon Intern 2024',cat:'System Design',diff:'Hard',q:"Since Dec 2020, what consistency model does Amazon S3 provide for GET/PUT?",opts:['Eventual consistency only','Strong read-after-write consistency','Weak consistency','No guarantees'],ans:1,exp:'Since Dec 2020, Amazon S3 provides strong read-after-write consistency for PUT and DELETE operations of objects.'},
     {id:'amz4',year:'Amazon SDE-1 2024',cat:'Coding',diff:'Medium',q:'Output of: def f(x, lst=[]): lst.append(x); return lst\nprint(f(1)); print(f(2))',opts:['[1] then [2]','[1] then [1, 2]','[1, 2] then [1, 2]','Error'],ans:1,exp:"Python mutable default argument trap! The default list [] is created ONCE and shared across calls. f(1) gives [1], then f(2) appends to same list giving [1, 2]."},
     {id:'amz5',year:'Amazon SDE-1 2024',cat:'Data Structures',diff:'Hard',q:'Data structure best suited for implementing an LRU Cache with O(1) get and put?',opts:['Array + Stack','HashMap + Doubly Linked List','Priority Queue + Tree','Binary Search Tree'],ans:1,exp:'HashMap gives O(1) key lookup; Doubly Linked List gives O(1) deletion and insertion at head/tail.'},
+    {id:'amz6',year:'Amazon SDE-1 2024',cat:'Coding',diff:'Hard',q:'Best algorithm to find the Shortest Path in a Weighted Graph with negative edge weights (no negative cycles)?',opts:['Dijkstra Algorithm','Bellman-Ford Algorithm','Floyd-Warshall','BFS'],ans:1,exp:'Bellman-Ford handles negative edge weights in O(V * E) time and detects negative cycles.'},
+    {id:'amz7',year:'Amazon SDE-1 2023',cat:'SQL',diff:'Medium',q:'Which Window Function calculates ranking without leaving gaps for tie scores (1, 2, 2, 3)?',opts:['RANK()','DENSE_RANK()','ROW_NUMBER()','NTILE()'],ans:1,exp:'DENSE_RANK() assigns consecutive rank numbers without leaving gaps when duplicate values occur.'},
+    {id:'amz8',year:'Amazon SDE-1 2024',cat:'System Design',diff:'Medium',q:'Which AWS service provides low-latency Content Delivery Network (CDN) edge caching?',opts:['Amazon S3','Amazon CloudFront','Amazon EC2','Amazon Route 53'],ans:1,exp:'CloudFront is AWS\'s global CDN that caches static and dynamic content at edge locations worldwide.'},
+    {id:'amz9',year:'Amazon SDE-1 2024',cat:'Data Structures',diff:'Medium',q:'Algorithm used to detect a cycle in a Singly Linked List in O(1) auxiliary space?',opts:['Floyd\'s Cycle-Finding Algorithm (Tortoise and Hare)','Dijkstra Algorithm','Kruskal Algorithm','Binary Search'],ans:0,exp:'Floyd\'s algorithm uses slow and fast pointers. If they meet, a cycle exists.'},
+    {id:'amz10',year:'Amazon SDE-1 2023',cat:'Aptitude',diff:'Medium',q:'A vendor sells an item at 20% profit. If cost price increases by 10% and selling price remains same, new profit %?',opts:['9.09%','10%','12%','15%'],ans:0,exp:'Let CP = 100, SP = 120. New CP = 110. Profit = 120 - 110 = 10. Profit % = (10/110)*100 = 9.09%.'}
   ],
   Infosys:[
     {id:'inf1',year:'Infosys InfyTQ 2024',cat:'Java',diff:'Medium',q:'Output of System.out.println(10 + 20 + "Hello" + 10 + 20)?',opts:['30Hello30','30Hello1020','1020Hello1020','Compile error'],ans:1,exp:"Java evaluates left-to-right: 10+20=30 (int), then 30+'Hello'='30Hello' (string concat), then +10='30Hello10', +20='30Hello1020'."},
@@ -583,27 +591,59 @@ const QUIZ_DB = {
     {id:'inf3',year:'Infosys 2023',cat:'Reasoning',diff:'Easy',q:'If CLOUD is coded as DMPVE (+1 shift), how is RAIN coded?',opts:['SBJO','TCJO','SBJP','SBIO'],ans:0,exp:"Each letter shifts +1: R→S, A→B, I→J, N→O = SBJO."},
     {id:'inf4',year:'Infosys InfyTQ 2024',cat:'SQL',diff:'Medium',q:'Which SQL statement combines rows from multiple tables based on a related column?',opts:['UNION','JOIN','MERGE','INTERSECT'],ans:1,exp:"JOIN combines rows from tables based on a related key column."},
     {id:'inf5',year:'Infosys 2024',cat:'Coding',diff:'Medium',q:'Check if a number is Palindrome in Python: n == int(str(n)[::-1]). Output for 12321?',opts:['True','False','None','Error'],ans:0,exp:'str(12321)[::-1] reverses string "12321" → "12321", int("12321") == 12321, returns True.'},
+    {id:'inf6',year:'Infosys 2024',cat:'Java',diff:'Easy',q:'Which keyword prevents a class from being inherited in Java?',opts:['static','final','abstract','private'],ans:1,exp:'A class declared with the final keyword in Java cannot be subclassed/extended.'},
+    {id:'inf7',year:'Infosys InfyTQ 2023',cat:'Data Structures',diff:'Medium',q:'Which traversal of a Binary Search Tree produces elements in Sorted Order?',opts:['Pre-order','In-order','Post-order','Level-order'],ans:1,exp:'In-order traversal (Left, Root, Right) of a BST visits nodes in strictly ascending order.'},
+    {id:'inf8',year:'Infosys 2024',cat:'Aptitude',diff:'Medium',q:'Average of 5 numbers is 27. If one number is excluded, average becomes 25. Excluded number?',opts:['35','30','28','40'],ans:0,exp:'Sum of 5 numbers = 5 * 27 = 135. Sum of 4 numbers = 4 * 25 = 100. Excluded number = 135 - 100 = 35.'},
+    {id:'inf9',year:'Infosys 2023',cat:'Coding',diff:'Easy',q:'What is the complexity of accessing an array element by index in Java?',opts:['O(n)','O(1)','O(log n)','O(n²)'],ans:1,exp:'Array index access uses contiguous memory address offset computation in O(1) constant time.'},
+    {id:'inf10',year:'Infosys 2024',cat:'SQL',diff:'Easy',q:'Which SQL constraint ensures all values in a column are distinct?',opts:['FOREIGN KEY','UNIQUE','CHECK','DEFAULT'],ans:1,exp:'The UNIQUE constraint enforces uniqueness across non-null rows in a database table.'}
   ],
   Wipro:[
     {id:'wip1',year:'Wipro Elite 2024',cat:'Aptitude',diff:'Easy',q:'Principal ₹5000 at 10% Simple Interest per annum for 3 years. Total Interest?',opts:['₹1200','₹1500','₹1800','₹2000'],ans:1,exp:'SI = (P × R × T) / 100 = (5000 × 10 × 3) / 100 = ₹1500.'},
     {id:'wip2',year:'Wipro NLTH 2024',cat:'Coding',diff:'Medium',q:'In C, if int *p points to integer 5, what does (*p)++ do?',opts:['Increments the address in p','Increments the integer value pointed by p','Compile error','Decrements value'],ans:1,exp:'(*p)++ dereferences pointer p and increments the value stored at that memory location.'},
     {id:'wip3',year:'Wipro 2024',cat:'Reasoning',diff:'Easy',q:'Complete series: 3, 7, 15, 31, ?',opts:['63','45','55','60'],ans:0,exp:'Pattern: (n × 2) + 1. 3×2+1=7, 7×2+1=15, 15×2+1=31, 31×2+1=63.'},
     {id:'wip4',year:'Wipro Elite 2023',cat:'Data Structures',diff:'Easy',q:'Which Data Structure follows LIFO (Last In First Out)?',opts:['Queue','Stack','LinkedList','Tree'],ans:1,exp:'Stack follows LIFO (Last In, First Out). Queue follows FIFO.'},
+    {id:'wip5',year:'Wipro 2024',cat:'SQL',diff:'Easy',q:'Which SQL keyword sorts the result set in descending order?',opts:['ORDER BY col ASC','ORDER BY col DESC','GROUP BY col DESC','SORT DESC'],ans:1,exp:'ORDER BY column_name DESC sorts query results in descending order.'},
+    {id:'wip6',year:'Wipro NLTH 2024',cat:'Aptitude',diff:'Easy',q:'Ratio of ages of A and B is 4:5. Sum of their ages is 36. Age of A?',opts:['16','20','18','15'],ans:0,exp:'Sum parts = 4 + 5 = 9. Value of 1 part = 36/9 = 4. Age of A = 4 * 4 = 16.'},
+    {id:'wip7',year:'Wipro Elite 2024',cat:'Coding',diff:'Easy',q:'Which function in C is used to dynamically allocate memory?',opts:['malloc()','alloc()','create()','new()'],ans:0,exp:'malloc() allocates uninitialized memory blocks on heap in C.'},
+    {id:'wip8',year:'Wipro 2023',cat:'OOP',diff:'Easy',q:'Mechanism of hiding internal details and showing only functionality is called?',opts:['Inheritance','Encapsulation','Abstraction','Polymorphism'],ans:2,exp:'Abstraction hides internal complexity and shows only essential operational features.'},
+    {id:'wip9',year:'Wipro 2024',cat:'Reasoning',diff:'Medium',q:'If A is brother of B, B is sister of C, C is father of D, how is A related to D?',opts:['Uncle','Father','Brother','Grandfather'],ans:0,exp:'A is brother of C (father of D), so A is D\'s paternal uncle.'},
+    {id:'wip10',year:'Wipro NLTH 2024',cat:'Data Structures',diff:'Medium',q:'Maximum number of nodes in a Binary Tree of height H (root height 0)?',opts:['2^(H+1) - 1','2^H','2H','2^(H-1)'],ans:0,exp:'For height H (0-indexed), max nodes = 2^0 + 2^1 + ... + 2^H = 2^(H+1) - 1.'}
   ],
   Microsoft:[
     {id:'ms1',year:'Microsoft SDE-1 2024',cat:'Coding',diff:'Medium',q:'Bitwise operation to check if integer N is a power of 2?',opts:['(N & (N - 1)) == 0','N % 2 == 0','(N | (N - 1)) == 0','N ^ 2 == 0'],ans:0,exp:'A power of 2 has only 1 set bit. N & (N - 1) unsets the rightmost set bit, leaving 0.'},
     {id:'ms2',year:'Microsoft 2024',cat:'Data Structures',diff:'Medium',q:'Find Lowest Common Ancestor (LCA) in a BST for values p and q. Condition to go left?',opts:['p < root.val and q < root.val','p > root.val and q > root.val','p == root.val','p + q < root.val'],ans:0,exp:'In a BST, if both p and q are smaller than current root value, LCA must lie in the left subtree.'},
     {id:'ms3',year:'Microsoft 2023',cat:'System Design',diff:'Hard',q:'Which protocol provides full-duplex persistent communication for real-time apps?',opts:['HTTP/1.1','WebSocket','REST','GraphQL'],ans:1,exp:'WebSockets establish a persistent, low-latency, full-duplex TCP connection.'},
+    {id:'ms4',year:'Microsoft SDE-1 2024',cat:'Coding',diff:'Medium',q:'Find longest substring without repeating characters. Optimal algorithm time complexity?',opts:['O(n²)','O(n) Sliding Window + Set','O(n log n)','O(2^n)'],ans:1,exp:'Sliding Window with 2 pointers and Hash Set achieves linear O(n) time complexity.'},
+    {id:'ms5',year:'Microsoft 2024',cat:'Data Structures',diff:'Hard',q:'Time complexity to merge K sorted linked lists of total N elements using Min-Heap?',opts:['O(N log K)','O(N K)','O(N log N)','O(K log K)'],ans:0,exp:'Inserting nodes into Min-Heap of size K takes O(log K) per node. Total N nodes => O(N log K).'},
+    {id:'ms6',year:'Microsoft 2023',cat:'SQL',diff:'Medium',q:'Which SQL statement prevents Dirty Reads by locking modified uncommitted data?',opts:['READ UNCOMMITTED','READ COMMITTED','SERIALIZABLE','REPEATABLE READ'],ans:1,exp:'READ COMMITTED prevents dirty reads by ensuring queries read only committed data.'},
+    {id:'ms7',year:'Microsoft 2024',cat:'System Design',diff:'Medium',q:'Which Azure service provides Serverless Function Execution?',opts:['Azure Functions','Azure VMs','Azure Blob Storage','Azure Cosmos DB'],ans:0,exp:'Azure Functions is Microsoft\'s event-driven serverless compute service.'},
+    {id:'ms8',year:'Microsoft SDE-1 2024',cat:'OOP',diff:'Medium',q:'Keyword in C# to prevent a class method from being overridden in derived classes?',opts:['sealed','final','static','abstract'],ans:0,exp:'In C#, sealed keyword prevents further overriding of a virtual method in derived classes.'},
+    {id:'ms9',year:'Microsoft 2023',cat:'Coding',diff:'Hard',q:'Serialize and Deserialize a Binary Tree. Which traversal combination uniquely reconstructs a GENERAL Binary Tree (without null markers)?',opts:['Pre-order + In-order','Pre-order + Post-order','In-order only','Level-order only'],ans:0,exp:'Pre-order (or Post-order) combined with In-order uniquely reconstructs any binary tree.'},
+    {id:'ms10',year:'Microsoft 2024',cat:'Aptitude',diff:'Medium',q:'Probability of getting a sum of 7 when rolling two fair 6-sided dice?',opts:['1/6','1/12','5/36','1/36'],ans:0,exp:'Favorable pairs for sum 7: (1,6),(2,5),(3,4),(4,3),(5,2),(6,1) = 6 pairs. Total outcomes = 36. Probability = 6/36 = 1/6.'}
   ],
   Google:[
     {id:'goog1',year:'Google STEP 2024',cat:'Coding',diff:'Hard',q:'Time complexity of finding Median of Two Sorted Arrays of sizes M and N?',opts:['O(M + N)','O(log(min(M, N)))','O(M * N)','O(1)'],ans:1,exp:'Binary search on smaller array partitions both arrays into equal halves in O(log(min(M,N))) time.'},
     {id:'goog2',year:'Google 2024',cat:'Data Structures',diff:'Hard',q:'Which data structure efficiently supports Prefix Search / Auto-complete?',opts:['HashTable','Trie (Prefix Tree)','Heap','Graph'],ans:1,exp:'Trie stores characters along nodes, allowing O(L) time prefix lookup where L is word length.'},
     {id:'goog3',year:'Google 2024',cat:'Aptitude',diff:'Hard',q:'Shortest path algorithm for graph with NON-NEGATIVE edge weights?',opts:['Bellman-Ford','Dijkstra Algorithm','Floyd-Warshall','Kruskal'],ans:1,exp:'Dijkstra finds shortest paths in O((V+E)logV) with non-negative edge weights.'},
+    {id:'goog4',year:'Google SDE-1 2024',cat:'Coding',diff:'Hard',q:'Trapping Rain Water problem (LeetCode #42). Optimal space complexity using 2-pointer approach?',opts:['O(n)','O(1)','O(log n)','O(n²)'],ans:1,exp:'Two pointer approach tracks left_max and right_max in O(n) time and O(1) auxiliary space.'},
+    {id:'goog5',year:'Google 2024',cat:'Data Structures',diff:'Hard',q:'What is the amortized time complexity per operation for a Disjoint Set Union (DSU) with Path Compression and Rank?',opts:['O(1)','O(α(N)) inverse Ackermann','O(log N)','O(N)'],ans:1,exp:'DSU with path compression & rank optimization operates in near-constant O(α(N)) time.'},
+    {id:'goog6',year:'Google 2023',cat:'System Design',diff:'Hard',q:'Which Distributed System consensus protocol is used by Google Chubby / Spanner?',opts:['Paxos / Raft','Two-Phase Commit','Gossip Protocol','Consistent Hashing'],ans:0,exp:'Google Chubby uses Paxos consensus to coordinate distributed locks and configuration metadata.'},
+    {id:'goog7',year:'Google 2024',cat:'Coding',diff:'Hard',q:'Minimum Number of Refueling Stops (Dynamic Programming / Priority Queue). Best time complexity?',opts:['O(N log N) with Max-Heap','O(2^N) recursion','O(N³) DP','O(N²) brute force'],ans:0,exp:'Max-Heap greedy strategy picks highest fuel station when reachable distance drops, in O(N log N) time.'},
+    {id:'goog8',year:'Google 2024',cat:'SQL',diff:'Hard',q:'Which BigQuery feature allows scanning massive datasets using partitioned tables without full table scans?',opts:['Partitioning by DATE/TIMESTAMP','Clustering','Indexes','Materialized Views'],ans:0,exp:'Partitioning divides tables into segments based on date, allowing BigQuery to prune unneeded partitions.'},
+    {id:'goog9',year:'Google 2023',cat:'OOP',diff:'Medium',q:'In Python, how is multiple inheritance method resolution order (MRO) determined?',opts:['C3 Linearization Algorithm','Depth First Search','Breadth First Search','Random Order'],ans:0,exp:'Python uses the C3 Linearization algorithm to compute class MRO predictably.'},
+    {id:'goog10',year:'Google STEP 2024',cat:'Aptitude',diff:'Hard',q:'You have 8 balls, 1 is heavier. Minimum weighings on a balance scale to guarantee finding it?',opts:['2','3','4','1'],ans:0,exp:'Weigh 3 vs 3. If equal, weigh remaining 2. If unequal, weigh 1 vs 1 from heavier pan. Total = 2 weighings.'}
   ],
   Accenture:[
     {id:'acc1',year:'Accenture ASE 2024',cat:'Coding',diff:'Easy',q:'Single non-repeating number in array where every other element appears twice. Best operator?',opts:['Bitwise AND (&)','Bitwise XOR (^)','Bitwise OR (|)','Modulo (%)'],ans:1,exp:'XORing a number with itself returns 0 (A ^ A = 0). XORing all elements leaves the single non-repeating element.'},
     {id:'acc2',year:'Accenture 2024',cat:'Aptitude',diff:'Easy',q:'In how many ways can 5 distinct books be arranged on a shelf?',opts:['25','120','60','24'],ans:1,exp:'Number of permutations = 5! = 5 × 4 × 3 × 2 × 1 = 120.'},
     {id:'acc3',year:'Accenture 2024',cat:'Reasoning',diff:'Medium',q:'Find missing term: A, C, F, J, O, ?',opts:['U','T','V','W'],ans:0,exp:'Letter differences increase by +1: A(+2)C(+3)F(+4)J(+5)O(+6)U. Result: U.'},
+    {id:'acc4',year:'Accenture ASE 2024',cat:'SQL',diff:'Easy',q:'Which SQL command adds a new column to an existing table?',opts:['ALTER TABLE table_name ADD col_name datatype','UPDATE TABLE table_name ADD col_name','INSERT INTO table_name col_name','MODIFY TABLE ADD col_name'],ans:0,exp:'ALTER TABLE table_name ADD column_name datatype adds columns to existing schema.'},
+    {id:'acc5',year:'Accenture 2024',cat:'Coding',diff:'Medium',q:'Python: list(set([1, 2, 2, 3, 4, 4])). Does set guarantee order preservation?',opts:['No, sets are unordered collections','Yes, sets always preserve order','Only in Python 3.8+','Error'],ans:0,exp:'Python sets are unordered collections. Order preservation is not guaranteed when converting back to list.'},
+    {id:'acc6',year:'Accenture 2023',cat:'Aptitude',diff:'Easy',q:'Speed of stream is 2 km/hr. Speed of boat in still water is 8 km/hr. Downstream speed?',opts:['10 km/hr','6 km/hr','16 km/hr','4 km/hr'],ans:0,exp:'Downstream speed = Speed of boat + Speed of stream = 8 + 2 = 10 km/hr.'},
+    {id:'acc7',year:'Accenture 2024',cat:'OOP',diff:'Easy',q:'Function with same name in same class with different parameters is called?',opts:['Method Overloading','Method Overriding','Abstraction','Encapsulation'],ans:0,exp:'Method Overloading occurs within the same class when methods share a name but differ in parameters.'},
+    {id:'acc8',year:'Accenture 2024',cat:'Data Structures',diff:'Easy',q:'Which Data Structure is used for Breadth First Search (BFS) graph traversal?',opts:['Stack','Queue','Tree','Heap'],ans:1,exp:'BFS uses a Queue (FIFO) to explore nodes level-by-level.'},
+    {id:'acc9',year:'Accenture ASE 2024',cat:'Reasoning',diff:'Easy',q:'If 1st Jan 2024 was Monday, what day of the week was 31st Dec 2024 (2024 is leap year)?',opts:['Tuesday','Monday','Wednesday','Sunday'],ans:0,exp:'A leap year has 366 days = 52 weeks + 2 extra odd days. 1st Jan & 31st Dec of a leap year fall on consecutive days. Starts Mon => Ends Tue.'},
+    {id:'acc10',year:'Accenture 2024',cat:'Coding',diff:'Easy',q:'What is the time complexity of linear search in an unsorted array of size N?',opts:['O(N)','O(1)','O(log N)','O(N²)'],ans:0,exp:'Linear search scans each element sequentially up to N times in O(N) time.'}
   ]
 };
 
@@ -1237,12 +1277,11 @@ function loadQuiz(){
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
 
-  // Separate unseen questions from seen questions to prevent repetition
   let unseen = pool.filter(q => !state.seenQuestions.has(q.id));
   if (unseen.length < size) {
     // Reset seen set if pool exhausted
     state.seenQuestions.clear();
-    unseen = pool;
+    unseen = [...pool];
   }
 
   // Generate dynamic variations if size is larger than pool
@@ -1395,9 +1434,9 @@ function detectWeakCategory(){
 
 function startWeakPractice(){
   if(!detectedWeakArea) return;
-  // Load 5 questions directly filtering to that category
   document.getElementById('quizCategory').value = detectedWeakArea;
-  document.getElementById('quizCount').value = 5;
+  const currentCount = parseInt(document.getElementById('quizCount')?.value) || 10;
+  if(currentCount < 10) document.getElementById('quizCount').value = 10;
   loadQuiz();
   showToast(`Practice session started for ${detectedWeakArea}! 🚀`, '🔥');
 }
