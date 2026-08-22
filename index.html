@@ -399,9 +399,9 @@ select option {background:#ffffff;color:var(--t1);}
   <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
       <div style="flex:1;min-width:120px;"><label>Company</label><select id="quizCompany" onchange="loadQuiz()"><option>TCS</option><option>Amazon</option><option>Infosys</option><option>Wipro</option><option>Microsoft</option><option>Google</option><option>Accenture</option></select></div>
-      <div style="flex:1;min-width:130px;"><label>Role</label><select id="quizRole"><option>NQT / Smart Hire</option><option>SDE-1</option><option>Systems Engineer</option><option>Graduate Trainee</option></select></div>
-      <div style="flex:1;min-width:130px;"><label>Category</label><select id="quizCategory"><option value="all">All Topics</option><option>Aptitude</option><option>Coding</option><option>SQL</option><option>Data Structures</option><option>System Design</option><option>OOP</option></select></div>
-      <div style="flex:1;min-width:100px;"><label>Questions (5-15)</label><input type="number" id="quizCount" min="5" max="15" value="5" style="padding:11px 12px;"/></div>
+      <div style="flex:1;min-width:130px;"><label>Role</label><select id="quizRole" onchange="loadQuiz()"><option>NQT / Smart Hire</option><option>SDE-1</option><option>Systems Engineer</option><option>Graduate Trainee</option></select></div>
+      <div style="flex:1;min-width:130px;"><label>Category</label><select id="quizCategory" onchange="loadQuiz()"><option value="all">All Topics</option><option>Aptitude</option><option>Coding</option><option>SQL</option><option>Data Structures</option><option>System Design</option><option>OOP</option></select></div>
+      <div style="flex:1;min-width:110px;"><label>Questions Count</label><select id="quizCount" onchange="loadQuiz()"><option value="5" selected>5 Questions</option><option value="10">10 Questions</option><option value="15">15 Questions</option><option value="20">20 Questions</option><option value="25">25 Questions</option></select></div>
       <button class="btn btn-primary btn-sm" onclick="loadQuiz()">🔄 Start Quiz</button>
     </div>
   </div></div>
@@ -985,7 +985,7 @@ function loadQuiz(){
   const co=document.getElementById('quizCompany')?.value||'TCS';
   const cat=document.getElementById('quizCategory')?.value||'all';
   const sizeInput = parseInt(document.getElementById('quizCount')?.value) || 5;
-  const size = Math.max(5, Math.min(15, sizeInput)); // Clamp 5-15
+  const size = Math.max(5, Math.min(30, sizeInput)); // Clamp 5-30
   
   if(!state.seenQuestions) state.seenQuestions = new Set();
   
