@@ -507,25 +507,42 @@ select option {background:#ffffff;color:var(--t1);}
     <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:24px;margin-bottom:24px;" class="animate d1">
       
       <!-- LEFT COLUMN: PROBLEM STATEMENT & TEST CASES -->
-      <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
-        <div class="card-body">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-            <span class="badge b-cyan" id="codeProblemDiff">Easy</span>
-            <span class="badge b-amber" id="codeProblemCategory">Arrays &amp; Hashing</span>
-            <span class="badge b-purple" id="codeProblemCompany">TCS • Amazon</span>
-          </div>
+      <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;position:relative;">
+        <!-- Mask Overlay -->
+        <div id="codeProblemMask" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(20,18,24,0.95);backdrop-filter:blur(8px);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;border-radius:16px;text-align:center;">
+          <div style="font-size:2.5rem;margin-bottom:16px;">🔒</div>
+          <h4 style="margin:0 0 8px 0;font-family:'Outfit',sans-serif;color:var(--t1);">Coding Challenge Locked</h4>
+          <p style="font-size:.84rem;color:var(--t2);margin-bottom:20px;max-width:260px;">Select your topic/difficulty and click below to reveal the problem details and start the timer.</p>
+          <button class="btn btn-primary" onclick="revealCodingProblem()">🔓 Reveal Challenge</button>
+        </div>
 
-          <h3 style="margin:0 0 12px 0;font-family:'Outfit',sans-serif;font-size:1.25rem;" id="codeProblemTitle">Loading Problem...</h3>
-          
-          <div style="font-size:.9rem;line-height:1.6;color:var(--t1);margin-bottom:18px;" id="codeProblemDesc"></div>
+        <div class="card-body" style="display:flex;flex-direction:column;height:100%;">
+          <!-- Main Content (masked initially) -->
+          <div id="codeProblemMainContent" style="display:flex;flex-direction:column;height:100%;opacity:0.25;pointer-events:none;transition:all 0.3s ease;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+              <span class="badge b-cyan" id="codeProblemDiff">Easy</span>
+              <span class="badge b-amber" id="codeProblemCategory">Arrays &amp; Hashing</span>
+              <span class="badge b-purple" id="codeProblemCompany">TCS • Amazon</span>
+            </div>
 
-          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:18px;">
-            <div style="font-size:.78rem;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px;">Sample Test Cases &amp; IO:</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--t1);" id="codeProblemExamples"></div>
+            <h3 style="margin:0 0 12px 0;font-family:'Outfit',sans-serif;font-size:1.25rem;" id="codeProblemTitle">Loading Problem...</h3>
+            
+            <div style="font-size:.9rem;line-height:1.6;color:var(--t1);margin-bottom:18px;" id="codeProblemDesc"></div>
+
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:18px;">
+              <div style="font-size:.78rem;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px;">Sample Test Cases &amp; IO:</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--t1);" id="codeProblemExamples"></div>
+            </div>
+
+            <!-- Timer Card -->
+            <div style="background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:.8rem;color:var(--t2);font-weight:600;">⏳ Time Spent:</span>
+              <span id="codingTimerText" style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--cyan);font-size:.9rem;">00:00</span>
+            </div>
           </div>
 
           <!-- SOLUTION HINT ACCORDION -->
-          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:auto;">
+          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:auto;position:relative;z-index:11;">
             <button class="btn btn-ghost btn-sm" onclick="toggleCodingSolution()" style="width:100%;justify-content:space-between;">
               <span>💡 View Solution Approach &amp; Reference Code</span>
               <span id="solArrow">▼</span>
@@ -2519,6 +2536,9 @@ function initCodingSandbox() {
   }
 }
 
+let codingTimerInterval = null;
+let codingSeconds = 0;
+
 function filterCodingProblems() {
   const topic = document.getElementById('codeTopicFilter')?.value || 'all';
   const diff = document.getElementById('codeDiffFilter')?.value || 'all';
@@ -2539,9 +2559,10 @@ function filterCodingProblems() {
     return;
   }
 
-  select.innerHTML = filtered.map(p => {
+  // Anonymize the challenge titles in the dropdown selection list
+  select.innerHTML = filtered.map((p, idx) => {
     const isSolved = solved.includes(p.id);
-    return `<option value="${p.id}">${isSolved ? '✓ ' : ''}${p.title} (${p.diff})</option>`;
+    return `<option value="${p.id}">${isSolved ? '✓ ' : ''}Challenge #${idx + 1} (${p.diff})</option>`;
   }).join('');
 
   const activeTopicEl = document.getElementById('codingActiveTopic');
@@ -2566,7 +2587,6 @@ function pickRandomCodingProblem() {
     return;
   }
 
-  // Prefer unsolved problems if available
   const unsolved = filtered.filter(p => !solved.includes(p.id));
   const pool = unsolved.length > 0 ? unsolved : filtered;
   const picked = pool[Math.floor(Math.random() * pool.length)];
@@ -2575,7 +2595,7 @@ function pickRandomCodingProblem() {
   if (select) {
     select.value = picked.id;
     loadCodingProblem();
-    showToast(`Loaded Random Problem: ${picked.title}`, '🎲');
+    showToast(`Loaded a new Random Challenge!`, '🎲');
   }
 }
 
@@ -2605,6 +2625,51 @@ function loadCodingProblem() {
   document.getElementById('consoleStatusBadge').textContent = 'Ready to Run';
   document.getElementById('consoleStatusBadge').className = 'badge b-purple';
   document.getElementById('consoleOutput').innerHTML = 'Click "Run Sample Tests" or "Submit Code" to evaluate your solution against test cases.';
+
+  // Mask details on load
+  const mask = document.getElementById('codeProblemMask');
+  const content = document.getElementById('codeProblemMainContent');
+  const area = document.getElementById('codeEditorTextarea');
+  const solBox = document.getElementById('codingSolutionBox');
+
+  if (mask) mask.style.display = 'flex';
+  if (content) {
+    content.style.opacity = '0.15';
+    content.style.pointerEvents = 'none';
+  }
+  if (area) area.disabled = true;
+  if (solBox) solBox.style.display = 'none';
+  document.getElementById('solArrow').textContent = '▼';
+
+  // Reset Timer
+  clearInterval(codingTimerInterval);
+  codingSeconds = 0;
+  document.getElementById('codingTimerText').textContent = '00:00';
+}
+
+function revealCodingProblem() {
+  const mask = document.getElementById('codeProblemMask');
+  const content = document.getElementById('codeProblemMainContent');
+  const area = document.getElementById('codeEditorTextarea');
+
+  if (mask) mask.style.display = 'none';
+  if (content) {
+    content.style.opacity = '1';
+    content.style.pointerEvents = 'auto';
+  }
+  if (area) area.disabled = false;
+
+  // Start Session Timer
+  clearInterval(codingTimerInterval);
+  codingSeconds = 0;
+  codingTimerInterval = setInterval(() => {
+    codingSeconds++;
+    const mins = String(Math.floor(codingSeconds / 60)).padStart(2, '0');
+    const secs = String(codingSeconds % 60).padStart(2, '0');
+    document.getElementById('codingTimerText').textContent = `${mins}:${secs}`;
+  }, 1000);
+
+  showToast('Challenge revealed! Timer started.', '👁️');
 }
 
 function changeCodingLanguage() {
