@@ -980,6 +980,63 @@ select option {background:#ffffff;color:var(--t1);}
       </div>
     </div>
 
+
+
+    <!-- CONTROL CENTER & ACTIONS -->
+    <div class="card">
+      <div class="card-body">
+        <!-- SIMULATION ACTIVE HEADER -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.15rem;">🕹️ Incident Control Center</h3>
+          <span class="badge b-purple" id="gameTimerVal">00:00</span>
+        </div>
+
+        <!-- INCIDENT WARNING BANNER -->
+        <div id="gameIncidentBanner" style="background:#111827;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+          <div style="font-size:2.2rem;margin-bottom:8px;" id="gameIncidentEmoji">🟢</div>
+          <div style="font-weight:800;font-size:.95rem;color:var(--t1);" id="gameIncidentTitle">Systems Nominal</div>
+          <div style="font-size:.76rem;color:var(--t2);margin-top:4px;" id="gameIncidentDesc">No active incidents detected. Monitor log telemetry.</div>
+        </div>
+
+        <!-- INTERACTIVE QUICK ACTION CONTROLS -->
+        <div style="margin-bottom:20px;">
+          <p style="font-size:.75rem;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:10px;">⚡ On-Call Mitigation Commands:</p>
+          
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('rollback')">
+              🔄 <strong>Rollback Last Commit</strong> (Fix buggy deployments)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('scale')">
+              🎚️ <strong>Scale Up Replicas</strong> (Handle massive traffic spikes)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('kill_queries')">
+              🚫 <strong>Kill Slow Queries</strong> (Clear database deadlocks)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('restart_cache')">
+              ⚡ <strong>Restart Redis Cache</strong> (Fix connection timeouts)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('rate_limit')">
+              🛡️ <strong>Enable Rate Limiting</strong> (Stop DDoS/API floods)
+            </button>
+          </div>
+        </div>
+
+        <!-- PLAY CONTROLS -->
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-primary" style="flex:1;padding:12px;" onclick="startGameSimulation()" id="btnGameStart">🚀 Start Outage Simulation</button>
+          <button class="btn btn-ghost" style="padding:12px;display:none;" onclick="stopGameSimulation()" id="btnGameStop">⏹️ Stop</button>
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:.78rem;color:var(--t2);">
+          <span>🏆 High Score (Survivals): <strong id="gameHighScoreText">0s</strong></span>
+          <span>Last Score: <strong id="gameLastScoreText">0s</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- ═══ RESUME TAILOR ═══ -->
 <div id="page-resume" class="page">
   <div class="section-title animate">✏️ AI <span class="g-text">Resume Tailor</span></div>
@@ -1088,61 +1145,6 @@ E-Commerce Application (React, Node.js)
       </div>
     </div>
   </div></div>
-</div>
-
-
-    <!-- CONTROL CENTER & ACTIONS -->
-    <div class="card">
-      <div class="card-body">
-        <!-- SIMULATION ACTIVE HEADER -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-          <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.15rem;">🕹️ Incident Control Center</h3>
-          <span class="badge b-purple" id="gameTimerVal">00:00</span>
-        </div>
-
-        <!-- INCIDENT WARNING BANNER -->
-        <div id="gameIncidentBanner" style="background:#111827;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
-          <div style="font-size:2.2rem;margin-bottom:8px;" id="gameIncidentEmoji">🟢</div>
-          <div style="font-weight:800;font-size:.95rem;color:var(--t1);" id="gameIncidentTitle">Systems Nominal</div>
-          <div style="font-size:.76rem;color:var(--t2);margin-top:4px;" id="gameIncidentDesc">No active incidents detected. Monitor log telemetry.</div>
-        </div>
-
-        <!-- INTERACTIVE QUICK ACTION CONTROLS -->
-        <div style="margin-bottom:20px;">
-          <p style="font-size:.75rem;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:10px;">⚡ On-Call Mitigation Commands:</p>
-          
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('rollback')">
-              🔄 <strong>Rollback Last Commit</strong> (Fix buggy deployments)
-            </button>
-            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('scale')">
-              🎚️ <strong>Scale Up Replicas</strong> (Handle massive traffic spikes)
-            </button>
-            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('kill_queries')">
-              🚫 <strong>Kill Slow Queries</strong> (Clear database deadlocks)
-            </button>
-            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('restart_cache')">
-              ⚡ <strong>Restart Redis Cache</strong> (Fix connection timeouts)
-            </button>
-            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('rate_limit')">
-              🛡️ <strong>Enable Rate Limiting</strong> (Stop DDoS/API floods)
-            </button>
-          </div>
-        </div>
-
-        <!-- PLAY CONTROLS -->
-        <div style="display:flex;gap:12px;">
-          <button class="btn btn-primary" style="flex:1;padding:12px;" onclick="startGameSimulation()" id="btnGameStart">🚀 Start Outage Simulation</button>
-          <button class="btn btn-ghost" style="padding:12px;display:none;" onclick="stopGameSimulation()" id="btnGameStop">⏹️ Stop</button>
-        </div>
-
-        <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:.78rem;color:var(--t2);">
-          <span>🏆 High Score (Survivals): <strong id="gameHighScoreText">0s</strong></span>
-          <span>Last Score: <strong id="gameLastScoreText">0s</strong></span>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
