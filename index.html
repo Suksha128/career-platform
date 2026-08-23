@@ -432,6 +432,81 @@ select option {background:#ffffff;color:var(--t1);}
     <div class="card animate d4"><div class="card-body"><p style="font-weight:700;margin-bottom:14px;">🔑 ATS Keywords Injected</p><div id="atsKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div></div></div>
     <div class="card animate d4"><div class="card-body"><p style="font-weight:700;margin-bottom:14px;">💡 Formatting Tips</p><div id="tailorTips"></div></div></div>
   </div>
+
+  <!-- 📄 IN-PLACE RESUME ALTERER & FORMAT-PRESERVING KEYWORD INJECTOR -->
+  <div class="card animate d4" style="margin-top:24px;"><div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h3 style="font-size:1.1rem;font-weight:800;margin:0;font-family:'Outfit',sans-serif;">📄 In-Place Resume Content Alterer &amp; Keyword Injector</h3>
+        <p style="font-size:.82rem;color:var(--t2);margin-top:2px;">Modifies <strong>ONLY</strong> text content, STAR metrics &amp; keywords while preserving your original resume headers, bullet points &amp; layout formatting 100% intact.</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" onclick="loadSampleResumeForAlteration()">📄 Load Sample Resume</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadCandidateProfileResume()">👤 Load Profile Data</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:18px;background:var(--bg2);padding:14px;border-radius:12px;border:1px solid var(--border);">
+      <div style="flex:1;min-width:140px;">
+        <label style="font-size:.74rem;">Target Role Focus</label>
+        <select id="alterRoleSelect" onchange="suggestKeywordsForAlteration()">
+          <option value="SDE">Software Development Engineer (SDE-1)</option>
+          <option value="FullStack">Full Stack Developer (MERN/Java)</option>
+          <option value="AIML">AI / ML Engineer</option>
+          <option value="Frontend">Frontend Specialist (React/TS)</option>
+          <option value="Backend">Backend Engineer (Node/Spring)</option>
+          <option value="DevOps">DevOps &amp; Cloud Engineer</option>
+          <option value="DataAnalyst">Data Analyst / BI Engineer</option>
+        </select>
+      </div>
+      <div style="flex:2;min-width:220px;">
+        <label style="font-size:.74rem;">Custom Keywords to Inject (Comma Separated)</label>
+        <input type="text" id="alterKeywordInput" placeholder="e.g. Microservices, Docker, Kafka, AWS, CI/CD, Redis" />
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="alterResumeContentPreservingFormat()">✨ Alter Content &amp; Inject Keywords</button>
+    </div>
+
+    <!-- Side-by-Side Editor & Altered Output -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:.78rem;font-weight:700;color:var(--t2);text-transform:uppercase;">Input: Original Resume Text</span>
+          <span style="font-size:.72rem;color:var(--t3);" id="inputLineCount">0 Lines</span>
+        </div>
+        <textarea id="alterResumeInput" rows="16" placeholder="Paste your raw resume text here...
+
+Example:
+JOHN DOE
+Software Developer | john@example.com
+
+SUMMARY
+Passionate software developer with experience in building web applications.
+
+EXPERIENCE
+Software Engineer Intern - Tech Corp (2023 - Present)
+- Worked on backend APIs using Python and SQL.
+- Helped design database tables and fixed bugs.
+- Built user interface components for internal tools.
+
+PROJECTS
+E-Commerce Application (React, Node.js)
+- Made a shopping cart module and integrated payments." style="font-family:'Consolas','Monaco',monospace;font-size:.84rem;line-height:1.5;background:#ffffff;" oninput="updateAlterInputStats()"></textarea>
+      </div>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:.78rem;font-weight:700;color:var(--green);text-transform:uppercase;">Output: Format-Preserved Altered Resume</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" onclick="copyAlteredResumeText()" style="padding:3px 10px;font-size:.75rem;">📋 Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadAlteredResumeTxt()" style="padding:3px 10px;font-size:.75rem;">💾 Download (.txt)</button>
+          </div>
+        </div>
+        <div id="alterResumeOutput" style="min-height:360px;max-height:430px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:'Consolas','Monaco',monospace;font-size:.84rem;line-height:1.6;white-space:pre-wrap;color:var(--t1);">
+          <span style="color:var(--t3);font-style:italic;">Click "✨ Alter Content &amp; Inject Keywords" to view your format-preserved altered resume with injected STAR metrics &amp; ATS keywords...</span>
+        </div>
+      </div>
+    </div>
+  </div></div>
 </div>
 
 <!-- ═══ QUIZ ═══ -->
@@ -1870,6 +1945,283 @@ function tailorResume(){
     </div>`).join('');
   document.getElementById('atsKeywords').innerHTML=d.keywords.map(k=>'<span class="badge b-purple">🔑 '+k+'</span>').join('');
   document.getElementById('tailorTips').innerHTML=d.tips.map((t,i)=>`<div style="display:flex;gap:10px;margin-bottom:10px;font-size:.85rem;"><span style="color:var(--amber);flex-shrink:0;">${i+1}.</span><span>${t}</span></div>`).join('');
+}
+
+// ─── IN-PLACE RESUME CONTENT ALTERER ENGINE ───────
+let rawAlteredResumeText = '';
+
+const ROLE_KEYWORD_SUGGESTIONS = {
+  SDE: ['Data Structures', 'Algorithms', 'System Design', 'OOP', 'REST APIs', 'SQL', 'Git', 'Clean Code', 'JUnit'],
+  FullStack: ['MERN Stack', 'React.js', 'Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'TypeScript', 'Redux', 'RESTful APIs'],
+  AIML: ['Python', 'PyTorch', 'TensorFlow', 'Scikit-Learn', 'Pandas', 'NLP', 'Computer Vision', 'Model Training', 'MLOps'],
+  Frontend: ['React', 'TypeScript', 'Next.js', 'HTML5/CSS3', 'Tailwind CSS', 'Redux Toolkit', 'Web Vitals', 'Responsive UI'],
+  Backend: ['Java', 'Spring Boot', 'Microservices', 'PostgreSQL', 'Redis', 'Kafka', 'Docker', 'REST APIs', 'Unit Testing'],
+  DevOps: ['Docker', 'Kubernetes', 'AWS Architecture', 'Terraform', 'CI/CD Pipelines', 'Linux Administration', 'Prometheus', 'GitOps'],
+  DataAnalyst: ['SQL', 'Python', 'Power BI', 'Tableau', 'Pandas', 'Data Cleaning', 'Statistical Analysis', 'A/B Testing', 'ETL Pipelines']
+};
+
+function suggestKeywordsForAlteration() {
+  const roleKey = document.getElementById('alterRoleSelect')?.value || 'SDE';
+  const keywords = ROLE_KEYWORD_SUGGESTIONS[roleKey] || ROLE_KEYWORD_SUGGESTIONS.SDE;
+  const inputEl = document.getElementById('alterKeywordInput');
+  if (inputEl) {
+    inputEl.value = keywords.join(', ');
+  }
+}
+
+function updateAlterInputStats() {
+  const text = document.getElementById('alterResumeInput')?.value || '';
+  const lines = text.split('\n').length;
+  const countEl = document.getElementById('inputLineCount');
+  if (countEl) countEl.textContent = `${lines} Lines`;
+}
+
+function loadSampleResumeForAlteration() {
+  const sample = `ALEX MORGAN
+Senior Software Engineer | alex.morgan@email.com | (555) 019-2834 | San Francisco, CA
+
+PROFESSIONAL SUMMARY
+Passionate software developer with 3+ years of experience in building web applications, optimizing databases, and collaborating with cross-functional product teams.
+
+WORK EXPERIENCE
+Software Engineer | TechCorp Inc. (2022 - Present)
+- Worked on backend APIs using Python, PostgreSQL, and Node.js for client services.
+- Helped design database schemas and fixed critical bugs in order processing handlers.
+- Built web components for internal dashboard tools, improving user workflow.
+- Handled deployment scripts and assisted with server maintenance tasks.
+
+Software Engineer Intern | Innovate Labs (2021 - 2022)
+- Built user interfaces using React and JavaScript for customer portal applications.
+- Created unit tests for API endpoints to ensure system stability.
+- Collaborated with senior developers on microservice integration.
+
+PROJECTS
+E-Commerce Checkout Gateway (React, Node.js, PostgreSQL)
+- Made a shopping cart checkout module and integrated Stripe payment processing.
+- Reduced database query times and improved load speed for product catalog pages.
+
+TECHNICAL SKILLS
+Languages: Python, JavaScript, Java, SQL, HTML/CSS
+Frameworks: React, Node.js, Express, PostgreSQL, Git`;
+
+  const inputEl = document.getElementById('alterResumeInput');
+  if (inputEl) {
+    inputEl.value = sample;
+    updateAlterInputStats();
+  }
+  suggestKeywordsForAlteration();
+  showToast('Sample Resume loaded into editor!', '📄');
+}
+
+function loadCandidateProfileResume() {
+  const p = state.profile;
+  if (!p || (!p.name && (!p.skills || p.skills.length === 0))) {
+    showToast('No saved candidate profile found. Fill in your profile in the Profile tab first!', '⚠️');
+    loadSampleResumeForAlteration();
+    return;
+  }
+
+  const name = p.name || 'CANDIDATE NAME';
+  const email = p.email || 'candidate@email.com';
+  const location = p.location || 'India';
+  const domain = p.domain || 'Software Engineer';
+  
+  let formatted = `${name.toUpperCase()}\n${domain} | ${email} | ${location}\n\n`;
+  formatted += `PROFESSIONAL SUMMARY\n${p.summary || `Motivated ${domain} with experience in building scalable technical applications and mastering core engineering workflows.`}\n\n`;
+
+  formatted += `WORK EXPERIENCE\n`;
+  if (p.experience && p.experience.length > 0) {
+    p.experience.forEach(exp => {
+      formatted += `${exp.role || 'Software Engineer'} - ${exp.company || 'Tech Company'} (${exp.duration || '2023 - Present'})\n`;
+      formatted += `- Responsible for developing core application features and backend data pipelines.\n`;
+      formatted += `- Worked with cross-functional engineering teams to deliver release milestones.\n\n`;
+    });
+  } else {
+    formatted += `Software Engineering Project Developer (2023 - Present)\n`;
+    formatted += `- Developed web applications and implemented RESTful API endpoints.\n`;
+    formatted += `- Designed database schemas and optimized data queries for client modules.\n\n`;
+  }
+
+  formatted += `PROJECTS\n`;
+  const projects = (p.projects && p.projects.length > 0) ? p.projects : projectList;
+  projects.forEach(proj => {
+    if (proj.title) {
+      formatted += `${proj.title} (${proj.tech || 'React, Node.js'})\n`;
+      formatted += `- Built application module and implemented data storage handlers.\n`;
+      formatted += `- Tested and deployed solution, ensuring high uptime and performance.\n\n`;
+    }
+  });
+
+  formatted += `TECHNICAL SKILLS\n`;
+  const skills = (p.skills && p.skills.length > 0) ? p.skills : state.skills;
+  formatted += `Skills: ${skills.length > 0 ? skills.join(', ') : 'Python, Java, JavaScript, React, SQL, Git'}\n`;
+
+  const inputEl = document.getElementById('alterResumeInput');
+  if (inputEl) {
+    inputEl.value = formatted.trim();
+    updateAlterInputStats();
+  }
+  suggestKeywordsForAlteration();
+  showToast('Candidate Profile loaded into editor!', '👤');
+}
+
+function alterResumeContentPreservingFormat() {
+  const inputText = document.getElementById('alterResumeInput')?.value || '';
+  if (!inputText.trim()) {
+    showToast('Please paste or load resume text first!', '⚠️');
+    return;
+  }
+
+  const customKeywordsRaw = document.getElementById('alterKeywordInput')?.value || '';
+  const keywordsList = customKeywordsRaw.split(',').map(k => k.trim()).filter(k => k.length > 0);
+  
+  if (keywordsList.length === 0) {
+    keywordsList.push('Microservices', 'REST APIs', 'PostgreSQL', 'Docker', 'System Architecture', 'CI/CD');
+  }
+
+  const actionVerbUpgrades = {
+    'worked on': 'Engineered and scaled',
+    'helped': 'Spearheaded',
+    'built': 'Architected and deployed',
+    'made': 'Pioneered',
+    'handled': 'Orchestrated',
+    'responsible for': 'Took full ownership of',
+    'assisted with': 'Collaborated to optimize',
+    'fixed': 'Resolved critical lock contentions and',
+    'created': 'Designed and implemented'
+  };
+
+  const metricPhrases = [
+    'improving API response throughput by 38% under peak loads',
+    'reducing database query execution times from 420ms to 45ms',
+    'scaling platform architecture to support 25,000+ active users',
+    'increasing test coverage from 62% to 94%',
+    'reducing deployment pipeline build times by 45%',
+    'cutting memory overhead by 30% through caching optimizations'
+  ];
+
+  const lines = inputText.split('\n');
+  const alteredLines = [];
+  let keywordIdx = 0;
+  let metricIdx = 0;
+  let injectedCount = 0;
+
+  lines.forEach((line) => {
+    // Preserve blank lines completely
+    if (!line.trim()) {
+      alteredLines.push('');
+      return;
+    }
+
+    const trimmed = line.trim();
+    const isHeader = (trimmed === trimmed.toUpperCase() && trimmed.length > 3 && !trimmed.includes(':') && !trimmed.startsWith('-') && !trimmed.startsWith('•') && !trimmed.startsWith('*')) ||
+                     /^(SUMMARY|EXPERIENCE|WORK EXPERIENCE|PROJECTS|EDUCATION|TECHNICAL SKILLS|CERTIFICATIONS|SKILLS)/i.test(trimmed);
+
+    // Preserve headers intact
+    if (isHeader) {
+      alteredLines.push(line);
+      return;
+    }
+
+    // Preserve contact info lines intact
+    if (trimmed.includes('@') || trimmed.includes('|') || /^\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(trimmed)) {
+      alteredLines.push(line);
+      return;
+    }
+
+    // Format-preserving modification for Bullet Points (- , • , * or leading spaces)
+    const bulletMatch = line.match(/^(\s*[-•*]\s*)(.*)/);
+    if (bulletMatch) {
+      const prefix = bulletMatch[1]; // Preserves exact indentation and bullet symbol (- or •)
+      let body = bulletMatch[2];
+
+      // Upgrade weak action verbs
+      for (const [weak, strong] of Object.entries(actionVerbUpgrades)) {
+        const regex = new RegExp('\\b' + weak + '\\b', 'gi');
+        if (regex.test(body)) {
+          body = body.replace(regex, `<mark class="kw-hl">${strong}</mark>`);
+          injectedCount++;
+          break;
+        }
+      }
+
+      // Inject target keyword if not present
+      const targetKw = keywordsList[keywordIdx % keywordsList.length];
+      if (targetKw && !body.toLowerCase().includes(targetKw.toLowerCase())) {
+        body += `, leveraging <mark class="kw-hl">${targetKw}</mark>`;
+        keywordIdx++;
+        injectedCount++;
+      }
+
+      // Inject metric if line doesn't already contain numbers or percentages
+      if (!/\d+%|\d+k|\d+ms|\d+\+/.test(body)) {
+        const metric = metricPhrases[metricIdx % metricPhrases.length];
+        body += `, <mark class="kw-hl">${metric}</mark>`;
+        metricIdx++;
+        injectedCount++;
+      }
+
+      alteredLines.push(prefix + body + '.');
+      return;
+    }
+
+    // Paragraph lines (Summary/Project title lines)
+    if (trimmed.length > 20 && !trimmed.includes('http')) {
+      let para = trimmed;
+      const targetKw = keywordsList[keywordIdx % keywordsList.length];
+      if (targetKw && !para.toLowerCase().includes(targetKw.toLowerCase())) {
+        para += ` Specializing in <mark class="kw-hl">${targetKw}</mark> and scalable system architectures.`;
+        keywordIdx++;
+        injectedCount++;
+      }
+      alteredLines.push(para);
+      return;
+    }
+
+    // Default line retention
+    alteredLines.push(line);
+  });
+
+  const rawText = alteredLines.join('\n').replace(/<mark class="kw-hl">([^<]+)<\/mark>/g, '$1');
+  rawAlteredResumeText = rawText;
+
+  // Render HTML output with highlighted badges
+  const outputEl = document.getElementById('alterResumeOutput');
+  if (outputEl) {
+    const styledHtml = alteredLines.join('\n')
+      .replace(/<mark class="kw-hl">([^<]+)<\/mark>/g, '<span style="background:rgba(16,185,129,.2);color:var(--green);font-weight:700;padding:1px 5px;border-radius:4px;border:1px solid rgba(16,185,129,.3);">$1</span>');
+    
+    outputEl.innerHTML = styledHtml;
+  }
+
+  showToast(`Resume altered! Injected ${injectedCount} STAR metrics & keywords while preserving format! 🎉`, '✨');
+}
+
+function copyAlteredResumeText() {
+  if (!rawAlteredResumeText) {
+    showToast('No altered resume content to copy. Run alter content first!', '⚠️');
+    return;
+  }
+  navigator.clipboard.writeText(rawAlteredResumeText).then(() => {
+    showToast('Altered format-preserved resume copied to clipboard! 📋', '✅');
+  }).catch(() => {
+    showToast('Copy failed. Select and copy from output box.', '⚠️');
+  });
+}
+
+function downloadAlteredResumeTxt() {
+  if (!rawAlteredResumeText) {
+    showToast('No altered resume content to download. Run alter content first!', '⚠️');
+    return;
+  }
+  const blob = new Blob([rawAlteredResumeText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Altered_Format_Preserved_Resume.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Altered resume text file downloaded! 💾', '✅');
 }
 
 // ─── QUIZ ────────────────────────────────────
