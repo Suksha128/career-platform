@@ -607,6 +607,18 @@ select option {background:#ffffff;color:var(--t1);}
   <div class="section-title animate">🎙️ AI Mock <span class="g-text">Interviewer</span></div>
   <div class="section-sub animate">Practice live audio interviews with your Virtual Manager. Features Text-to-Speech audio voicing, Speech-to-Text stream, Filler Word Tracker &amp; WPM Pacing Gauge.</div>
 
+  <!-- SESSION INTERVIEW READINESS SCORE PROGRESS BAR -->
+  <div class="card animate" style="margin-bottom:20px;"><div class="card-body" style="padding:14px 20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <span style="font-weight:700;font-size:.9rem;">🎯 Session Interview Readiness Score: </span>
+        <span style="font-weight:900;font-size:1.15rem;color:var(--green);" id="sessionReadinessPctText">0%</span>
+      </div>
+      <span class="badge b-purple" id="sessionQuestionCounter">Question 1 of 5</span>
+    </div>
+    <div class="progress" style="height:10px;"><div class="progress-fill" id="sessionReadinessBar" style="width:0%;background:var(--grad);"></div></div>
+  </div></div>
+
   <!-- CONTROL & FILTER BAR -->
   <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
@@ -863,11 +875,22 @@ select option {background:#ffffff;color:var(--t1);}
       </div>
     </div>
 
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
       <div style="font-size:.85rem;font-weight:700;color:var(--p);margin-bottom:8px;">💡 AI Communication Feedback &amp; Recommendations</div>
       <ul style="margin:0;padding-left:18px;font-size:.82rem;color:var(--t2);line-height:1.6;" id="sumFeedbackList">
         <li>Great job completing your response!</li>
       </ul>
+    </div>
+
+    <!-- AI MODEL EXEMPLARY STAR ANSWER -->
+    <div style="background:var(--card);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:.88rem;font-weight:700;color:var(--green);">🌟 AI Model Exemplary Answer (STAR Framework Benchmark)</div>
+        <span class="badge b-green">Ideal 100% Response</span>
+      </div>
+      <div style="font-size:.84rem;color:var(--t1);line-height:1.6;" id="modelStarAnswerText">
+        Loading benchmark STAR answer...
+      </div>
     </div>
   </div></div>
 </div>
@@ -878,17 +901,25 @@ select option {background:#ffffff;color:var(--t1);}
   <div class="section-sub animate">Auto-generated paths for your exact skill gaps. Verified 100% permanent documentation, LeetCode, W3Schools &amp; GitHub resources.</div>
   <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-      <div><div style="font-weight:700;">Overall Learning Progress</div><div style="font-size:.82rem;color:var(--t2);">Based on skill gaps for your target role</div></div>
-      <div style="font-size:1.8rem;font-weight:900;" class="g-text">0%</div>
+      <div><div style="font-weight:700;">Overall Skill Mastery Progress</div><div style="font-size:.82rem;color:var(--t2);">Tracks interactive module completion across all technical learning roadmaps</div></div>
+      <div style="font-size:1.8rem;font-weight:900;" class="g-text" id="lpProgressPctText">0%</div>
     </div>
-    <div class="progress"><div class="progress-fill" style="width:0%;"></div></div>
-    <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
-      <div><span class="badge b-red">Critical</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;">1 skill</span></div>
-      <div><span class="badge b-amber">High</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;">2 skills</span></div>
-      <div><span class="badge b-blue">Medium</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;">2 skills</span></div>
-      <div style="margin-left:auto;"><span style="font-size:.82rem;color:var(--t2);">Est. total:</span> <strong>97 hrs</strong></div>
+    <div class="progress"><div class="progress-fill" id="lpProgressFillBar" style="width:0%;"></div></div>
+    <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;align-items:center;">
+      <div><span class="badge b-red">Critical Gaps</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;" id="cntLpCrit">1 skill</span></div>
+      <div><span class="badge b-amber">High Priority</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;" id="cntLpHigh">2 skills</span></div>
+      <div><span class="badge b-blue">Medium</span> <span style="font-size:.82rem;color:var(--t2);margin-left:4px;" id="cntLpMed">2 skills</span></div>
+      <div style="margin-left:auto;"><span style="font-size:.82rem;color:var(--t2);">Est. remaining:</span> <strong id="lpHoursLeftText">97 hrs</strong></div>
     </div>
   </div></div>
+
+  <!-- PRIORITY FILTER TOOLBAR -->
+  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <button class="btn btn-primary btn-sm" onclick="filterLearnModules('all')" id="btnLpAll">All Learning Paths</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterLearnModules('Critical')" id="btnLpCritBtn">🔥 Critical Gaps</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterLearnModules('High')" id="btnLpHighBtn">🔶 High Priority</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterLearnModules('Medium')" id="btnLpMedBtn">🔷 Medium Priority</button>
+  </div>
   <div id="learningPathContainer"></div>
 </div>
 
@@ -2722,10 +2753,55 @@ function resetInterviewSession() {
   processFillerWords('');
 }
 
+let sessionScores = [];
+
+function getModelStarAnswer(qObj) {
+  if (!qObj || !qObj.q) {
+    return "<strong>Situation:</strong> In my previous engineering role...<br><strong>Task:</strong> Optimizing system performance.<br><strong>Action:</strong> Implemented caching & indexing.<br><strong>Result:</strong> Reduced latency by 45%.";
+  }
+
+  const text = qObj.q || "";
+  const lower = text.toLowerCase();
+
+  if (lower.includes("complex feature") || lower.includes("trade-offs")) {
+    return `<strong>Situation:</strong> While leading the backend service for a real-time notification engine...<br>
+            <strong>Task:</strong> We needed to support 50,000 active WebSocket connections without overloading our database.<br>
+            <strong>Action:</strong> I introduced Redis Pub/Sub as an asynchronous message queue, decoupled DB writes, and benchmarked connection pooling with Locust.<br>
+            <strong>Result:</strong> Handled 100k peak requests/sec with < 50ms latency, zero dropped sockets, and reduced database CPU load by 60%.`;
+  }
+  if (lower.includes("deployment") || lower.includes("bug") || lower.includes("outage")) {
+    return `<strong>Situation:</strong> During a Friday release, a memory leak in a newly deployed payment microservice caused worker crash loops.<br>
+            <strong>Task:</strong> Instantly restore production stability, perform root-cause analysis, and prevent recurring downtime.<br>
+            <strong>Action:</strong> I triggered an automated blue-green rollback within 2 minutes, extracted heap snapshots using Chrome DevTools/Node profiler, and identified an unclosed database listener.<br>
+            <strong>Result:</strong> Full service restoration in < 3 minutes; added regression tests to CI/CD pipeline so unclosed listeners fail build validation automatically.`;
+  }
+  if (lower.includes("sql") || lower.includes("query") || lower.includes("database")) {
+    return `<strong>Situation:</strong> An e-commerce reporting dashboard took over 18 seconds to load multi-join sales reports.<br>
+            <strong>Task:</strong> Optimize query execution time to under 1 second for seamless executive reporting.<br>
+            <strong>Action:</strong> Analyzed execution plans via EXPLAIN ANALYZE, added composite B-Tree indexes on (created_at, status), and converted nested subqueries into materialized views.<br>
+            <strong>Result:</strong> Query load time dropped from 18.2s to 320ms (a 56x speedup), completely eliminating DB CPU spikes.`;
+  }
+  if (lower.includes("url shortening") || lower.includes("system design") || lower.includes("rate limit")) {
+    return `<strong>Situation:</strong> Designing a URL shortener scaling to 10k write requests/sec and 100k read requests/sec.<br>
+            <strong>Task:</strong> Ensure high availability, global low latency, and collision-free short key generation.<br>
+            <strong>Action:</strong> Selected Base62 encoding on auto-incrementing 64-bit IDs generated by a distributed Snowflake ID service. Used Redis for hot URL caching with LRU eviction and Cassandra for persistent key storage.<br>
+            <strong>Result:</strong> Read latency < 15ms globally via CDN integration, O(1) key generation, and 99.999% system uptime guarantee.`;
+  }
+  return `<strong>Situation:</strong> When working on a mission-critical project milestone under a tight 2-week deadline...<br>
+          <strong>Task:</strong> Deliver high-quality, fully tested code while coordinating across cross-functional teams.<br>
+          <strong>Action:</strong> I structured the project into modular components, automated unit tests, and maintained daily async standups.<br>
+          <strong>Result:</strong> Delivered the feature 2 days ahead of schedule with 95% test coverage and zero P0 bugs in production.`;
+}
+
 function generateInterviewSummary() {
   const mins = String(Math.floor(interviewState.recSeconds / 60)).padStart(2, '0');
   const secs = String(interviewState.recSeconds % 60).padStart(2, '0');
   const totalFillers = Object.values(interviewState.fillerCounts).reduce((a, b) => a + b, 0);
+
+  const durationEl = document.getElementById('sumDuration');
+  if (durationEl) durationEl.textContent = `${mins}:${secs}`;
+  const wordsEl = document.getElementById('sumWords');
+  if (wordsEl) wordsEl.textContent = interviewState.wordCount;
 
   const pacingEl = document.getElementById('sumPacing');
   if(pacingEl) {
@@ -2765,6 +2841,29 @@ function generateInterviewSummary() {
   if(document.getElementById('sumFeedbackList')) {
     document.getElementById('sumFeedbackList').innerHTML = feedback.map(f => `<li>${f}</li>`).join('');
   }
+
+  // Calculate session score & update readiness progress bar
+  const pacingScore = (interviewState.wpm >= 110 && interviewState.wpm <= 150) ? 35 : 15;
+  const fillerScore = Math.max(0, 35 - (totalFillers * 5));
+  const wordScore = Math.min(30, Math.round((interviewState.wordCount / 40) * 30));
+  const totalScore = Math.min(100, pacingScore + fillerScore + wordScore);
+
+  sessionScores.push(totalScore);
+  const avgSessionScore = Math.round(sessionScores.reduce((a,b)=>a+b, 0) / sessionScores.length);
+
+  const pctText = document.getElementById('sessionReadinessPctText');
+  const bar = document.getElementById('sessionReadinessBar');
+  const counter = document.getElementById('sessionQuestionCounter');
+
+  if (pctText) pctText.textContent = `${avgSessionScore}%`;
+  if (bar) bar.style.width = `${avgSessionScore}%`;
+  if (counter) counter.textContent = `Question ${sessionScores.length} of 5`;
+
+  const modelAnswerEl = document.getElementById('modelStarAnswerText');
+  if (modelAnswerEl) {
+    modelAnswerEl.innerHTML = getModelStarAnswer(interviewState.activeQuestion);
+  }
+
   if(document.getElementById('interviewSummaryCard')) {
     document.getElementById('interviewSummaryCard').style.display = 'block';
   }
@@ -3434,17 +3533,112 @@ function simulateTestCaseExecution(code, lang, probId, testCase, syntaxReport) {
   return hasControlFlow && hasAlgoLogic;
 }
 
-// ─── LEARNING PATH ────────────────────────────
-let learnInit=false;
-function initLearnPage(){if(learnInit)return;learnInit=true;renderLP();}
-function renderLP(){
-  document.getElementById('learningPathContainer').innerHTML=LP.map((sk,si)=>`
-    <div class="card" style="margin-bottom:20px;animation:fadeUp .5s ease ${si*.1}s both;">
+// ─── LEARNING PATH ENGINE & INTERACTIVE ROADMAP ───────────
+let currentLearnFilter = 'all';
+
+function getCompletedLearnMods() {
+  try {
+    const raw = localStorage.getItem('careerai_completed_learn_mods');
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function toggleLearnModule(modTitle) {
+  try {
+    let completed = getCompletedLearnMods();
+    if (completed.includes(modTitle)) {
+      completed = completed.filter(t => t !== modTitle);
+      showToast('Module marked incomplete', 'ℹ️');
+    } else {
+      completed.push(modTitle);
+      showToast('Module Completed! Progress updated 🎉', '🏆');
+    }
+    localStorage.setItem('careerai_completed_learn_mods', JSON.stringify(completed));
+    renderLP();
+  } catch(e){}
+}
+
+function filterLearnModules(prio) {
+  currentLearnFilter = prio;
+  ['All', 'CritBtn', 'HighBtn', 'MedBtn'].forEach(btn => {
+    const el = document.getElementById('btnLp' + btn);
+    if(el) el.className = 'btn btn-ghost btn-sm';
+  });
+  const activeId = prio === 'all' ? 'btnLpAll' : prio === 'Critical' ? 'btnLpCritBtn' : prio === 'High' ? 'btnLpHighBtn' : 'btnLpMedBtn';
+  const activeEl = document.getElementById(activeId);
+  if (activeEl) activeEl.className = 'btn btn-primary btn-sm';
+  
+  renderLP();
+}
+
+function openLearnQuizModal(modTitle) {
+  const answer = confirm(`🧪 Quick Knowledge Check for "${modTitle}":\n\nQuestion: Have you reviewed the concepts and practiced 2+ coding/system design problems for this topic?`);
+  if (answer) {
+    let completed = getCompletedLearnMods();
+    if (!completed.includes(modTitle)) {
+      completed.push(modTitle);
+      localStorage.setItem('careerai_completed_learn_mods', JSON.stringify(completed));
+      showToast(`Quiz Passed! Marked "${modTitle}" as Completed! 🎓`, '🌟');
+      renderLP();
+    } else {
+      showToast(`Topic already mastered! Keep up the momentum!`, '✅');
+    }
+  }
+}
+
+function initLearnPage() {
+  renderLP();
+}
+
+function renderLP() {
+  const completed = getCompletedLearnMods();
+  let totalModsCount = 0;
+  let completedModsCount = 0;
+  let totalHours = 0;
+  let hoursCompleted = 0;
+
+  LP.forEach(sk => {
+    sk.mods.forEach(m => {
+      totalModsCount++;
+      totalHours += m.h;
+      if (completed.includes(m.t)) {
+        completedModsCount++;
+        hoursCompleted += m.h;
+      }
+    });
+  });
+
+  const masteryPct = totalModsCount > 0 ? Math.round((completedModsCount / totalModsCount) * 100) : 0;
+  const hoursLeft = Math.max(0, totalHours - hoursCompleted);
+
+  const pctText = document.getElementById('lpProgressPctText');
+  const fillBar = document.getElementById('lpProgressFillBar');
+  const hoursLeftText = document.getElementById('lpHoursLeftText');
+
+  if (pctText) pctText.textContent = masteryPct + '%';
+  if (fillBar) fillBar.style.width = masteryPct + '%';
+  if (hoursLeftText) hoursLeftText.textContent = `${hoursLeft} hrs left`;
+
+  const filteredLP = currentLearnFilter === 'all' ? LP : LP.filter(sk => sk.priority === currentLearnFilter);
+
+  const container = document.getElementById('learningPathContainer');
+  if (!container) return;
+
+  if (filteredLP.length === 0) {
+    container.innerHTML = `<div class="card" style="padding:30px;text-align:center;color:var(--t2);">No learning roadmaps found for priority "${currentLearnFilter}".</div>`;
+    return;
+  }
+
+  container.innerHTML = filteredLP.map((sk, si) => `
+    <div class="card" style="margin-bottom:20px;animation:fadeUp .4s ease ${si * .08}s both;">
       <div class="card-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
           <div style="display:flex;align-items:center;gap:14px;">
             <div style="width:44px;height:44px;border-radius:50%;background:${sk.col}22;border:2px solid ${sk.col}66;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">${sk.icon}</div>
-            <div><div style="font-weight:800;font-size:1rem;">${sk.skill}</div><div style="font-size:.78rem;color:var(--t2);">${sk.why}</div></div>
+            <div>
+              <div style="font-weight:800;font-size:1.02rem;">${sk.skill}</div>
+              <div style="font-size:.78rem;color:var(--t2);">${sk.why}</div>
+            </div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <span class="badge ${sk.priority==='Critical'?'b-red':sk.priority==='High'?'b-amber':'b-blue'}">${sk.priority}</span>
@@ -3453,17 +3647,34 @@ function renderLP(){
           </div>
         </div>
         <div style="margin-left:8px;">
-          ${sk.mods.map((m,mi)=>`
-            <div class="lp-node">
-              <div class="lp-dot" style="background:${sk.col}22;border:2px solid ${sk.col}55;color:${sk.col};">${mi+1}</div>
-              <div style="flex:1;padding-bottom:8px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-                  <div><div style="font-weight:600;font-size:.9rem;">${m.t}</div><div style="font-size:.75rem;color:var(--t2);margin-top:2px;">⏱ ~${m.h}h</div></div>
-                  <a href="${m.u}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:${PCOLORS[m.p]||'#6366f1'}22;color:${PCOLORS[m.p]||'#6366f1'};border:1px solid ${PCOLORS[m.p]||'#6366f1'}44;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">${PICONS[m.p]||'🔗'} ${m.r} ↗</a>
+          ${sk.mods.map((m, mi) => {
+            const isDone = completed.includes(m.t);
+            return `
+            <div class="lp-node" style="padding:10px 0;border-bottom:1px dashed var(--border);">
+              <div class="lp-dot" style="background:${isDone ? 'var(--green)' : sk.col + '22'};border:2px solid ${isDone ? 'var(--green)' : sk.col + '55'};color:${isDone ? '#fff' : sk.col}; font-weight:bold;">
+                ${isDone ? '✓' : mi + 1}
+              </div>
+              <div style="flex:1;padding-bottom:4px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                  <div>
+                    <div style="font-weight:600;font-size:.9rem; ${isDone ? 'text-decoration:line-through;color:var(--t2);' : ''}">${m.t}</div>
+                    <div style="font-size:.75rem;color:var(--t2);margin-top:2px;">⏱ ~${m.h}h • Recommended Resource</div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-sm ${isDone ? 'btn-success' : 'btn-ghost'}" onclick="toggleLearnModule('${m.t.replace(/'/g, "\\'")}')" style="font-size:.75rem;padding:5px 10px;">
+                      ${isDone ? '✅ Completed' : '⭕ Mark Complete'}
+                    </button>
+                    <button class="btn btn-ghost btn-sm" onclick="openLearnQuizModal('${m.t.replace(/'/g, "\\'")}')" style="font-size:.75rem;padding:5px 10px;">
+                      🧪 Quick Quiz
+                    </button>
+                    <a href="${m.u}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:${PCOLORS[m.p]||'#6366f1'}22;color:${PCOLORS[m.p]||'#6366f1'};border:1px solid ${PCOLORS[m.p]||'#6366f1'}44;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">
+                      ${PICONS[m.p]||'🔗'} ${m.r} ↗
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          `).join('')}
+            </div>`;
+          }).join('')}
         </div>
       </div>
     </div>`).join('');
