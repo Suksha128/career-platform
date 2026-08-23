@@ -1375,6 +1375,13 @@ function addProjectBlock(title='', tech='') {
   renderProjectBlocks();
 }
 
+function removeProjectBlock(idx) {
+  if (projectList.length > 1) {
+    projectList.splice(idx, 1);
+    renderProjectBlocks();
+  }
+}
+
 // ─── DYNAMIC CERTIFICATION MANAGEMENT ────────
 let certList = [{ title: 'AWS Certified Cloud Practitioner', org: 'Amazon Web Services' }];
 
@@ -1768,9 +1775,8 @@ function renderRoleList(){
   document.getElementById('roleList').innerHTML = sorted.map(r => {
     const mc = r.match >= 80 ? 'var(--green)' : r.match >= 60 ? 'var(--amber)' : 'var(--red)';
     const sel = selectedRole?.id === r.id ? 'selected' : '';
-    const safeRoleJson = JSON.stringify(r).replace(/'/g, "&#39;");
     
-    return `<div class="card role-card ${sel}" id="rcard-${r.id}" onclick='selectRole(${safeRoleJson})'>
+    return `<div class="card role-card ${sel}" id="rcard-${r.id}" onclick="selectRole('${r.id}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="role-icon" style="background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);">${r.icon}</div>
@@ -1809,7 +1815,12 @@ function renderRoleList(){
 }
 
 function selectRole(role){
-  if(typeof role==='string') role=JSON.parse(role);
+  if(typeof role==='string') {
+    const found = ROLES.find(r => r.id === role);
+    if(found) role = found;
+    else try { role = JSON.parse(role); } catch(e){}
+  }
+  if (!role) role = ROLES[0];
   // Ensure role is dynamically updated with latest user skills
   role = getDynamicRoleMatch(role);
   selectedRole=role;
