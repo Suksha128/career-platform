@@ -156,6 +156,18 @@ select option {background:#ffffff;color:var(--t1);}
   0% { transform: scale(1); opacity: 0.8; }
   100% { transform: scale(1.35); opacity: 0; }
 }
+@keyframes avatarNod {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-7px) rotate(-3deg); }
+  50% { transform: translateY(4px) rotate(2deg); }
+  75% { transform: translateY(-3px) rotate(-1deg); }
+}
+@keyframes avatarSmileGlow {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(16,185,129,0.3); }
+  50% { transform: scale(1.12); box-shadow: 0 0 25px rgba(16,185,129,0.7); }
+}
+.avatar-nod { animation: avatarNod 0.75s ease-in-out; }
+.avatar-smile { animation: avatarSmileGlow 1.2s ease-in-out; border-color: var(--green) !important; }
 .animate {animation:fadeIn .4s ease forwards;}
 .d1 {animation-delay:.05s;}
 .d2 {animation-delay:.1s;}
@@ -633,8 +645,13 @@ select option {background:#ffffff;color:var(--t1);}
           <div>
             <div style="font-weight:800;font-size:1.1rem;font-family:'Outfit',sans-serif;" id="managerName">Alex Morgan</div>
             <div style="font-size:.82rem;color:var(--t2);" id="managerRole">Senior Hiring Manager • Technical Interview Panel</div>
-            <div style="margin-top:6px;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);font-size:.72rem;font-weight:600;color:var(--p);" id="voiceStatusBadge">
-              <span>🔊 Web Speech Audio Ready</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+              <div style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);font-size:.72rem;font-weight:600;color:var(--p);" id="voiceStatusBadge">
+                <span>🔊 Web Speech Audio Ready</span>
+              </div>
+              <div style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);font-size:.72rem;font-weight:600;color:var(--green);" id="avatarMoodText">
+                <span>👂 Expression: Listening Attentively</span>
+              </div>
             </div>
           </div>
         </div>
@@ -645,9 +662,19 @@ select option {background:#ffffff;color:var(--t1);}
           <div style="font-size:1.02rem;font-weight:600;line-height:1.5;color:var(--t1);" id="interviewQuestionText">Loading question...</div>
         </div>
 
-        <div style="font-size:.78rem;color:var(--t2);display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:.78rem;color:var(--t2);display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
           <span id="questionTag">Category: Behavioral</span>
           <span>Tip: Use STAR format (Situation, Task, Action, Result)</span>
+        </div>
+
+        <!-- SPONTANEOUS AI FOLLOW-UP CARD -->
+        <div id="followupQuestionCard" style="display:none;margin-top:14px;background:rgba(99,102,241,.08);border:1px dashed var(--p);border-radius:14px;padding:16px;" class="animate">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+            <span class="badge b-purple">🤖 AI Spontaneous Follow-up</span>
+            <button class="btn btn-ghost btn-sm" onclick="speakFollowupQuestion()" style="font-size:.75rem;padding:4px 10px;">🔊 Hear Follow-up</button>
+          </div>
+          <div style="font-size:.95rem;font-weight:600;line-height:1.5;color:var(--t1);" id="followupQuestionText">Loading follow-up...</div>
+          <div style="font-size:.74rem;color:var(--t2);margin-top:8px;font-style:italic;" id="followupContextReason">Triggered based on your latest spoken response.</div>
         </div>
       </div>
     </div>
@@ -2120,6 +2147,7 @@ function initSpeechRecognition() {
       updateTranscriptUI(fullText);
       processFillerWords(fullText);
       updateWpmGauge();
+      evaluateLiveAvatarExpressions(fullText);
     };
 
     interviewState.recognition.onerror = function(event) {
@@ -2141,9 +2169,124 @@ function initSpeechRecognition() {
   }
 }
 
+function triggerAvatarNod() {
+  const container = document.getElementById('avatarContainer');
+  if (!container) return;
+  container.classList.remove('avatar-nod');
+  void container.offsetWidth;
+  container.classList.add('avatar-nod');
+}
+
+function evaluateLiveAvatarExpressions(text) {
+  const container = document.getElementById('avatarContainer');
+  const emojiEl = document.getElementById('avatarEmoji');
+  const moodEl = document.getElementById('avatarMoodText');
+  if (!container || !emojiEl) return;
+
+  if (!text.trim()) {
+    emojiEl.textContent = '👨‍💼';
+    container.classList.remove('avatar-nod', 'avatar-smile');
+    if (moodEl) moodEl.innerHTML = '<span>👂 Expression: Listening Attentively</span>';
+    return;
+  }
+
+  triggerAvatarNod();
+
+  const successKeywords = ["achieved", "solved", "success", "successful", "led", "built", "improved", "increased", "reduced", "won", "optimized", "created", "awarded", "boosted", "designed", "launched", "passed", "complete", "growth", "high", "best"];
+  const lowerText = text.toLowerCase();
+  
+  const hasSuccess = successKeywords.some(kw => lowerText.includes(kw));
+
+  if (hasSuccess) {
+    emojiEl.textContent = '😊';
+    container.classList.add('avatar-smile');
+    if (moodEl) moodEl.innerHTML = '<span style="color:var(--green);">😊 Expression: Smiling (Success Story Detected!)</span>';
+  } else {
+    emojiEl.textContent = '👨‍💼';
+    container.classList.remove('avatar-smile');
+    if (moodEl) moodEl.innerHTML = '<span style="color:var(--cyan);">👂 Expression: Nodding &amp; Listening</span>';
+  }
+}
+
+let currentFollowupText = '';
+
+function generateSpontaneousFollowup(transcript) {
+  const card = document.getElementById('followupQuestionCard');
+  const textEl = document.getElementById('followupQuestionText');
+  const reasonEl = document.getElementById('followupContextReason');
+  const emojiEl = document.getElementById('avatarEmoji');
+  const moodEl = document.getElementById('avatarMoodText');
+
+  if (!transcript || transcript.trim().split(/\s+/).length < 6) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+
+  const lower = transcript.toLowerCase();
+  let followup = "";
+  let reason = "";
+
+  if (lower.includes("latency") || lower.includes("speed") || lower.includes("optimi") || lower.includes("query") || lower.includes("database") || lower.includes("scale") || lower.includes("performance") || lower.includes("sec")) {
+    followup = "That sounds like a significant technical optimization! What specific metrics or profiling tools did you use to benchmark the before-and-after improvements, and were there any architectural trade-offs?";
+    reason = "Spontaneous Follow-up based on your mention of performance & optimization metrics.";
+  } else if (lower.includes("team") || lower.includes("led") || lower.includes("colleague") || lower.includes("engineer") || lower.includes("manager") || lower.includes("client") || lower.includes("conflict")) {
+    followup = "Great teamwork example! How did you handle differing technical opinions or pushback within your team during that process to reach alignment?";
+    reason = "Spontaneous Follow-up based on your mention of team collaboration & leadership.";
+  } else if (lower.includes("bug") || lower.includes("error") || lower.includes("fail") || lower.includes("crash") || lower.includes("issue") || lower.includes("outage") || lower.includes("fix")) {
+    followup = "Troubleshooting complex failures is a critical engineering skill. What root-cause analysis steps did you take to prevent that issue from recurring in production?";
+    reason = "Spontaneous Follow-up based on your mention of debugging & incident response.";
+  } else if (lower.includes("api") || lower.includes("microservice") || lower.includes("react") || lower.includes("python") || lower.includes("java") || lower.includes("aws") || lower.includes("cloud") || lower.includes("system")) {
+    followup = "Solid technical setup! How did you design the architecture to ensure high availability, and how would you scale it if user traffic doubled tomorrow?";
+    reason = "Spontaneous Follow-up based on your mention of system architecture & tech stack.";
+  } else {
+    followup = "That is a compelling project story! Looking back at your implementation, what was the single biggest technical challenge you overcame, or what would you do differently today?";
+    reason = "Spontaneous Follow-up based on your response summary.";
+  }
+
+  currentFollowupText = followup;
+  if (textEl) textEl.textContent = followup;
+  if (reasonEl) reasonEl.textContent = reason;
+  if (card) card.style.display = 'block';
+
+  if (emojiEl) emojiEl.textContent = '💡';
+  if (moodEl) moodEl.innerHTML = '<span style="color:var(--p);">💡 Expression: Thoughtful (Asking Spontaneous Follow-up)</span>';
+
+  setTimeout(() => {
+    speakFollowupQuestion();
+  }, 600);
+}
+
+function speakFollowupQuestion() {
+  if (!currentFollowupText || !('speechSynthesis' in window)) return;
+
+  const pulse = document.getElementById('avatarPulse');
+  const badge = document.getElementById('voiceStatusBadge');
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(currentFollowupText);
+  utterance.rate = 0.95;
+  utterance.pitch = 1.0;
+
+  utterance.onstart = function() {
+    if(pulse) { pulse.style.display = 'block'; pulse.style.opacity = '1'; }
+    if(badge) badge.innerHTML = '<span style="color:var(--green);">🔊 AI Manager Asking Follow-up Question...</span>';
+  };
+
+  utterance.onend = function() {
+    if(pulse) pulse.style.display = 'none';
+    if(badge) badge.innerHTML = '<span>⏸️ Ready — Click "🔊 Speak Question" to Listen</span>';
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
 function loadInterviewQuestion() {
   if (interviewState.isRecording) stopInterviewRecord();
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+  const followupCard = document.getElementById('followupQuestionCard');
+  if (followupCard) followupCard.style.display = 'none';
+  currentFollowupText = '';
 
   const role = document.getElementById('interviewRole')?.value || 'SDE-1';
   const cat = document.getElementById('interviewCategory')?.value || 'Behavioral';
@@ -2262,6 +2405,7 @@ function stopInterviewRecord() {
   }
 
   generateInterviewSummary();
+  generateSpontaneousFollowup(interviewState.transcript);
 }
 
 function updateTranscriptUI(text) {
@@ -2293,6 +2437,7 @@ function handleManualTranscriptInput(el) {
   document.getElementById('transcriptWordCount').textContent = `${words.length} Words Spoken`;
   processFillerWords(text);
   updateWpmGauge();
+  evaluateLiveAvatarExpressions(text);
 }
 
 function processFillerWords(text) {
