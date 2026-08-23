@@ -3571,18 +3571,218 @@ function filterLearnModules(prio) {
   renderLP();
 }
 
-function openLearnQuizModal(modTitle) {
-  const answer = confirm(`🧪 Quick Knowledge Check for "${modTitle}":\n\nQuestion: Have you reviewed the concepts and practiced 2+ coding/system design problems for this topic?`);
-  if (answer) {
-    let completed = getCompletedLearnMods();
-    if (!completed.includes(modTitle)) {
-      completed.push(modTitle);
-      localStorage.setItem('careerai_completed_learn_mods', JSON.stringify(completed));
-      showToast(`Quiz Passed! Marked "${modTitle}" as Completed! 🎓`, '🌟');
-      renderLP();
-    } else {
-      showToast(`Topic already mastered! Keep up the momentum!`, '✅');
+const LEARN_QUIZZES = {
+  "Arrays, Strings, Hashing": [
+    {
+      q: "1. What is the average time complexity of looking up a key in an uncollided Hash Map?",
+      opts: ["O(1) Constant Time", "O(N) Linear Time", "O(log N) Logarithmic", "O(N²) Quadratic"],
+      ans: 0
+    },
+    {
+      q: "2. Which technique finds a target pair in a sorted array in O(n) time and O(1) space?",
+      opts: ["Two Pointers at opposite ends", "Fast and Slow Pointers at index 0", "Binary Search loop", "Sorting hash map"],
+      ans: 0
     }
+  ],
+  "Linked Lists & Stacks": [
+    {
+      q: "1. Which data structure operates on a Last-In, First-Out (LIFO) order?",
+      opts: ["Stack", "Queue", "Binary Tree", "Heap"],
+      ans: 0
+    },
+    {
+      q: "2. What is the auxiliary space complexity of Floyd's Tortoise & Hare cycle detection algorithm?",
+      opts: ["O(1) Auxiliary Space", "O(N) Space", "O(log N) Space", "O(N²) Space"],
+      ans: 0
+    }
+  ],
+  "Trees & Binary Search Trees": [
+    {
+      q: "1. In a balanced Binary Search Tree (BST), what is the time complexity to search for a value?",
+      opts: ["O(log N)", "O(N)", "O(1)", "O(N log N)"],
+      ans: 0
+    },
+    {
+      q: "2. Which tree traversal order visits BST nodes in ascending sorted order?",
+      opts: ["Inorder Traversal (Left, Root, Right)", "Preorder Traversal", "Postorder Traversal", "Level Order Traversal"],
+      ans: 0
+    }
+  ],
+  "Graphs: BFS, DFS, Dijkstra": [
+    {
+      q: "1. Which graph traversal algorithm uses a Queue and finds the shortest path in unweighted graphs?",
+      opts: ["Breadth-First Search (BFS)", "Depth-First Search (DFS)", "Preorder Traversal", "Prim's Algorithm"],
+      ans: 0
+    },
+    {
+      q: "2. Which data structure optimizes Dijkstra's algorithm to run in O((V + E) log V)?",
+      opts: ["Min Priority Queue / Heap", "Array List", "Stack", "HashSet"],
+      ans: 0
+    }
+  ],
+  "Dynamic Programming": [
+    {
+      q: "1. What are the two essential prerequisites for a problem to be solved using Dynamic Programming?",
+      opts: ["Overlapping Subproblems & Optimal Substructure", "Sorting & Divide and Conquer", "Pointers & Hash Maps", "Greedy Choice & Recursion"],
+      ans: 0
+    },
+    {
+      q: "2. What optimization reduces Fibonacci DP space complexity from O(N) to O(1)?",
+      opts: ["Rolling Variables / Two-State Swap", "Memoization Table", "Recursion Stack", "Binary Search"],
+      ans: 0
+    }
+  ],
+  "Fundamentals: Scaling & Load Balancing": [
+    {
+      q: "1. What is the fundamental difference between Vertical Scaling and Horizontal Scaling?",
+      opts: ["Vertical adds CPU/RAM to 1 machine; Horizontal adds more server nodes", "Vertical adds servers; Horizontal adds RAM", "They are identical", "Horizontal is always cheaper"],
+      ans: 0
+    },
+    {
+      q: "2. Which component sits in front of backend servers to distribute incoming traffic evenly?",
+      opts: ["Load Balancer", "Reverse Proxy Cache", "Database Index", "DNS Server"],
+      ans: 0
+    }
+  ],
+  "Database Design & Sharding": [
+    {
+      q: "1. What does Database Sharding accomplish?",
+      opts: ["Horizontally partitions large table rows across multiple database servers", "Backs up data to cloud storage", "Creates duplicate read replicas", "Encrypts database columns"],
+      ans: 0
+    },
+    {
+      q: "2. Which index structure is default in MySQL InnoDB for fast range queries?",
+      opts: ["B-Tree Index", "Hash Index", "Bitmap Index", "Full-Text Index"],
+      ans: 0
+    }
+  ],
+  "SQL Fundamentals & JOINs": [
+    {
+      q: "1. Which SQL JOIN returns all rows from the left table and matching rows from the right table?",
+      opts: ["LEFT JOIN", "INNER JOIN", "RIGHT JOIN", "FULL OUTER JOIN"],
+      ans: 0
+    },
+    {
+      q: "2. What is the key purpose of the HAVING clause in SQL?",
+      opts: ["Filters aggregated results after GROUP BY", "Sorts query output", "Joins two tables", "Filters rows before GROUP BY"],
+      ans: 0
+    }
+  ],
+  "Java Basics & OOP": [
+    {
+      q: "1. Which OOP principle allows a subclass to provide a specific implementation of a superclass method?",
+      opts: ["Polymorphism (Method Overriding)", "Encapsulation", "Abstraction", "Multiple Inheritance"],
+      ans: 0
+    },
+    {
+      q: "2. Where are objects created with the `new` keyword stored in Java memory?",
+      opts: ["Heap Memory", "Stack Memory", "Method Area", "Program Counter"],
+      ans: 0
+    }
+  ]
+};
+
+let currentQuizModTitle = null;
+let activeQuizQuestions = [];
+
+function openLearnQuizModal(modTitle) {
+  currentQuizModTitle = modTitle;
+  const questions = LEARN_QUIZZES[modTitle] || [
+    {
+      q: `1. Key concept check for "${modTitle}": What is the core goal when mastering this skill?`,
+      opts: ["Understanding underlying architecture and efficiency trade-offs", "Memorizing code lines without understanding", "Skipping practice problems", "Only reading theory without writing code"],
+      ans: 0
+    },
+    {
+      q: `2. How do top engineers verify readiness for "${modTitle}" in interviews?`,
+      opts: ["Solving practice scenarios and explaining time/space complexities", "Only looking at solution code", "Reading documentation once", "Guessing test cases"],
+      ans: 0
+    }
+  ];
+
+  activeQuizQuestions = questions;
+
+  const titleEl = document.getElementById('lqModalTitle');
+  if (titleEl) titleEl.textContent = `🧪 Quick Quiz: ${modTitle}`;
+
+  const contentEl = document.getElementById('lqModalContent');
+  if (contentEl) {
+    contentEl.innerHTML = `
+      <form id="learnQuizForm" onsubmit="event.preventDefault(); submitLearnQuiz();">
+        ${questions.map((q, qidx) => `
+          <div style="margin-bottom:18px;background:var(--bg2);padding:14px;border-radius:10px;border:1px solid var(--border);">
+            <div style="font-weight:700;font-size:.88rem;color:var(--t1);margin-bottom:10px;">${q.q}</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${q.opts.map((opt, oidx) => `
+                <label style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--t2);cursor:pointer;padding:6px 10px;border-radius:6px;background:var(--card);border:1px solid var(--border);">
+                  <input type="radio" name="lq_q${qidx}" value="${oidx}" required style="accent-color:var(--p);">
+                  <span>${opt}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+        
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="closeLearnQuizModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Submit Answers 🚀</button>
+        </div>
+      </form>
+    `;
+  }
+
+  const modal = document.getElementById('modalLearnQuiz');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeLearnQuizModal() {
+  const modal = document.getElementById('modalLearnQuiz');
+  if (modal) modal.style.display = 'none';
+}
+
+function submitLearnQuiz() {
+  if (!activeQuizQuestions || !currentQuizModTitle) return;
+
+  let correctCount = 0;
+  activeQuizQuestions.forEach((q, qidx) => {
+    const selected = document.querySelector(`input[name="lq_q${qidx}"]:checked`);
+    if (selected && parseInt(selected.value) === q.ans) {
+      correctCount++;
+    }
+  });
+
+  const total = activeQuizQuestions.length;
+  const passed = correctCount === total;
+
+  const contentEl = document.getElementById('lqModalContent');
+  if (passed) {
+    let completed = getCompletedLearnMods();
+    if (!completed.includes(currentQuizModTitle)) {
+      completed.push(currentQuizModTitle);
+      localStorage.setItem('careerai_completed_learn_mods', JSON.stringify(completed));
+    }
+
+    contentEl.innerHTML = `
+      <div style="text-align:center;padding:20px 10px;">
+        <div style="font-size:3rem;margin-bottom:10px;">🎉</div>
+        <h3 style="margin:0 0 6px 0;color:var(--green);font-size:1.3rem;">100% Score! Quiz Passed!</h3>
+        <p style="font-size:.85rem;color:var(--t2);margin-bottom:20px;">You correctly answered ${correctCount}/${total} questions for <strong>"${currentQuizModTitle}"</strong>.</p>
+        <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);padding:12px;border-radius:10px;font-size:.8rem;color:var(--green);margin-bottom:20px;">
+          🏆 Topic marked as <strong>COMPLETED</strong> in your Learning Roadmap!
+        </div>
+        <button class="btn btn-primary" onclick="closeLearnQuizModal(); renderLP();" style="width:100%;">Continue Learning 🚀</button>
+      </div>
+    `;
+    showToast(`Passed Quiz! "${currentQuizModTitle}" Completed! 🎓`, '🌟');
+  } else {
+    contentEl.innerHTML = `
+      <div style="text-align:center;padding:20px 10px;">
+        <div style="font-size:3rem;margin-bottom:10px;">⚠️</div>
+        <h3 style="margin:0 0 6px 0;color:var(--amber);font-size:1.2rem;">Score: ${correctCount}/${total} Correct</h3>
+        <p style="font-size:.85rem;color:var(--t2);margin-bottom:20px;">You need 100% to pass the quick check. Review the topics and try again!</p>
+        <button class="btn btn-primary" onclick="openLearnQuizModal('${currentQuizModTitle.replace(/'/g, "\\'")}')" style="width:100%;">Try Quiz Again 🔄</button>
+      </div>
+    `;
   }
 }
 
@@ -3679,7 +3879,28 @@ function renderLP() {
       </div>
     </div>`).join('');
 }
-</script>
+<!-- LEARN QUICK QUIZ INTERACTIVE MODAL -->
+<div id="modalLearnQuiz" class="modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);">
+  <div class="card" style="max-width:550px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.6);animation:fadeUp .3s ease;">
+    <div class="card-body" style="padding:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--p)22;color:var(--p);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🧪</div>
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;" id="lqModalTitle">Topic Quick Quiz</div>
+            <div style="font-size:.75rem;color:var(--t2);">2-Question Knowledge Check • Earn Topic Mastery</div>
+          </div>
+        </div>
+        <button onclick="closeLearnQuizModal()" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:1.4rem;padding:4px;">✕</button>
+      </div>
+
+      <!-- Quiz Body Container -->
+      <div id="lqModalContent">
+        <!-- Dynamic questions injected here -->
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ CHATBOT PANEL ═══ -->
 <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()" title="Recruitment AI Assistant">💬</button>
