@@ -173,6 +173,24 @@ select option {background:#ffffff;color:var(--t1);}
 .d2 {animation-delay:.1s;}
 .d3 {animation-delay:.15s;}
 .d4 {animation-delay:.2s;}
+
+/* Role Toggle Switch */
+.switch input:checked + .slider { background-color: var(--green) !important; }
+.switch input:checked + .slider::before { transform: translateX(20px); }
+.slider.round { border-radius: 34px; }
+.slider.round::before { border-radius: 50%; }
+.slider::before {
+  position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+  background-color: white; transition: .4s;
+}
+.slider { background-color: #ccc; transition: .4s; }
+
+/* Shake Keyframe */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
 </style>
 </head>
 <body>
@@ -191,7 +209,7 @@ select option {background:#ffffff;color:var(--t1);}
     <button class="nav-tab"       onclick="showPage('quiz')"    id="tab-quiz">🧠 Quiz</button>
     <button class="nav-tab"       onclick="showPage('interview')" id="tab-interview">🎙️ Mock Interview</button>
     <button class="nav-tab"       onclick="showPage('learn')"   id="tab-learn">📚 Learn</button>
-  </div>
+    <button class="nav-tab"       onclick="showPage('game')"    id="tab-game">🎮 Outage Game</button></div>
   <div class="nav-badge" id="profileBadge" style="display:none">✓ <span id="profileName">Student</span></div>
   <button onclick="showSettings()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:.85rem;color:var(--t2);margin-left:8px;" title="Settings">⚙️</button>
   <button onclick="showAuthModal()" id="btnAuthNav" style="background:var(--p);color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.82rem;font-weight:600;margin-left:8px;display:inline-flex;align-items:center;gap:6px;">🔐 Sign In</button>
@@ -621,29 +639,45 @@ select option {background:#ffffff;color:var(--t1);}
 
   <!-- CONTROL & FILTER BAR -->
   <div class="card animate" style="margin-bottom:24px;"><div class="card-body">
-    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
-      <div style="flex:1;min-width:140px;">
-        <label>Question Domain</label>
-        <select id="interviewCategory" onchange="loadInterviewQuestion()">
-          <option value="Behavioral">Behavioral (Amazon STAR Method)</option>
-          <option value="Technical">Technical &amp; SDE Problem Solving</option>
-          <option value="SystemDesign">System Design &amp; Architecture</option>
-          <option value="Culture">HR &amp; Culture Fit</option>
-        </select>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;">
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;flex:1;">
+        <div style="flex:1;min-width:140px;">
+          <label>Question Domain</label>
+          <select id="interviewCategory" onchange="loadInterviewQuestion()">
+            <option value="Behavioral">Behavioral (Amazon STAR Method)</option>
+            <option value="Technical">Technical &amp; SDE Problem Solving</option>
+            <option value="SystemDesign">System Design &amp; Architecture</option>
+            <option value="Culture">HR &amp; Culture Fit</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:140px;">
+          <label>Target Role</label>
+          <select id="interviewRole" onchange="loadInterviewQuestion()">
+            <option value="SDE-1">SDE-1 (Full Stack / Backend)</option>
+            <option value="Frontend">Frontend Developer</option>
+            <option value="DataScientist">ML / Data Scientist</option>
+            <option value="DevOps">DevOps / Cloud Engineer</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="loadInterviewQuestion()" id="btnNextQuestion">🎲 Next Question</button>
+        <button class="btn btn-ghost btn-sm" onclick="speakInterviewQuestion()" id="btnSpeakQuestion">🔊 Speak Question (TTS)</button>
       </div>
-      <div style="flex:1;min-width:140px;">
-        <label>Target Role</label>
-        <select id="interviewRole" onchange="loadInterviewQuestion()">
-          <option value="SDE-1">SDE-1 (Full Stack / Backend)</option>
-          <option value="Frontend">Frontend Developer</option>
-          <option value="DataScientist">ML / Data Scientist</option>
-          <option value="DevOps">DevOps / Cloud Engineer</option>
-        </select>
+
+      <!-- ROLE SWITCH MODE TOGGLE -->
+      <div style="display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;align-self:stretch;">
+        <span style="font-size:.82rem;font-weight:700;color:var(--t1);">🔄 Switch Roles: I am the Interviewer</span>
+        <label class="switch" style="position:relative;display:inline-block;width:40px;height:20px;margin-bottom:0;">
+          <input type="checkbox" id="toggleRoleSwitch" onchange="toggleInterviewRoleMode()" style="opacity:0;width:0;height:0;">
+          <span class="slider round" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;border-radius:20px;"></span>
+        </label>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="loadInterviewQuestion()">🎲 Next Question</button>
-      <button class="btn btn-ghost btn-sm" onclick="speakInterviewQuestion()">🔊 Speak Question (TTS)</button>
     </div>
   </div></div>
+
+  <!-- SPEECH GUARD REJECTION BANNER -->
+  <div id="speechGuardAlert" style="display:none;background:rgba(184,74,57,.1);border:1px solid rgba(184,74,57,.3);color:var(--red);border-radius:10px;padding:12px 16px;font-size:.82rem;font-weight:700;margin-bottom:20px;text-align:center;align-items:center;justify-content:center;gap:8px;animation:shake .4s ease;">
+    ⚠️ Unprofessional, casual, or irrelevant speech input detected. Please speak formal interview questions or responses.
+  </div>
 
   <!-- INTERVIEW MAIN GRID: AVATAR & CONTROLS -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px;margin-bottom:24px;" class="animate d1">
@@ -673,7 +707,7 @@ select option {background:#ffffff;color:var(--t1);}
 
         <!-- Question Speech Bubble -->
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;margin-bottom:12px;">
-          <div style="font-size:.72rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Current Question:</div>
+          <div style="font-size:.72rem;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;" id="interviewBubbleLabel">Current Question:</div>
           <div style="font-size:1.02rem;font-weight:600;line-height:1.5;color:var(--t1);" id="interviewQuestionText">Loading question...</div>
         </div>
 
@@ -921,6 +955,117 @@ select option {background:#ffffff;color:var(--t1);}
     <button class="btn btn-ghost btn-sm" onclick="filterLearnModules('Medium')" id="btnLpMedBtn">🔷 Medium Priority</button>
   </div>
   <div id="learningPathContainer"></div>
+</div>
+
+<!-- ═══ SYSTEM OUTAGE GAME ═══ -->
+<div id="page-game" class="page">
+  <div class="section-title animate">🚨 System Outage <span class="g-text">Stress Simulator</span></div>
+  <div class="section-sub animate">Keep the server alive! You are the on-call engineer during a production disaster. Monitor logs, scale infrastructure, and resolve active incidents under high pressure.</div>
+
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-bottom:24px;" class="animate d1">
+    
+    <!-- TERMINAL SCREEN & LIVE METRICS -->
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;background:#0d0e12;border:1px solid #1f2937;">
+      <div class="card-body">
+        <!-- SYSTEM HEALTH BAR -->
+        <div style="margin-bottom:18px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-weight:800;font-size:.9rem;color:#f3f4f6;display:flex;align-items:center;gap:6px;">
+              ❤️ System Health / SLA Status: 
+            </span>
+            <span style="font-weight:900;font-family:monospace;font-size:1.1rem;color:#10b981;" id="gameHealthPct">100%</span>
+          </div>
+          <div class="progress" style="height:14px;background:#1f2937;border:1px solid #374151;">
+            <div id="gameHealthBar" class="progress-fill" style="width:100%;background:linear-gradient(90deg, #10b981, #059669);transition:width .2s ease, background .3s;"></div>
+          </div>
+        </div>
+
+        <!-- METRICS MONITOR HUD -->
+        <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:#111827;border:1px solid #1f2937;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:.65rem;color:#9ca3af;font-weight:700;text-transform:uppercase;">🖥️ CPU Load</div>
+            <div style="font-size:1.2rem;font-weight:900;font-family:monospace;color:#10b981;margin-top:4px;" id="gameCpuVal">22%</div>
+          </div>
+          <div style="background:#111827;border:1px solid #1f2937;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:.65rem;color:#9ca3af;font-weight:700;text-transform:uppercase;">🗄️ DB Conns</div>
+            <div style="font-size:1.2rem;font-weight:900;font-family:monospace;color:#10b981;margin-top:4px;" id="gameDbVal">14/100</div>
+          </div>
+          <div style="background:#111827;border:1px solid #1f2937;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:.65rem;color:#9ca3af;font-weight:700;text-transform:uppercase;">💾 Cache Stat</div>
+            <div style="font-size:1rem;font-weight:900;font-family:monospace;color:#10b981;margin-top:4px;" id="gameCacheVal">Healthy</div>
+          </div>
+          <div style="background:#111827;border:1px solid #1f2937;border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:.65rem;color:#9ca3af;font-weight:700;text-transform:uppercase;">⚙️ Version</div>
+            <div style="font-size:1.1rem;font-weight:900;font-family:monospace;color:#3b82f6;margin-top:4px;" id="gameVersionVal">v2.4.1</div>
+          </div>
+        </div>
+
+        <!-- RETRO CRT LOG TERMINAL -->
+        <div style="position:relative;background:#050508;border:2px solid #1f2937;border-radius:12px;padding:16px;box-shadow:inset 0 0 20px rgba(0,0,0,0.9);">
+          <div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;background:radial-gradient(circle, rgba(16,185,129,0.04) 0%, rgba(0,0,0,0) 80%);"></div>
+          <div style="position:flex;justify-content:space-between;border-bottom:1px solid #1f2937;padding-bottom:6px;margin-bottom:10px;font-family:monospace;font-size:.72rem;color:#10b981;">
+            <span>📟 ON-CALL LIVE DEPLOYMENT TERMINAL LOGS</span>
+            <span style="float:right;animation:pulse 1s infinite;">● STREAMING</span>
+          </div>
+          <div id="gameTerminal" style="height:210px;overflow-y:auto;font-family:'JetBrains Mono','Courier New',monospace;font-size:.78rem;color:#10b981;line-height:1.5;white-space:pre-wrap;">
+[SYSTEM INFO] Console ready. Click "Start Outage Simulation" to deploy on-call session.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROL CENTER & ACTIONS -->
+    <div class="card">
+      <div class="card-body">
+        <!-- SIMULATION ACTIVE HEADER -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="margin:0;font-family:'Outfit',sans-serif;font-size:1.15rem;">🕹️ Incident Control Center</h3>
+          <span class="badge b-purple" id="gameTimerVal">00:00</span>
+        </div>
+
+        <!-- INCIDENT WARNING BANNER -->
+        <div id="gameIncidentBanner" style="background:#111827;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+          <div style="font-size:2.2rem;margin-bottom:8px;" id="gameIncidentEmoji">🟢</div>
+          <div style="font-weight:800;font-size:.95rem;color:var(--t1);" id="gameIncidentTitle">Systems Nominal</div>
+          <div style="font-size:.76rem;color:var(--t2);margin-top:4px;" id="gameIncidentDesc">No active incidents detected. Monitor log telemetry.</div>
+        </div>
+
+        <!-- INTERACTIVE QUICK ACTION CONTROLS -->
+        <div style="margin-bottom:20px;">
+          <p style="font-size:.75rem;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:10px;">⚡ On-Call Mitigation Commands:</p>
+          
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('rollback')">
+              🔄 <strong>Rollback Last Commit</strong> (Fix buggy deployments)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('scale')">
+              🎚️ <strong>Scale Up Replicas</strong> (Handle massive traffic spikes)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('kill_queries')">
+              🚫 <strong>Kill Slow Queries</strong> (Clear database deadlocks)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('restart_cache')">
+              ⚡ <strong>Restart Redis Cache</strong> (Fix connection timeouts)
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding:12px 16px;font-size:.85rem;border-radius:10px;border-color:var(--border);" onclick="triggerGameAction('rate_limit')">
+              🛡️ <strong>Enable Rate Limiting</strong> (Stop DDoS/API floods)
+            </button>
+          </div>
+        </div>
+
+        <!-- PLAY CONTROLS -->
+        <div style="display:flex;gap:12px;">
+          <button class="btn btn-primary" style="flex:1;padding:12px;" onclick="startGameSimulation()" id="btnGameStart">🚀 Start Outage Simulation</button>
+          <button class="btn btn-ghost" style="padding:12px;display:none;" onclick="stopGameSimulation()" id="btnGameStop">⏹️ Stop</button>
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:space-between;font-size:.78rem;color:var(--t2);">
+          <span>🏆 High Score (Survivals): <strong id="gameHighScoreText">0s</strong></span>
+          <span>Last Score: <strong id="gameLastScoreText">0s</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1188,6 +1333,7 @@ function showPage(id) {
   if(id==='quiz') initQuizPage();
   if(id==='interview') initInterviewPage();
   if(id==='learn') initLearnPage();
+  if(id==='game') initGamePage();
 }
 
 // ─── TOAST ──────────────────────────────────
@@ -2384,16 +2530,37 @@ function stopInterviewRecord() {
   interviewState.isRecording = false;
   clearInterval(interviewState.recTimer);
 
+  const switchEl = document.getElementById('toggleRoleSwitch');
+  const isInterviewer = switchEl && switchEl.checked;
+
   document.getElementById('recBtnIcon').textContent = '🎙️';
-  document.getElementById('recBtnText').textContent = 'Record Answer';
+  document.getElementById('recBtnText').textContent = isInterviewer ? 'Record Question' : 'Record Answer';
+  
   const btn = document.getElementById('btnInterviewRecord');
   if(btn && btn.classList.contains('btn-danger')) btn.classList.replace('btn-danger', 'btn-primary');
-  document.getElementById('recStatusText').textContent = 'Recording stopped. Review your summary below.';
+  document.getElementById('recStatusText').textContent = 'Recording stopped.';
 
   if (interviewState.recognition) {
     try { interviewState.recognition.stop(); } catch(e){}
   }
 
+  // 1. Apply Speech Guard Rejection Filter
+  if (!validateProfessionalSpeech(interviewState.transcript)) {
+    flashSpeechGuardAlert();
+    document.getElementById('recStatusText').textContent = '⚠️ Speech rejected. Please ask/answer professional interview queries.';
+    return;
+  }
+
+  // 2. Handle AI Interviewee Role-Switch Mode
+  if (isInterviewer) {
+    const aiAnswer = getAiCandidateResponse(interviewState.transcript);
+    document.getElementById('interviewQuestionText').textContent = aiAnswer;
+    document.getElementById('recStatusText').textContent = 'AI Candidate has formulated a professional response. Listen above.';
+    speakTTS(aiAnswer);
+    return;
+  }
+
+  // 3. Default Mode (User answers Manager question)
   generateInterviewSummary();
   generateSpontaneousFollowup(interviewState.transcript);
 }
@@ -4414,8 +4581,437 @@ function showAuthAccountModal(){
   modal.addEventListener('click',(e)=>{ if(e.target===modal) modal.remove(); });
 }
 
+// ─── SPEECH GUARD REJECTION FILTER ────────────────
+function validateProfessionalSpeech(text) {
+  const clean = text.toLowerCase().trim();
+  if (clean.length < 4) return false;
+
+  // Reject gibberish, casual slang, and non-professional noise patterns
+  const junkPatterns = [
+    'blah', 'gibberish', 'yoyoyo', 'whatsup', 'wazzup', 'nonsense',
+    'testtest', 'lalala', 'bababa', 'brobro', 'dudedu', 'yo yo',
+    'what\'s up', 'hey bro', 'hey dude', 'whatever', 'asdf', 'qwerty'
+  ];
+
+  for (const pattern of junkPatterns) {
+    if (clean.includes(pattern)) return false;
+  }
+  return true;
+}
+
+function flashSpeechGuardAlert() {
+  const banner = document.getElementById('speechGuardAlert');
+  if (banner) {
+    banner.style.display = 'flex';
+    banner.style.animation = 'none';
+    void banner.offsetWidth; // Trigger reflow to restart CSS animation
+    banner.style.animation = 'shake .4s ease';
+    
+    // Voice read warnings
+    speakTTS("Speech input flagged as casual or irrelevant. Please use professional terms.");
+    
+    setTimeout(() => {
+      banner.style.display = 'none';
+    }, 4500);
+  }
+}
+
+// ─── AI INTERVIEWEE MODE SWITCH ────────────────────
+let interviewRoleMode = 'candidate'; // 'candidate' (default) or 'interviewer'
+
+function toggleInterviewRoleMode() {
+  const switchEl = document.getElementById('toggleRoleSwitch');
+  const labelEl = document.getElementById('interviewBubbleLabel');
+  const questionEl = document.getElementById('interviewQuestionText');
+  const moodBadge = document.getElementById('avatarMoodText');
+  const titleText = document.getElementById('recStatusText');
+  const voiceBtn = document.getElementById('btnSpeakQuestion');
+  const nextBtn = document.getElementById('btnNextQuestion');
+
+  if (switchEl && switchEl.checked) {
+    interviewRoleMode = 'interviewer';
+    showToast('Role Switched: You are now the Interviewer!', '🔄');
+    if (labelEl) labelEl.textContent = 'AI Candidate Answer:';
+    if (questionEl) questionEl.textContent = 'Speak or type your interview question, then stop recording to hear the AI Candidate respond.';
+    if (moodBadge) moodBadge.innerHTML = '<span>👂 Status: Ready for your Question</span>';
+    if (titleText) titleText.textContent = 'Click "Record Question" and ask me any technical/behavioral question.';
+    if (voiceBtn) voiceBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    
+    document.getElementById('recBtnText').textContent = 'Record Question';
+  } else {
+    interviewRoleMode = 'candidate';
+    showToast('Role Switched: You are now the Candidate!', '🔄');
+    if (labelEl) labelEl.textContent = 'Current Question:';
+    if (voiceBtn) voiceBtn.style.display = 'inline-flex';
+    if (nextBtn) nextBtn.style.display = 'inline-flex';
+    
+    document.getElementById('recBtnText').textContent = 'Record Answer';
+    loadInterviewQuestion();
+  }
+}
+
+const AI_CANDIDATE_RESPONSES = {
+  dsa: `As a candidate, I would implement this algorithm using an optimal approach. For example, if it's a Two Sum constraint, I'd maintain a single-pass hash map to index target complements in O(N) time complexity and O(N) auxiliary space, bypassing redundant O(N²) nested loops. This ensures linear-time execution suitable for highly scalable database indexes.`,
+  system_design: `To scale this microservice architecture to 100k active requests per second, I would decouple frontend servers from database transactions by introducing an asynchronous message broker like Apache Kafka or Redis Pub/Sub. I'd then implement composite B-Tree database indexing, database read-replicas, and horizontal scaling via load balancers.`,
+  behavioral: `In my last role, we faced a major production incident when a Friday release caused a severe database deadlock. I took ownership of mitigation: rolling back the deployment within 3 minutes, tracing slow lock contentions, and adding automated CI regression tests. We prevented further downtime and preserved our SLA.`,
+  hr: `I am highly motivated to join your engineering team because of your focus on building high-scalability systems. My experience with Java, Python, and SQL matches your technical stack, and I thrive in collaborative agile environments focused on code quality and clean architecture.`
+};
+
+function getAiCandidateResponse(question) {
+  const lower = question.toLowerCase();
+  if (lower.includes('leetcode') || lower.includes('algorithm') || lower.includes('data structure') || lower.includes('binary') || lower.includes('sort') || lower.includes('reverse') || lower.includes('array') || lower.includes('complexity') || lower.includes('tree') || lower.includes('graph')) {
+    return AI_CANDIDATE_RESPONSES.dsa;
+  }
+  if (lower.includes('scale') || lower.includes('system design') || lower.includes('database') || lower.includes('load balance') || lower.includes('cache') || lower.includes('microservice') || lower.includes('architecture') || lower.includes('sql') || lower.includes('sharding')) {
+    return AI_CANDIDATE_RESPONSES.system_design;
+  }
+  if (lower.includes('conflict') || lower.includes('pressure') || lower.includes('mistake') || lower.includes('star') || lower.includes('project') || lower.includes('team') || lower.includes('challenge') || lower.includes('behavioral')) {
+    return AI_CANDIDATE_RESPONSES.behavioral;
+  }
+  return AI_CANDIDATE_RESPONSES.hr;
+}
+
+// ─── RETRO OUTAGE INCIDENT SIMULATOR ENGINE ───────
+let gameActive = false;
+let gameHealth = 100;
+let gameSeconds = 0;
+let gameInterval = null;
+let gameLogInterval = null;
+let gameHighScore = 0;
+let currentIncident = null;
+
+const GAME_INCIDENTS = [
+  {
+    id: 'traffic_spike',
+    emoji: '⚡',
+    title: 'Massive Traffic Surge (DDoS Attack)',
+    desc: 'API gateway ingress spiked by 900%! Load balancers are failing health checks.',
+    expected: 'scale',
+    cpu: '98%',
+    db: '32/100',
+    cache: 'Healthy',
+    version: 'v2.4.1',
+    logs: [
+      '[WARN] Traffic surge: 48,000 ingress requests/sec detected.',
+      '[ERROR] Load balancer CPU load at 98%. Target group failures rising.',
+      '[CRITICAL] 502 Bad Gateway: Connection pool timeouts! Scale replicas immediately!'
+    ]
+  },
+  {
+    id: 'redis_timeout',
+    emoji: '💾',
+    title: 'Redis Cache Connection Outage',
+    desc: 'Redis client reports TimeoutException. All queries fall back to DB, causing load spikes.',
+    expected: 'restart_cache',
+    cpu: '64%',
+    db: '95/100',
+    cache: 'Timeout 🔴',
+    version: 'v2.4.1',
+    logs: [
+      '[WARN] Redis connection dropped: pool closed.',
+      '[ERROR] Fallback active: Routing all transaction queries straight to PostgreSQL.',
+      '[CRITICAL] DB connections exhausted! Restart Redis cache cluster now!'
+    ]
+  },
+  {
+    id: 'db_deadlock',
+    emoji: '🗄️',
+    title: 'PostgreSQL Composite Deadlocks',
+    desc: 'A heavy analytical report query is locking transaction tables, blocking checkouts.',
+    expected: 'kill_queries',
+    cpu: '88%',
+    db: '98/100',
+    cache: 'Healthy',
+    version: 'v2.4.1',
+    logs: [
+      '[WARN] pg_stat_activity: Running SELECT SUM(sales) FROM transactions JOIN users...',
+      '[ERROR] pg_deadlock: process 8041 blocked by ShareLock on transaction index.',
+      '[CRITICAL] DB Pool Lock contention 100%! Terminate locking process immediately!'
+    ]
+  },
+  {
+    id: 'buggy_deploy',
+    emoji: '🐛',
+    title: 'Memory Leak in Buggy Release (v2.4.2)',
+    desc: 'Latest production deployment is leaking memory rapidly, triggering OOM worker crash loops.',
+    expected: 'rollback',
+    cpu: '96%',
+    db: '18/100',
+    cache: 'Healthy',
+    version: 'v2.4.2 🔴',
+    logs: [
+      '[INFO] Triggering CI/CD production release v2.4.2...',
+      '[WARN] Node Runtime: Heap memory usage exceeded 95% (OOM imminent).',
+      '[CRITICAL] Container crash: OutOfMemoryError. Rollback last commit immediately!'
+    ]
+  },
+  {
+    id: 'ddos_flood',
+    emoji: '🛡️',
+    title: 'DDoS API Scraper Flood',
+    desc: 'Rogue IP blocks scraping public product catalogs, flooding DB with search queries.',
+    expected: 'rate_limit',
+    cpu: '92%',
+    db: '80/100',
+    cache: 'Slow 🟡',
+    version: 'v2.4.1',
+    logs: [
+      '[WARN] Ingress traffic audit: Single IP making 800 search req/sec.',
+      '[ERROR] Search query database queue exceeded 500 rows.',
+      '[CRITICAL] API catalog latency spiked to 4.2 seconds! Enable Cloudflare rate limit!'
+    ]
+  }
+];
+
+function initGamePage() {
+  try {
+    gameHighScore = parseInt(localStorage.getItem('careerai_outage_game_highscore') || '0');
+    const lastScore = parseInt(localStorage.getItem('careerai_outage_game_lastscore') || '0');
+    
+    document.getElementById('gameHighScoreText').textContent = gameHighScore + 's';
+    document.getElementById('gameLastScoreText').textContent = lastScore + 's';
+  } catch(e){}
+}
+
+function startGameSimulation() {
+  if (gameActive) return;
+  gameActive = true;
+  gameHealth = 100;
+  gameSeconds = 0;
+  currentIncident = null;
+
+  document.getElementById('btnGameStart').style.display = 'none';
+  document.getElementById('btnGameStop').style.display = 'inline-flex';
+  
+  const terminal = document.getElementById('gameTerminal');
+  if (terminal) {
+    terminal.textContent = `[ON-CALL SESSION INITIALIZED]\n[SLA TARGET: 100%]\n[MONITOR ACTIVE] Streaming live metrics...\n`;
+  }
+
+  updateGameUI();
+  showToast('Simulation Outage Game Started! Stay Alert!', '🚨');
+
+  // Core Game Loop (1s intervals)
+  gameInterval = setInterval(() => {
+    gameSeconds++;
+    
+    // Display stopwatch timer
+    const mins = String(Math.floor(gameSeconds / 60)).padStart(2, '0');
+    const secs = String(gameSeconds % 60).padStart(2, '0');
+    document.getElementById('gameTimerVal').textContent = `${mins}:${secs}`;
+
+    // Handle Active Incident health depletion
+    if (currentIncident) {
+      gameHealth -= 4; // Health drains quickly during outages
+      if (gameHealth <= 0) {
+        gameHealth = 0;
+        gameOverOutageSimulation();
+      }
+    } else {
+      // Small recovery if nominal
+      if (gameHealth < 100) gameHealth = Math.min(100, gameHealth + 2);
+      
+      // Randomly spawn incident every 8-12 seconds
+      if (gameSeconds > 2 && Math.random() < 0.16) {
+        spawnGameIncident();
+      }
+    }
+    
+    updateGameUI();
+  }, 1000);
+
+  // Live Telemetry Logs Simulator
+  gameLogInterval = setInterval(() => {
+    writeLiveTelemetryLog();
+  }, 1200);
+}
+
+function spawnGameIncident() {
+  const roll = GAME_INCIDENTS[Math.floor(Math.random() * GAME_INCIDENTS.length)];
+  currentIncident = roll;
+
+  document.getElementById('gameIncidentEmoji').textContent = roll.emoji;
+  document.getElementById('gameIncidentTitle').textContent = roll.title;
+  document.getElementById('gameIncidentTitle').style.color = '#ef4444';
+  document.getElementById('gameIncidentDesc').textContent = roll.desc;
+  document.getElementById('gameIncidentBanner').style.backgroundColor = 'rgba(239,68,68,.08)';
+  document.getElementById('gameIncidentBanner').style.borderColor = 'rgba(239,68,68,.3)';
+
+  // Telemetry HUD updates
+  document.getElementById('gameCpuVal').textContent = roll.cpu;
+  document.getElementById('gameCpuVal').style.color = '#ef4444';
+  document.getElementById('gameDbVal').textContent = roll.db;
+  document.getElementById('gameDbVal').style.color = '#ef4444';
+  document.getElementById('gameCacheVal').textContent = roll.cache;
+  document.getElementById('gameCacheVal').style.color = roll.cache.includes('Healthy') ? '#10b981' : '#ef4444';
+  document.getElementById('gameVersionVal').textContent = roll.version;
+  document.getElementById('gameVersionVal').style.color = roll.version.includes('🔴') ? '#ef4444' : '#3b82f6';
+
+  // Flush critical error logs
+  const terminal = document.getElementById('gameTerminal');
+  if (terminal) {
+    terminal.innerHTML += `\n<span style="color:#ef4444;font-weight:bold;">🚨 [INCIDENT INCITED] ${roll.title} 🚨</span>`;
+    roll.logs.forEach(log => {
+      terminal.innerHTML += `\n<span style="color:#f59e0b;">${log}</span>`;
+    });
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  showToast(`incident Detected: ${roll.title}`, '🚨');
+  speakTTS(`Warning: ${roll.title} detected. Mitigate immediately.`);
+}
+
+function writeLiveTelemetryLog() {
+  const terminal = document.getElementById('gameTerminal');
+  if (!terminal) return;
+
+  if (!gameActive) return;
+
+  if (currentIncident) {
+    const errorLogs = [
+      `[CRITICAL] SLA health draining. Database pool utilization high.`,
+      `[WARN] Gateway retry queue full. Backing off request handlers.`,
+      `[ERROR] Transaction timeout. client HTTP 504 Gateway Timeout.`,
+      `[CRITICAL] Server load threshold breached! Emergency intervention required.`
+    ];
+    terminal.innerHTML += `\n<span style="color:#ef4444;">${errorLogs[Math.floor(Math.random() * errorLogs.length)]}</span>`;
+  } else {
+    const healthyLogs = [
+      `[INFO] Ingress gateway: HTTP 200 OK - ${Math.round(2000 + Math.random()*500)} req/m.`,
+      `[INFO] pg_stat_activity: DB connections healthy (14/100).`,
+      `[INFO] Redis client: Cache hits steady at 98.4%.`,
+      `[INFO] Health check: All node containers reporting green.`
+    ];
+    terminal.innerHTML += `\n<span style="color:#10b981;">${healthyLogs[Math.floor(Math.random() * healthyLogs.length)]}</span>`;
+  }
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function triggerGameAction(action) {
+  if (!gameActive) {
+    showToast('Simulation is offline. Click "Start Outage Simulation" first!', '⚠️');
+    return;
+  }
+
+  const terminal = document.getElementById('gameTerminal');
+  if (!currentIncident) {
+    // Punish for mitigation attempt when system is nominal
+    gameHealth = Math.max(0, gameHealth - 10);
+    if (terminal) {
+      terminal.innerHTML += `\n<span style="color:#ef4444;">[REDUNDANT COMMAND] System nominal. Mitigation action ignored. SLA Health penalized -10%.</span>`;
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+    showToast('No active incident! SLA penalized.', '⚠️');
+    updateGameUI();
+    return;
+  }
+
+  if (currentIncident.expected === action) {
+    // Successfully mitigated!
+    gameHealth = Math.min(100, gameHealth + 30);
+    
+    if (terminal) {
+      terminal.innerHTML += `\n<span style="color:#10b981;font-weight:bold;">[MITIGATION RESOLVED] Command successfully applied. Incidents cleared. Systems nominal.</span>`;
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    showToast('Mitigated Outage successfully! SLA healthy.', '✅');
+    speakTTS("Incident resolved. Systems nominal.");
+
+    // Clear incident
+    currentIncident = null;
+    resetIncidentHUD();
+  } else {
+    // Wrong action!
+    gameHealth = Math.max(0, gameHealth - 20);
+    if (terminal) {
+      terminal.innerHTML += `\n<span style="color:#ef4444;">[MISALIGNED ACTION] Command failed to resolve outage! SLA Health penalized -20%.</span>`;
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+    showToast('Wrong mitigation action! Health penalized.', '❌');
+    
+    if (gameHealth <= 0) {
+      gameOverOutageSimulation();
+    }
+  }
+  updateGameUI();
+}
+
+function resetIncidentHUD() {
+  document.getElementById('gameIncidentEmoji').textContent = '🟢';
+  document.getElementById('gameIncidentTitle').textContent = 'Systems Nominal';
+  document.getElementById('gameIncidentTitle').style.color = 'var(--t1)';
+  document.getElementById('gameIncidentDesc').textContent = 'No active incidents detected. Monitor log telemetry.';
+  document.getElementById('gameIncidentBanner').style.backgroundColor = '#111827';
+  document.getElementById('gameIncidentBanner').style.borderColor = 'var(--border)';
+
+  // Telemetry HUD reset
+  document.getElementById('gameCpuVal').textContent = '22%';
+  document.getElementById('gameCpuVal').style.color = '#10b981';
+  document.getElementById('gameDbVal').textContent = '14/100';
+  document.getElementById('gameDbVal').style.color = '#10b981';
+  document.getElementById('gameCacheVal').textContent = 'Healthy';
+  document.getElementById('gameCacheVal').style.color = '#10b981';
+  document.getElementById('gameVersionVal').textContent = 'v2.4.1';
+  document.getElementById('gameVersionVal').style.color = '#3b82f6';
+}
+
+function updateGameUI() {
+  document.getElementById('gameHealthPct').textContent = gameHealth + '%';
+  const bar = document.getElementById('gameHealthBar');
+  if (bar) {
+    bar.style.width = gameHealth + '%';
+    if (gameHealth > 60) {
+      bar.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+      document.getElementById('gameHealthPct').style.color = '#10b981';
+    } else if (gameHealth > 30) {
+      bar.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+      document.getElementById('gameHealthPct').style.color = '#f59e0b';
+    } else {
+      bar.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+      document.getElementById('gameHealthPct').style.color = '#ef4444';
+    }
+  }
+}
+
+function gameOverOutageSimulation() {
+  stopGameSimulation();
+  
+  const terminal = document.getElementById('gameTerminal');
+  if (terminal) {
+    terminal.innerHTML += `\n<span style="color:#ef4444;font-weight:bold;font-size:1.1rem;">[CRITICAL FAILURE] SLA HIT 0%. SYSTEM COLLAPSED. ON-CALL DISASTER INCURRED!</span>`;
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  showToast('Game Over! System crashed.', '❌');
+  speakTTS("SLA threshold breached. Game Over.");
+
+  // Save scores
+  try {
+    localStorage.setItem('careerai_outage_game_lastscore', gameSeconds);
+    if (gameSeconds > gameHighScore) {
+      gameHighScore = gameSeconds;
+      localStorage.setItem('careerai_outage_game_highscore', gameHighScore);
+      showToast('New High Score established! 🏆', '🏆');
+    }
+  } catch(e){}
+
+  initGamePage();
+}
+
+function stopGameSimulation() {
+  gameActive = false;
+  clearInterval(gameInterval);
+  clearInterval(gameLogInterval);
+
+  document.getElementById('btnGameStart').style.display = 'inline-flex';
+  document.getElementById('btnGameStop').style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   updateAuthNav();
+  initGamePage();
 });
 </script>
 </body>
