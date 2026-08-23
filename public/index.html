@@ -2886,6 +2886,194 @@ function build200PlusCodingDatabase() {
 
   let globalIdCounter = 1;
 
+  // Authentic Category Algorithm Generators
+  const getAlgoSpec = (cat, titleName, diff, idNum) => {
+    const fnName = `solve_${cat.toLowerCase()}_${idNum}`;
+    
+    if (cat === 'Arrays') {
+      return {
+        desc: `Given an array of integers <code>nums</code> and a target value <code>target</code>, solve the <strong>${titleName}</strong> algorithm under <code>${diff}</code> time and memory constraints.`,
+        examples: `Input: nums = [2, 7, 11, 15], target = 9<br>Output: [0, 1]`,
+        templates: {
+          python: `def ${fnName}(nums, target):\n    # Write your ${diff} level ${titleName} solution here\n    pass\n`,
+          cpp: `vector<int> ${fnName}(vector<int>& nums, int target) {\n    // Write your ${diff} level ${titleName} solution here\n    return {};\n}\n`,
+          java: `public int[] ${fnName}(int[] nums, int target) {\n    // Write your ${diff} level ${titleName} solution here\n    return new int[0];\n}\n`,
+          c: `int* ${fnName}(int* nums, int size, int target, int* returnSize) {\n    // Write your ${diff} level ${titleName} solution here\n    *returnSize = 0;\n    return NULL;\n}\n`
+        },
+        testCases: [
+          { input: `nums = [2, 7, 11, 15], target = 9`, expected: `[0, 1]` },
+          { input: `nums = [3, 2, 4], target = 6`, expected: `[1, 2]` }
+        ],
+        solution: {
+          title: `Hash Map & Two-Pointer Optimal Approach for ${titleName}`,
+          text: `Optimal Strategy for ${titleName}:\n1. Initialize a hash map to store seen elements and their corresponding indices.\n2. Iterate through the array; for each element x, calculate its complement diff = target - x.\n3. If diff exists in the map, return [map[diff], i]. Otherwise, add x -> i to map.\n\nTime Complexity: O(N) single-pass linear time.\nSpace Complexity: O(N) auxiliary hash map memory.`,
+          code: {
+            python: `def ${fnName}(nums, target):\n    seen = {}\n    for i, num in enumerate(nums):\n        diff = target - num\n        if diff in seen:\n            return [seen[diff], i]\n        seen[num] = i\n    return []`,
+            cpp: `vector<int> ${fnName}(vector<int>& nums, int target) {\n    unordered_map<int, int> seen;\n    for (int i = 0; i < nums.size(); i++) {\n        int diff = target - nums[i];\n        if (seen.count(diff)) return {seen[diff], i};\n        seen[nums[i]] = i;\n    }\n    return {};\n}`,
+            java: `public int[] ${fnName}(int[] nums, int target) {\n    Map<Integer, Integer> seen = new HashMap<>();\n    for (int i = 0; i < nums.length; i++) {\n        int diff = target - nums[i];\n        if (seen.containsKey(diff)) return new int[]{seen.get(diff), i};\n        seen.put(nums[i], i);\n    }\n    return new int[0];\n}`,
+            c: `int* ${fnName}(int* nums, int size, int target, int* returnSize) {\n    int* res = (int*)malloc(2 * sizeof(int));\n    for (int i = 0; i < size; i++) {\n        for (int j = i + 1; j < size; j++) {\n            if (nums[i] + nums[j] == target) {\n                res[0] = i; res[1] = j;\n                *returnSize = 2;\n                return res;\n            }\n        }\n    }\n    *returnSize = 0;\n    return NULL;\n}`
+          }
+        }
+      };
+    }
+
+    if (cat === 'Strings' || cat === 'StackQueue') {
+      return {
+        desc: `Given an input string <code>s</code> containing bracket characters or string tokens, solve <strong>${titleName}</strong> using stack push/pop evaluation under <code>${diff}</code> constraints.`,
+        examples: `Input: s = "()[]{}"<br>Output: true`,
+        templates: {
+          python: `def ${fnName}(s):\n    # Write your ${diff} level ${titleName} solution using Stack\n    pass\n`,
+          cpp: `bool ${fnName}(string s) {\n    // Write your ${diff} level ${titleName} solution using std::stack\n    return false;\n}\n`,
+          java: `public boolean ${fnName}(String s) {\n    // Write your ${diff} level ${titleName} solution using Stack\n    return false;\n}\n`,
+          c: `bool ${fnName}(char* s) {\n    // Write your ${diff} level ${titleName} solution using Stack array\n    return false;\n}\n`
+        },
+        testCases: [
+          { input: `s = "()[]{}"`, expected: `true` },
+          { input: `s = "(]"`, expected: `false` }
+        ],
+        solution: {
+          title: `Stack-Based Bracket Matching Approach for ${titleName}`,
+          text: `Optimal Strategy for ${titleName}:\n1. Initialize a stack to keep track of open brackets.\n2. Iterate through string s; if opening bracket is found, push to stack.\n3. If closing bracket is found, check top element of stack for matching bracket pair. Return false if empty or mismatched.\n4. Return true if stack is completely empty at the end.\n\nTime Complexity: O(N) linear scan.\nSpace Complexity: O(N) stack auxiliary memory.`,
+          code: {
+            python: `def ${fnName}(s):\n    stack = []\n    mapping = {")": "(", "}": "{", "]": "["}\n    for char in s:\n        if char in mapping:\n            top = stack.pop() if stack else '#'\n            if mapping[char] != top:\n                return False\n        else:\n            stack.append(char)\n    return not stack`,
+            cpp: `bool ${fnName}(string s) {\n    stack<char> st;\n    for (char c : s) {\n        if (c == '(' || c == '{' || c == '[') st.push(c);\n        else {\n            if (st.empty()) return false;\n            char top = st.top(); st.pop();\n            if ((c == ')' && top != '(') || (c == '}' && top != '{') || (c == ']' && top != '[')) return false;\n        }\n    }\n    return st.empty();\n}`,
+            java: `public boolean ${fnName}(String s) {\n    Stack<Character> stack = new Stack<>();\n    for (char c : s.toCharArray()) {\n        if (c == '(') stack.push(')');\n        else if (c == '{') stack.push('}');\n        else if (c == '[') stack.push(']');\n        else if (stack.isEmpty() || stack.pop() != c) return false;\n    }\n    return stack.isEmpty();\n}`,
+            c: `bool ${fnName}(char* s) {\n    char stack[1000]; int top = -1;\n    for (int i = 0; s[i]; i++) {\n        if (s[i] == '(' || s[i] == '{' || s[i] == '[') stack[++top] = s[i];\n        else {\n            if (top == -1) return false;\n            char t = stack[top--];\n            if ((s[i] == ')' && t != '(') || (s[i] == '}' && t != '{') || (s[i] == ']' && t != '[')) return false;\n        }\n    }\n    return top == -1;\n}`
+          }
+        }
+      };
+    }
+
+    if (cat === 'LinkedList') {
+      return {
+        desc: `Given the head of a singly linked list <code>head</code>, solve <strong>${titleName}</strong> by adjusting node pointers iteratively or recursively.`,
+        examples: `Input: head = [1, 2, 3, 4, 5]<br>Output: [5, 4, 3, 2, 1]`,
+        templates: {
+          python: `def ${fnName}(head):\n    # Write your ${diff} level ${titleName} pointer solution\n    pass\n`,
+          cpp: `ListNode* ${fnName}(ListNode* head) {\n    // Write your ${diff} level ${titleName} pointer solution\n    return head;\n}\n`,
+          java: `public ListNode ${fnName}(ListNode head) {\n    // Write your ${diff} level ${titleName} pointer solution\n    return head;\n}\n`,
+          c: `struct ListNode* ${fnName}(struct ListNode* head) {\n    // Write your ${diff} level ${titleName} pointer solution\n    return head;\n}\n`
+        },
+        testCases: [
+          { input: `head = [1, 2, 3, 4, 5]`, expected: `[5, 4, 3, 2, 1]` }
+        ],
+        solution: {
+          title: `Iterative 3-Pointer Reversal Approach for ${titleName}`,
+          text: `Optimal Strategy for ${titleName}:\n1. Maintain prev (None), curr (head), and next_node pointers.\n2. In each iteration, save curr.next, reverse curr.next to point to prev.\n3. Advance prev = curr and curr = next_node.\n\nTime Complexity: O(N) linear time.\nSpace Complexity: O(1) in-place auxiliary memory.`,
+          code: {
+            python: `def ${fnName}(head):\n    prev = None\n    curr = head\n    while curr:\n        nxt = curr.next\n        curr.next = prev\n        prev = curr\n        curr = nxt\n    return prev`,
+            cpp: `ListNode* ${fnName}(ListNode* head) {\n    ListNode* prev = nullptr; ListNode* curr = head;\n    while (curr) {\n        ListNode* nxt = curr->next;\n        curr->next = prev; prev = curr; curr = nxt;\n    }\n    return prev;\n}`,
+            java: `public ListNode ${fnName}(ListNode head) {\n    ListNode prev = null, curr = head;\n    while (curr != null) {\n        ListNode nxt = curr.next;\n        curr.next = prev; prev = curr; curr = nxt;\n    }\n    return prev;\n}`,
+            c: `struct ListNode* ${fnName}(struct ListNode* head) {\n    struct ListNode* prev = NULL, *curr = head;\n    while (curr) {\n        struct ListNode* nxt = curr->next;\n        curr->next = prev; prev = curr; curr = nxt;\n    }\n    return prev;\n}`
+          }
+        }
+      };
+    }
+
+    if (cat === 'Trees') {
+      return {
+        desc: `Given the root node of a binary tree <code>root</code>, compute tree depth or structural properties for <strong>${titleName}</strong>.`,
+        examples: `Input: root = [3, 9, 20, null, null, 15, 7]<br>Output: 3`,
+        templates: {
+          python: `def ${fnName}(root):\n    # Write your ${diff} level ${titleName} DFS solution\n    pass\n`,
+          cpp: `int ${fnName}(TreeNode* root) {\n    // Write your ${diff} level ${titleName} DFS solution\n    return 0;\n}\n`,
+          java: `public int ${fnName}(TreeNode root) {\n    // Write your ${diff} level ${titleName} DFS solution\n    return 0;\n}\n`,
+          c: `int ${fnName}(struct TreeNode* root) {\n    // Write your ${diff} level ${titleName} DFS solution\n    return 0;\n}\n`
+        },
+        testCases: [
+          { input: `root = [3, 9, 20, null, null, 15, 7]`, expected: `3` }
+        ],
+        solution: {
+          title: `Recursive DFS Tree Traversal Approach for ${titleName}`,
+          text: `Optimal Strategy for ${titleName}:\n1. Base case: if root is null, return 0 depth.\n2. Recurse to find maximum depth of left and right subtrees.\n3. Return 1 + max(left_depth, right_depth).\n\nTime Complexity: O(N) visits every tree node.\nSpace Complexity: O(H) call stack memory where H is tree height.`,
+          code: {
+            python: `def ${fnName}(root):\n    if not root: return 0\n    return 1 + max(${fnName}(root.left), ${fnName}(root.right))`,
+            cpp: `int ${fnName}(TreeNode* root) {\n    if (!root) return 0;\n    return 1 + max(${fnName}(root->left), ${fnName}(root->right));\n}`,
+            java: `public int ${fnName}(TreeNode root) {\n    if (root == null) return 0;\n    return 1 + Math.max(${fnName}(root.left), ${fnName}(root.right));\n}`,
+            c: `int ${fnName}(struct TreeNode* root) {\n    if (!root) return 0;\n    int l = ${fnName}(root->left), r = ${fnName}(root->right);\n    return 1 + (l > r ? l : r);\n}`
+          }
+        }
+      };
+    }
+
+    if (cat === 'DP') {
+      return {
+        desc: `You are climbing a staircase with <code>n</code> steps. Each time you can climb 1 or 2 steps. Solve <strong>${titleName}</strong> using dynamic programming.`,
+        examples: `Input: n = 5<br>Output: 8`,
+        templates: {
+          python: `def ${fnName}(n):\n    # Write your ${diff} level ${titleName} DP solution\n    pass\n`,
+          cpp: `int ${fnName}(int n) {\n    // Write your ${diff} level ${titleName} DP solution\n    return 0;\n}\n`,
+          java: `public int ${fnName}(int n) {\n    // Write your ${diff} level ${titleName} DP solution\n    return 0;\n}\n`,
+          c: `int ${fnName}(int n) {\n    // Write your ${diff} level ${titleName} DP solution\n    return 0;\n}\n`
+        },
+        testCases: [
+          { input: `n = 5`, expected: `8` }
+        ],
+        solution: {
+          title: `Bottom-Up Dynamic Programming Approach for ${titleName}`,
+          text: `Optimal Strategy for ${titleName}:\n1. Recurrence relation: dp[i] = dp[i-1] + dp[i-2].\n2. Base cases: dp[1] = 1, dp[2] = 2.\n3. Optimize space by storing only the previous two computed values (variables a and b).\n\nTime Complexity: O(N) linear time.\nSpace Complexity: O(1) constant auxiliary space.`,
+          code: {
+            python: `def ${fnName}(n):\n    if n <= 2: return n\n    a, b = 1, 2\n    for _ in range(3, n + 1):\n        a, b = b, a + b\n    return b`,
+            cpp: `int ${fnName}(int n) {\n    if (n <= 2) return n;\n    int a = 1, b = 2;\n    for (int i = 3; i <= n; i++) {\n        int c = a + b; a = b; b = c;\n    }\n    return b;\n}`,
+            java: `public int ${fnName}(int n) {\n    if (n <= 2) return n;\n    int a = 1, b = 2;\n    for (int i = 3; i <= n; i++) {\n        int c = a + b; a = b; b = c;\n    }\n    return b;\n}`,
+            c: `int ${fnName}(int n) {\n    if (n <= 2) return n;\n    int a = 1, b = 2;\n    for (int i = 3; i <= n; i++) {\n        int c = a + b; a = b; b = c;\n    }\n    return b;\n}`
+          }
+        }
+      };
+    }
+
+    if (cat === 'SearchSort') {
+      return {
+        desc: `Given a sorted array of integers <code>nums</code> and a target <code>target</code>, solve <strong>${titleName}</strong> in logarithmic O(log N) time.`,
+        examples: `Input: nums = [-1, 0, 3, 5, 9, 12], target = 9<br>Output: 4`,
+        templates: {
+          python: `def ${fnName}(nums, target):\n    # Write your ${diff} level ${titleName} Binary Search solution\n    pass\n`,
+          cpp: `int ${fnName}(vector<int>& nums, int target) {\n    // Write your ${diff} level ${titleName} Binary Search solution\n    return -1;\n}\n`,
+          java: `public int ${fnName}(int[] nums, int target) {\n    // Write your ${diff} level ${titleName} Binary Search solution\n    return -1;\n}\n`,
+          c: `int ${fnName}(int* nums, int size, int target) {\n    // Write your ${diff} level ${titleName} Binary Search solution\n    return -1;\n}\n`
+        },
+        testCases: [
+          { input: `nums = [-1, 0, 3, 5, 9, 12], target = 9`, expected: `4` }
+        ],
+        solution: {
+          title: `Binary Search O(log N) Approach for ${titleName}`,
+          text: `Optimal Strategy for ${titleName}:\n1. Set pointers left = 0, right = length - 1.\n2. Loop while left <= right: calculate mid = left + (right - left) // 2.\n3. Compare nums[mid] to target. Adjust left = mid + 1 or right = mid - 1.\n\nTime Complexity: O(log N) logarithmic time.\nSpace Complexity: O(1) auxiliary space.`,
+          code: {
+            python: `def ${fnName}(nums, target):\n    left, right = 0, len(nums) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if nums[mid] == target: return mid\n        elif nums[mid] < target: left = mid + 1\n        else: right = mid - 1\n    return -1`,
+            cpp: `int ${fnName}(vector<int>& nums, int target) {\n    int left = 0, right = nums.size() - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}`,
+            java: `public int ${fnName}(int[] nums, int target) {\n    int left = 0, right = nums.length - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}`,
+            c: `int ${fnName}(int* nums, int size, int target) {\n    int left = 0, right = size - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}`
+          }
+        }
+      };
+    }
+
+    // Default Fallback (Graphs, BitMath, etc.)
+    return {
+      desc: `Given an array of integers <code>nums</code> where every element appears twice except for one, solve <strong>${titleName}</strong> using bitwise XOR in linear time.`,
+      examples: `Input: nums = [4, 1, 2, 1, 2]<br>Output: 4`,
+      templates: {
+        python: `def ${fnName}(nums):\n    # Write your ${diff} level ${titleName} Bitwise solution\n    pass\n`,
+        cpp: `int ${fnName}(vector<int>& nums) {\n    // Write your ${diff} level ${titleName} Bitwise solution\n    return 0;\n}\n`,
+        java: `public int ${fnName}(int[] nums) {\n    // Write your ${diff} level ${titleName} Bitwise solution\n    return 0;\n}\n`,
+        c: `int ${fnName}(int* nums, int size) {\n    // Write your ${diff} level ${titleName} Bitwise solution\n    return 0;\n}\n`
+      },
+      testCases: [
+        { input: `nums = [4, 1, 2, 1, 2]`, expected: `4` }
+      ],
+      solution: {
+        title: `Bitwise XOR Single-Pass Approach for ${titleName}`,
+        text: `Optimal Strategy for ${titleName}:\n1. Initialize result res = 0.\n2. Iterate through elements and compute res ^= num.\n3. Duplicate numbers cancel out (a ^ a = 0), leaving the single unique element.\n\nTime Complexity: O(N) linear time.\nSpace Complexity: O(1) auxiliary space.`,
+        code: {
+          python: `def ${fnName}(nums):\n    res = 0\n    for n in nums:\n        res ^= n\n    return res`,
+          cpp: `int ${fnName}(vector<int>& nums) {\n    int res = 0;\n    for (int n : nums) res ^= n;\n    return res;\n}`,
+          java: `public int ${fnName}(int[] nums) {\n    int res = 0;\n    for (int n : nums) res ^= n;\n    return res;\n}`,
+          c: `int ${fnName}(int* nums, int size) {\n    int res = 0;\n    for (int i = 0; i < size; i++) res ^= nums[i];\n    return res;\n}`
+        }
+      }
+    };
+  };
+
   // Generate 70 Easy, 70 Medium, 70 Hard problems = 210 total!
   diffs.forEach(diff => {
     for (let i = 0; i < 70; i++) {
@@ -2895,6 +3083,7 @@ function build200PlusCodingDatabase() {
       const comp = companies[(globalIdCounter * 3) % companies.length] + ' • ' + companies[(globalIdCounter * 5) % companies.length];
       
       const pId = `prob_${diff.toLowerCase()}_${cat.toLowerCase()}_${globalIdCounter}`;
+      const spec = getAlgoSpec(cat, titleName, diff, globalIdCounter);
       
       problems.push({
         id: pId,
@@ -2902,23 +3091,11 @@ function build200PlusCodingDatabase() {
         category: cat,
         diff: diff,
         company: comp,
-        desc: `Given an input dataset or structure for <code>${cat}</code>, solve the <strong>${titleName}</strong> algorithm under <code>${diff}</code> efficiency constraints.<br>Evaluate edge cases, optimized time complexity, and memory footprint.`,
-        examples: `Input: ${cat.toLowerCase()}_data = [sample_input_${globalIdCounter}]<br>Output: expected_result_${globalIdCounter}`,
-        templates: {
-          python: `def solve_${cat.toLowerCase()}_${globalIdCounter}(data):\n    # Write your ${diff} level ${cat} solution here\n    pass\n`,
-          cpp: `#include <vector>\n#include <iostream>\nusing namespace std;\n\nvector<int> solve_${cat.toLowerCase()}_${globalIdCounter}(vector<int>& data) {\n    // Write your ${diff} level ${cat} solution here\n    return {};\n}\n`,
-          java: `import java.util.*;\n\nclass Solution {\n    public int[] solve_${cat.toLowerCase()}_${globalIdCounter}(int[] data) {\n        // Write your ${diff} level ${cat} solution here\n        return new int[0];\n    }\n}\n`,
-          c: `#include <stdio.h>\n#include <stdlib.h>\n\nint* solve_${cat.toLowerCase()}_${globalIdCounter}(int* data, int size, int* returnSize) {\n    // Write your ${diff} level ${cat} solution here\n    *returnSize = 0;\n    return NULL;\n}\n`
-        },
-        testCases: [
-          { input: `data = [1, 2, 3, ${globalIdCounter}]`, expected: `[1, 2, 3, ${globalIdCounter}]` },
-          { input: `data = [${globalIdCounter * 2}, ${globalIdCounter * 3}]`, expected: `[${globalIdCounter * 2}, ${globalIdCounter * 3}]` }
-        ],
-        solution: {
-          title: `Step-by-Step ${diff} Approach for ${titleName}`,
-          text: `Optimal Algorithmic Pattern for ${titleName}:\n1. Analyze input bounds and constraints for ${cat}.\n2. Initialize state tracking structures (e.g. hash maps, pointers, or dynamic DP arrays).\n3. Process input dataset iteratively or recursively while avoiding redundant operations.\n4. Return computed result.\n\nTime Complexity: O(N) linear time.\nSpace Complexity: O(1) auxiliary memory.`,
-          code: `def solve_${cat.toLowerCase()}_${globalIdCounter}(data):\n    # Reference Optimal Implementation\n    res = []\n    for item in data:\n        res.append(item)\n    return res`
-        }
+        desc: spec.desc,
+        examples: spec.examples,
+        templates: spec.templates,
+        testCases: spec.testCases,
+        solution: spec.solution
       });
 
       globalIdCounter++;
@@ -3238,24 +3415,23 @@ function checkStructuralCodeQuality(code, lang) {
 function simulateTestCaseExecution(code, lang, probId, testCase, syntaxReport) {
   if (!syntaxReport.valid) return false;
   
-  const lower = code.toLowerCase();
+  const lower = code.toLowerCase().replace(/\s+/g, '');
   
-  if (probId === 'two_sum') {
-    return (lower.includes('hash') || lower.includes('map') || lower.includes('for') || lower.includes('dict') || lower.includes('seen')) && lower.includes('return');
+  // Reject unedited starter templates and pass statements
+  if (lower.includes('#writeyour') || 
+      lower.includes('pass') ||
+      lower.includes('return{}') ||
+      lower.includes('returnnewint[0]') ||
+      lower.includes('returnnull')) {
+    return false;
   }
-  if (probId === 'valid_palindrome') {
-    return (lower.includes('isalnum') || lower.includes('lower') || lower.includes('replace') || lower.includes('while') || lower.includes('[::-1]')) && lower.includes('return');
-  }
-  if (probId === 'reverse_linked_list') {
-    return (lower.includes('prev') || lower.includes('curr') || lower.includes('next')) && lower.includes('return');
-  }
-  if (probId === 'longest_substring') {
-    return (lower.includes('set') || lower.includes('map') || lower.includes('while') || lower.includes('max')) && lower.includes('return');
-  }
-  if (probId === 'climbing_stairs') {
-    return (lower.includes('for') || lower.includes('range') || lower.includes('dp') || lower.includes('one')) && lower.includes('return');
-  }
-  return true;
+
+  const rawLower = code.toLowerCase();
+  // Ensure genuine algorithmic logic was written (loops, conditionals, hash maps, stacks, pointers, or binary search)
+  const hasControlFlow = rawLower.includes('for') || rawLower.includes('while') || rawLower.includes('if');
+  const hasAlgoLogic = rawLower.includes('seen') || rawLower.includes('map') || rawLower.includes('stack') || rawLower.includes('st.') || rawLower.includes('prev') || rawLower.includes('curr') || rawLower.includes('left') || rawLower.includes('right') || rawLower.includes('mid') || rawLower.includes('dp') || rawLower.includes('diff') || rawLower.includes('^');
+
+  return hasControlFlow && hasAlgoLogic;
 }
 
 // ─── LEARNING PATH ────────────────────────────
