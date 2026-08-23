@@ -353,9 +353,13 @@ select option {background:#ffffff;color:var(--t1);}
           <p style="font-size:.75rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">✅ You Already Have</p>
           <div id="matchedSkillsRow" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
         </div>
-        <div style="margin-bottom:16px;">
+        <div style="margin-bottom:12px;">
           <p style="font-size:.75rem;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">❌ Skills to Gain</p>
           <div id="missingSkillsRow" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <p style="font-size:.75rem;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">🔑 Recommended ATS Target Keywords</p>
+          <div id="matchedKeywordsRow" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
         </div>
         <!-- Role insight banner -->
         <div id="roleInsight" style="padding:12px 14px;border-radius:10px;background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);font-size:.82rem;color:#67e8f9;margin-bottom:16px;line-height:1.6;"></div>
@@ -391,7 +395,6 @@ select option {background:#ffffff;color:var(--t1);}
         <label>Target Role</label>
         <select id="tailorRole"><option>SDE-1</option><option>Systems Engineer</option><option>Graduate Trainee</option><option>Software Engineer</option></select>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="exportTailoredResumePDF()">📄 Export Resume PDF</button>
     </div>
   </div></div>
   <div class="ats-meter animate d1" style="margin-bottom:24px;">
@@ -870,47 +873,58 @@ const ROLES = [
   {id:'r1',icon:'⚙️',domain:'SDE',title:'Software Development Engineer (SDE-1)',level:'Entry',type:'Hybrid',salary:'₹8–32 LPA',demand:'🔥 Very High',match:74,
    matched:['Python','SQL','REST APIs','Git','React'],missing:['Java','Data Structures','System Design','LLD'],
    insight:'SDE roles are the highest-volume tech roles in India. Your Python + React stack covers ~70% of what most product companies need. Focus on DSA (LeetCode) and System Design to unlock top-tier offers (₹20L+).',
-   radar:[{s:'Python',c:75,r:85},{s:'DSA',c:45,r:90},{s:'Sys Design',c:20,r:75},{s:'SQL',c:70,r:80},{s:'React/JS',c:80,r:70},{s:'OOP',c:55,r:85},{s:'APIs',c:72,r:75}]},
+   radar:[{s:'Python',c:75,r:85},{s:'DSA',c:45,r:90},{s:'Sys Design',c:20,r:75},{s:'SQL',c:70,r:80},{s:'React/JS',c:80,r:70},{s:'OOP',c:55,r:85},{s:'APIs',c:72,r:75}],
+   keywords:['data structures', 'algorithms', 'LLD', 'OOP', 'system design', 'scalability', 'clean code', 'version control', 'REST APIs']},
   {id:'r2',icon:'🤖',domain:'AI/ML',title:'ML Engineer / Data Scientist',level:'Entry',type:'On-Site',salary:'₹10–38 LPA',demand:'🔥 Very High',match:61,
    matched:['Python','SQL','Git'],missing:['PyTorch/TensorFlow','Statistics','ML Deployment','LLM APIs'],
    insight:'ML roles are exploding in 2024–25 with GenAI boom. Your Python base is solid. Priority gaps: learn PyTorch fundamentals + hands-on Kaggle projects. Companies specifically look for deployed models, not just notebooks.',
-   radar:[{s:'Python',c:75,r:90},{s:'PyTorch',c:20,r:85},{s:'Stats',c:40,r:80},{s:'SQL',c:70,r:60},{s:'ML Ops',c:10,r:70},{s:'NLP',c:30,r:75},{s:'APIs',c:72,r:70}]},
+   radar:[{s:'Python',c:75,r:90},{s:'PyTorch',c:20,r:85},{s:'Stats',c:40,r:80},{s:'SQL',c:70,r:60},{s:'ML Ops',c:10,r:70},{s:'NLP',c:30,r:75},{s:'APIs',c:72,r:70}],
+   keywords:['neural networks', 'deep learning', 'model training', 'feature engineering', 'scikit-learn', 'PyTorch', 'data pipelines', 'model deployment']},
   {id:'r3',icon:'🎨',domain:'Frontend',title:'Frontend Engineer (React/Next.js)',level:'Entry–Mid',type:'Remote Friendly',salary:'₹7–25 LPA',demand:'🔶 High',match:82,
    matched:['React','JavaScript','REST APIs','Git','Node.js'],missing:['TypeScript','CSS Animation','Web Perf (LCP/CLS)'],
    insight:'Your React + JS stack makes you immediately interview-ready for frontend roles. Missing: TypeScript (1-week to learn) and performance metrics. Adding TypeScript to your resume increases callbacks by ~35%.',
-   radar:[{s:'React',c:80,r:85},{s:'TypeScript',c:30,r:80},{s:'CSS/UX',c:60,r:75},{s:'Performance',c:25,r:70},{s:'Testing',c:40,r:65},{s:'APIs',c:72,r:75},{s:'Git',c:72,r:70}]},
+   radar:[{s:'React',c:80,r:85},{s:'TypeScript',c:30,r:80},{s:'CSS/UX',c:60,r:75},{s:'Performance',c:25,r:70},{s:'Testing',c:40,r:65},{s:'APIs',c:72,r:75},{s:'Git',c:72,r:70}],
+   keywords:['component design', 'state management', 'responsive design', 'web performance', 'SEO', 'TypeScript', 'bundle optimization', 'DOM manipulation']},
   {id:'r4',icon:'🔧',domain:'Backend',title:'Backend Engineer (Node/Python/Java)',level:'Entry',type:'Hybrid',salary:'₹8–28 LPA',demand:'🔶 High',match:78,
    matched:['Python','Node.js','SQL','REST APIs','Git'],missing:['Java','Redis/Caching','Kafka/Queues','Docker'],
    insight:'Strong backend foundation with Python + Node.js. Missing scalability tools (Redis, Kafka) are learnable in 3–4 weeks. Companies hiring backend engineers look for database design skills heavily — your SQL is already an asset.',
-   radar:[{s:'Python',c:75,r:80},{s:'Node.js',c:65,r:75},{s:'SQL/DB',c:70,r:85},{s:'Java',c:15,r:75},{s:'Caching',c:10,r:70},{s:'Queues',c:10,r:65},{s:'Docker',c:20,r:70}]},
+   radar:[{s:'Python',c:75,r:80},{s:'Node.js',c:65,r:75},{s:'SQL/DB',c:70,r:85},{s:'Java',c:15,r:75},{s:'Caching',c:10,r:70},{s:'Queues',c:10,r:65},{s:'Docker',c:20,r:70}],
+   keywords:['RESTful microservices', 'caching strategies', 'relational databases', 'Docker', 'message queues', 'SQL indexing', 'load balancing']},
   {id:'r5',icon:'☁️',domain:'DevOps',title:'Cloud / DevOps Engineer',level:'Entry',type:'On-Site',salary:'₹7–22 LPA',demand:'🔶 High',match:45,
    matched:['Git','Python','SQL'],missing:['Docker','Kubernetes','AWS/GCP','CI/CD','Terraform'],
    insight:'DevOps is highly specialised. Your current gap is large but very structured — it is entirely self-learnable in 8–12 weeks using free resources (AWS Free Tier, KodeKloud). Consider this a 3-month target role.',
-   radar:[{s:'Linux',c:40,r:85},{s:'Docker',c:15,r:90},{s:'K8s',c:5,r:80},{s:'AWS',c:20,r:85},{s:'CI/CD',c:25,r:85},{s:'Python',c:75,r:70},{s:'Terraform',c:5,r:75}]},
+   radar:[{s:'Linux',c:40,r:85},{s:'Docker',c:15,r:90},{s:'K8s',c:5,r:80},{s:'AWS',c:20,r:85},{s:'CI/CD',c:25,r:85},{s:'Python',c:75,r:70},{s:'Terraform',c:5,r:75}],
+   keywords:['infrastructure as code', 'CI/CD pipelines', 'Kubernetes orchestration', 'AWS architecture', 'configuration management', 'automated deployments']},
   {id:'r6',icon:'📊',domain:'Data',title:'Data Analyst / BI Analyst',level:'Entry',type:'Hybrid',salary:'₹5–18 LPA',demand:'🔶 High',match:71,
    matched:['SQL','Python','Excel/Sheets','Git'],missing:['Power BI / Tableau','Statistics','Data Storytelling'],
    insight:'Your SQL + Python combo is perfect for data analyst roles. The only gap is BI tools (Power BI is free with Microsoft account) and presenting insights visually. This is your second-highest match role after Frontend.',
-   radar:[{s:'SQL',c:70,r:90},{s:'Python',c:75,r:75},{s:'Stats',c:40,r:70},{s:'Tableau/BI',c:5,r:80},{s:'Excel',c:55,r:65},{s:'Storytelling',c:50,r:70},{s:'APIs',c:72,r:55}]},
+   radar:[{s:'SQL',c:70,r:90},{s:'Python',c:75,r:75},{s:'Stats',c:40,r:70},{s:'Tableau/BI',c:5,r:80},{s:'Excel',c:55,r:65},{s:'Storytelling',c:50,r:70},{s:'APIs',c:72,r:55}],
+   keywords:['data visualization', 'BI dashboards', 'statistical analysis', 'data cleaning', 'SQL querying', 'data storytelling', 'trend analysis']},
   {id:'r7',icon:'🛡️',domain:'Other',title:'Automation / QA Engineer',level:'Entry',type:'On-Site',salary:'₹5–15 LPA',demand:'🔷 Medium',match:68,
    matched:['Python','SQL','REST APIs','Git'],missing:['Selenium','Pytest/JUnit','API Testing (Postman)'],
    insight:'QA Automation roles are often overlooked but are high-volume and well-paid. Your Python is directly applicable for Pytest/Selenium scripts. This is an excellent bridging role to gain product company experience.',
-   radar:[{s:'Python',c:75,r:85},{s:'Selenium',c:5,r:80},{s:'SQL',c:70,r:70},{s:'APIs',c:72,r:80},{s:'Pytest',c:15,r:80},{s:'CI/CD',c:25,r:65},{s:'Comm.',c:75,r:70}]},
+   radar:[{s:'Python',c:75,r:85},{s:'Selenium',c:5,r:80},{s:'SQL',c:70,r:70},{s:'APIs',c:72,r:80},{s:'Pytest',c:15,r:80},{s:'CI/CD',c:25,r:65},{s:'Comm.',c:75,r:70}],
+   keywords:['test automation', 'regression testing', 'unit testing', 'Selenium scripts', 'CI/CD integration', 'bug tracking', 'Postman testing']},
   {id:'r8',icon:'💼',domain:'Other',title:'Business / Systems Analyst',level:'Entry',type:'Hybrid',salary:'₹5–14 LPA',demand:'🔷 Medium',match:65,
    matched:['SQL','Python','Communication','REST APIs'],missing:['Requirement Gathering','JIRA','Process Modeling (BPMN)'],
    insight:'BA roles bridge tech and business. Your SQL + communication skills are exactly what is needed. Added benefit: many service companies (Infosys, Wipro, Accenture) have mass BA openings for freshers year-round.',
-   radar:[{s:'SQL',c:70,r:80},{s:'Python',c:75,r:60},{s:'Communication',c:75,r:90},{s:'JIRA',c:20,r:75},{s:'Analytics',c:55,r:75},{s:'Process',c:20,r:70},{s:'Docs',c:50,r:75}]},
+   radar:[{s:'SQL',c:70,r:80},{s:'Python',c:75,r:60},{s:'Communication',c:75,r:90},{s:'JIRA',c:20,r:75},{s:'Analytics',c:55,r:75},{s:'Process',c:20,r:70},{s:'Docs',c:50,r:75}],
+   keywords:['requirement gathering', 'JIRA tracking', 'process mapping', 'user stories', 'agile scrum', 'stakeholder communication', 'gap analysis']},
   {id:'r9',icon:'🌐',domain:'Full Stack',title:'Full Stack Developer (MERN/MEAN)',level:'Entry–Mid',type:'Remote Friendly',salary:'₹8–28 LPA',demand:'🔥 Very High',match:79,
    matched:['React','Node.js','JavaScript','MongoDB','REST APIs','Git'],missing:['TypeScript','Docker','CI/CD','Redis'],
    insight:'Full Stack is the most in-demand profile for startups in 2024–25. Your MERN stack is production-ready. Adding TypeScript and Docker gives you a 40–50% salary jump in product startup hiring.',
-   radar:[{s:'React',c:80,r:85},{s:'Node.js',c:65,r:80},{s:'MongoDB',c:55,r:75},{s:'TypeScript',c:30,r:80},{s:'Docker',c:20,r:70},{s:'SQL',c:70,r:65},{s:'Git',c:72,r:70}]},
+   radar:[{s:'React',c:80,r:85},{s:'Node.js',c:65,r:80},{s:'MongoDB',c:55,r:75},{s:'TypeScript',c:30,r:80},{s:'Docker',c:20,r:70},{s:'SQL',c:70,r:65},{s:'Git',c:72,r:70}],
+   keywords:['MERN stack', 'REST APIs', 'database indexing', 'state hydration', 'microservices', 'caching', 'TypeScript type safety']},
   {id:'r10',icon:'📱',domain:'Mobile',title:'Android / iOS Developer',level:'Entry',type:'Hybrid',salary:'₹7–24 LPA',demand:'🔶 High',match:42,
    matched:['Java','JavaScript','Git','REST APIs'],missing:['Kotlin','Swift/React Native','Android SDK','App Store Deployment'],
    insight:'Mobile development is a focused niche with strong demand from fintech and consumer apps. Java gives you a solid Android base — Kotlin is the modern replacement and takes 2–3 weeks to pick up. React Native is a cross-platform shortcut.',
-   radar:[{s:'Java',c:40,r:75},{s:'Kotlin',c:10,r:85},{s:'Swift',c:5,r:70},{s:'React Native',c:25,r:75},{s:'APIs',c:72,r:80},{s:'Firebase',c:35,r:70},{s:'UI/UX',c:45,r:65}]},
+   radar:[{s:'Java',c:40,r:75},{s:'Kotlin',c:10,r:85},{s:'Swift',c:5,r:70},{s:'React Native',c:25,r:75},{s:'APIs',c:72,r:80},{s:'Firebase',c:35,r:70},{s:'UI/UX',c:45,r:65}],
+   keywords:['native mobile apps', 'app store publishing', 'state management', 'mobile UI guidelines', 'React Native', 'Kotlin development', 'SDK integrations']},
   {id:'r11',icon:'🔐',domain:'Security',title:'Cybersecurity Analyst',level:'Entry',type:'On-Site',salary:'₹6–20 LPA',demand:'🔥 Very High',match:38,
    matched:['Python','Linux','Git','SQL'],missing:['Network Security','Ethical Hacking','SIEM Tools','CEH/CompTIA Cert'],
-   insight:'Cybersecurity is India\'s fastest-growing shortage domain with 0.5M+ unfilled roles. Your Python scripting is a strong base for automation of security tasks. A 90-day structured path (TryHackMe + CEH) can open well-paying government and banking sector roles.',
-   radar:[{s:'Python',c:75,r:80},{s:'Linux',c:40,r:90},{s:'Networking',c:20,r:85},{s:'SIEM',c:5,r:75},{s:'Hacking',c:10,r:80},{s:'Compliance',c:15,r:70},{s:'SQL',c:70,r:60}]},
+   insight:'Cybersecurity analysts protect infrastructure. Your Python and Linux base is valuable. Focus on CompTIA Security+ or CEH (Certified Ethical Hacker) prep + learning network protocols to secure entry-level SOC positions.',
+   radar:[{s:'Linux',c:40,r:80},{s:'Networks',c:30,r:85},{s:'Security+',c:5,r:75},{s:'Python',c:75,r:65},{s:'Hacking',c:10,r:80},{s:'SIEM',c:5,r:70},{s:'Git',c:72,r:60}],
+   keywords:['network security', 'penetration testing', 'vulnerability scanning', 'firewalls', 'OWASP Top 10', 'incident response', 'cryptography']},
   {id:'r12',icon:'🗄️',domain:'Data',title:'Database Administrator (DBA)',level:'Entry',type:'Hybrid',salary:'₹5–16 LPA',demand:'🔷 Medium',match:62,
    matched:['SQL','Python','Linux','Git'],missing:['PostgreSQL Admin','Oracle/MySQL DBA','Query Tuning','Backup & Recovery'],
    insight:'DBAs are a stable, evergreen role in large enterprises and government projects. Your SQL foundation is directly applicable. Specializing in PostgreSQL (free) or Oracle (certification valued in PSUs) can fast-track your career.',
@@ -1583,6 +1597,7 @@ function selectRole(role){
   document.getElementById('statHiring').textContent=role.demand.replace(/[^a-zA-Z\s]/g,'').trim();
   document.getElementById('matchedSkillsRow').innerHTML=role.matched.map(s=>'<span class="badge b-green">✓ '+s+'</span>').join('');
   document.getElementById('missingSkillsRow').innerHTML=role.missing.map(s=>'<span class="badge b-red">✗ '+s+'</span>').join('');
+  document.getElementById('matchedKeywordsRow').innerHTML=(role.keywords || []).map(s=>'<span class="badge b-amber">🔑 '+s+'</span>').join('') || '<span class="badge b-blue">N/A</span>';
   document.getElementById('roleInsight').textContent='💡 '+role.insight;
   drawRadarChart(role.radar);
 }
@@ -1619,109 +1634,6 @@ function tailorResume(){
     </div>`).join('');
   document.getElementById('atsKeywords').innerHTML=d.keywords.map(k=>'<span class="badge b-purple">🔑 '+k+'</span>').join('');
   document.getElementById('tailorTips').innerHTML=d.tips.map((t,i)=>`<div style="display:flex;gap:10px;margin-bottom:10px;font-size:.85rem;"><span style="color:var(--amber);flex-shrink:0;">${i+1}.</span><span>${t}</span></div>`).join('');
-}
-
-function exportTailoredResumePDF() {
-  const p = state.profile || {
-    name: "Rahul Verma",
-    email: "rahul.verma@gmail.com",
-    cgpa: "8.4 CGPA",
-    domain: "Software Development (SDE)",
-    exp: "0",
-    location: "Bangalore",
-    skills: ["Python", "Java", "React", "SQL", "Node.js"],
-    projects: [
-      { name: "E-Commerce Web Application", desc: "Developed shopping portal using React." },
-      { name: "Sentiment Analysis Classifier", desc: "Implemented NLP classifier model in Python." }
-    ],
-    certs: ["AWS Certified Cloud Practitioner", "Google Data Analytics Certificate"]
-  };
-
-  const co = document.getElementById('tailorCompany')?.value || 'Amazon';
-  const role = document.getElementById('tailorRole')?.value || 'SDE-1';
-  const d = RESUME_DATA[co] || RESUME_DATA.Amazon;
-
-  const printWindow = window.open('', '_blank');
-  if(!printWindow) {
-    showToast('Popup blocked! Please allow popups to export your resume.', '⚠️');
-    return;
-  }
-  
-  let projectsHtml = '';
-  if (p.projects && p.projects.length > 0) {
-    projectsHtml = '<h3>PROJECTS & EXPERIENCE</h3>';
-    p.projects.forEach((proj, idx) => {
-      let bulletText = proj.desc || '';
-      if (d.bullets && d.bullets[idx]) {
-        bulletText = d.bullets[idx].new;
-      }
-      projectsHtml += `
-        <div style="margin-bottom: 12px;">
-          <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>${proj.name || 'Personal Project'}</span>
-          </div>
-          <p style="margin: 4px 0 0 0; font-size: 13px; line-height: 1.4; text-align: justify;">• ${bulletText}</p>
-        </div>
-      `;
-    });
-  }
-
-  let certsHtml = '';
-  const certList = p.certs || [];
-  if (certList.length > 0) {
-    certsHtml = `
-      <h3>CERTIFICATIONS</h3>
-      <ul style="margin: 4px 0; padding-left: 20px; font-size: 13px;">
-        ${certList.map(c => `<li style="margin-bottom:2px;">${c.name || c}</li>`).join('')}
-      </ul>
-    `;
-  }
-
-  const skillsList = [...(p.skills || []), ...(d.keywords || [])];
-  const uniqueSkills = [...new Set(skillsList)];
-
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${p.name || 'Resume'} - Tailored for ${co}</title>
-      <style>
-        body { font-family: "Arial", sans-serif; color: #333; margin: 40px; line-height: 1.5; }
-        h1 { text-align: center; margin-bottom: 4px; font-size: 26px; text-transform: uppercase; }
-        .contact-info { text-align: center; font-size: 13px; color: #666; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        h3 { border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 20px; margin-bottom: 8px; font-size: 16px; color: #111; }
-        p, li { font-size: 13px; color: #444; }
-        .skill-tag { display: inline-block; background: #f0f0f0; border-radius: 4px; padding: 2px 6px; margin: 2px; font-size: 12px; }
-      </style>
-    </head>
-    <body>
-      <h1>${(p.name || 'Candidate Name').toUpperCase()}</h1>
-      <div class="contact-info">
-        ${p.email || 'email@domain.com'} | ${p.location || 'India'} | Target: ${role} at ${co} | CGPA: ${p.cgpa || 'N/A'}
-      </div>
-
-      <h3>PROFESSIONAL SUMMARY</h3>
-      <p style="text-align: justify; margin: 4px 0;">${d.summary}</p>
-
-      ${projectsHtml}
-
-      <h3>TECHNICAL SKILLS & KEYWORDS</h3>
-      <div style="margin: 4px 0;">
-        ${uniqueSkills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
-      </div>
-
-      ${certsHtml}
-
-    </body>
-    </html>
-  `;
-
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
-  printWindow.focus();
-  setTimeout(() => {
-    try { printWindow.print(); } catch(e){}
-  }, 500);
 }
 
 // ─── QUIZ ────────────────────────────────────
@@ -2216,7 +2128,7 @@ function generateSpontaneousFollowup(transcript) {
   const emojiEl = document.getElementById('avatarEmoji');
   const moodEl = document.getElementById('avatarMoodText');
 
-  if (!transcript || transcript.trim().split(/\s+/).length < 6) {
+  if (!transcript || transcript.trim().split(/\s+/).length < 2) {
     if (card) card.style.display = 'none';
     return;
   }
@@ -2858,7 +2770,6 @@ function loadCodingProblemByIndex(idx) {
   document.getElementById('codeProblemExamples').innerHTML = pObj.examples;
 
   document.getElementById('solApproachText').textContent = pObj.solution.text;
-  document.getElementById('solCodeBlock').textContent = pObj.solution.code;
 
   const solBox = document.getElementById('codingSolutionBox');
   if (solBox) solBox.style.display = 'none';
@@ -2901,6 +2812,17 @@ function changeCodingLanguage() {
     codeArea.value = userCodeDrafts[draftKey];
   } else {
     codeArea.value = currentCodingProblem.templates[lang] || `// Write your ${lang} solution here`;
+  }
+
+  // Update solution block reference code dynamically to match the selected language
+  const solCodeBlock = document.getElementById('solCodeBlock');
+  if (solCodeBlock && currentCodingProblem.solution && currentCodingProblem.solution.code) {
+    const codeData = currentCodingProblem.solution.code;
+    if (typeof codeData === 'string') {
+      solCodeBlock.textContent = codeData;
+    } else {
+      solCodeBlock.textContent = codeData[lang] || '';
+    }
   }
 }
 
