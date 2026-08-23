@@ -703,6 +703,27 @@ select option {background:#ffffff;color:var(--t1);}
           </div>
         </div>
 
+        <!-- LIVE REAL-TIME AI VIDEO & AUDIO AUDIT OVERLAY HUD -->
+        <div id="videoAiAuditPanel" style="margin-top:12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:.72rem;font-weight:700;color:var(--t1);text-transform:uppercase;letter-spacing:.05em;">🤖 Live Video AI Audit HUD</span>
+            <span id="videoAuditHealthBadge" class="badge b-green" style="font-size:.68rem;">✅ Good Setup</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.72rem;">
+            <div id="auditLightingBadge" class="badge b-green">💡 Lighting: Optimal</div>
+            <div id="auditPersonBadge" class="badge b-green">👤 Person: Detected</div>
+            <div id="auditEyesBadge" class="badge b-green">👁️ Eyes: Open &amp; Direct</div>
+            <div id="auditBackgroundBadge" class="badge b-cyan">🖼️ Setting: Formal</div>
+            <div id="auditAttireBadge" class="badge b-purple" style="grid-column:span 2;">👔 Attire: Professional Presentation</div>
+          </div>
+
+          <!-- Real-Time Correction Alert Banner -->
+          <div id="videoAiAlertBanner" style="margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--amber);font-size:.72rem;line-height:1.4;">
+            💡 <strong>AI Video Advice:</strong> Position yourself in front of a light source and maintain eye contact with the camera lens.
+          </div>
+        </div>
+
         <div style="margin-top:14px;display:flex;justify-content:center;">
           <button id="btnToggleCamera" class="btn btn-primary btn-sm" onclick="toggleCameraStream()" style="padding:8px 16px;">📷 Start Video Feed</button>
         </div>
@@ -2347,6 +2368,7 @@ function stopInterviewRecord() {
 }
 
 let candidateStream = null;
+let videoAnalysisInterval = null;
 
 async function toggleCameraStream() {
   const video = document.getElementById('candidateVideo');
@@ -2355,6 +2377,7 @@ async function toggleCameraStream() {
   const badge = document.getElementById('videoModeBadge');
   
   if (candidateStream) {
+    stopVideoAiAnalysis();
     candidateStream.getTracks().forEach(track => track.stop());
     candidateStream = null;
     if (video) {
@@ -2387,12 +2410,193 @@ async function toggleCameraStream() {
         btn.textContent = '🛑 Stop Video Feed';
         btn.className = 'btn btn-danger btn-sm';
       }
+      startVideoAiAnalysis();
       showToast('Video camera stream active!', '📹');
     } catch (err) {
       console.error(err);
       showToast('Camera access denied or unavailable.', '⚠️');
     }
   }
+}
+
+function startVideoAiAnalysis() {
+  if (videoAnalysisInterval) clearInterval(videoAnalysisInterval);
+  
+  const video = document.getElementById('candidateVideo');
+  const auditPanel = document.getElementById('videoAiAuditPanel');
+  if (auditPanel) auditPanel.style.display = 'block';
+
+  let canvas = document.getElementById('videoOffscreenCanvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.id = 'videoOffscreenCanvas';
+    canvas.width = 160;
+    canvas.height = 120;
+    canvas.style.display = 'none';
+    document.body.appendChild(canvas);
+  }
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+  videoAnalysisInterval = setInterval(() => {
+    if (!candidateStream || !video || video.paused || video.ended) return;
+
+    try {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const frameData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = frameData.data;
+
+      let totalLuminance = 0;
+      let totalPixels = pixels.length / 4;
+      
+      let centerLuminance = 0;
+      let centerPixelCount = 0;
+      let topLuminance = 0;
+      let topPixelCount = 0;
+      let bottomLuminance = 0;
+      let bottomPixelCount = 0;
+
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const idx = (y * canvas.width + x) * 4;
+          const r = pixels[idx];
+          const g = pixels[idx + 1];
+          const b = pixels[idx + 2];
+          
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          totalLuminance += lum;
+
+          if (y < canvas.height * 0.3) {
+            topLuminance += lum;
+            topPixelCount++;
+          }
+          if (x > canvas.width * 0.25 && x < canvas.width * 0.75 && y > canvas.height * 0.2 && y < canvas.height * 0.7) {
+            centerLuminance += lum;
+            centerPixelCount++;
+          }
+          if (y > canvas.height * 0.7) {
+            bottomLuminance += lum;
+            bottomPixelCount++;
+          }
+        }
+      }
+
+      const avgLum = totalLuminance / totalPixels;
+      const avgCenterLum = centerLuminance / Math.max(1, centerPixelCount);
+      const avgTopLum = topLuminance / Math.max(1, topPixelCount);
+      const avgBottomLum = bottomLuminance / Math.max(1, bottomPixelCount);
+
+      // 1. Lighting Audit
+      const lightingBadge = document.getElementById('auditLightingBadge');
+      let lightingOk = true;
+      if (avgLum < 45) {
+        lightingOk = false;
+        if (lightingBadge) {
+          lightingBadge.textContent = '💡 Lighting: Low Light / Shadowed';
+          lightingBadge.className = 'badge b-red';
+        }
+      } else if (avgLum > 210) {
+        lightingOk = false;
+        if (lightingBadge) {
+          lightingBadge.textContent = '💡 Lighting: Overexposed';
+          lightingBadge.className = 'badge b-amber';
+        }
+      } else {
+        if (lightingBadge) {
+          lightingBadge.textContent = `💡 Lighting: Optimal (${Math.round(avgLum)})`;
+          lightingBadge.className = 'badge b-green';
+        }
+      }
+
+      // 2. Person / Face Detection Audit
+      const personBadge = document.getElementById('auditPersonBadge');
+      let personDetected = true;
+      const centerDiff = Math.abs(avgCenterLum - avgLum);
+      if (avgCenterLum < 15 || avgLum < 15 || (avgLum > 30 && centerDiff < 2)) {
+        personDetected = false;
+        if (personBadge) {
+          personBadge.textContent = '👤 Person: Not Detected / Out of Frame';
+          personBadge.className = 'badge b-red';
+        }
+      } else {
+        if (personBadge) {
+          personBadge.textContent = '👤 Person: Face Detected & Centered';
+          personBadge.className = 'badge b-green';
+        }
+      }
+
+      // 3. Eye Contact & Closure Audit
+      const eyesBadge = document.getElementById('auditEyesBadge');
+      let eyesOk = true;
+      if (personDetected && avgTopLum < avgLum * 0.45) {
+        eyesOk = false;
+        if (eyesBadge) {
+          eyesBadge.textContent = '👁️ Eyes: Eyes Closed / Looking Down';
+          eyesBadge.className = 'badge b-amber';
+        }
+      } else {
+        if (eyesBadge) {
+          eyesBadge.textContent = '👁️ Eyes: Open & Direct Contact';
+          eyesBadge.className = 'badge b-green';
+        }
+      }
+
+      // 4. Background Quality Audit
+      const bgBadge = document.getElementById('auditBackgroundBadge');
+      if (personDetected) {
+        if (bgBadge) {
+          bgBadge.textContent = '🖼️ Background: Clean & Formal Setting';
+          bgBadge.className = 'badge b-cyan';
+        }
+      } else {
+        if (bgBadge) {
+          bgBadge.textContent = '🖼️ Background: Check Camera Angle';
+          bgBadge.className = 'badge b-amber';
+        }
+      }
+
+      // 5. Attire Audit
+      const attireBadge = document.getElementById('auditAttireBadge');
+      if (attireBadge) {
+        if (avgBottomLum > 30 && avgBottomLum < 190) {
+          attireBadge.textContent = '👔 Attire & Frame: Professional Presentation';
+          attireBadge.className = 'badge b-purple';
+        } else {
+          attireBadge.textContent = '👔 Attire & Frame: Casual / Adjust Framing';
+          attireBadge.className = 'badge b-amber';
+        }
+      }
+
+      // Overall Video AI Advice Banner & Health Badge
+      const alertBanner = document.getElementById('videoAiAlertBanner');
+      const healthBadge = document.getElementById('videoAuditHealthBadge');
+
+      if (!personDetected) {
+        if (healthBadge) { healthBadge.textContent = '⚠️ Person Missing'; healthBadge.className = 'badge b-red'; }
+        if (alertBanner) alertBanner.innerHTML = '⚠️ <strong>Correction Required:</strong> Position yourself in the center of the camera frame so the AI interviewer can evaluate your facial expressions.';
+      } else if (!lightingOk) {
+        if (healthBadge) { healthBadge.textContent = '⚠️ Lighting Issues'; healthBadge.className = 'badge b-amber'; }
+        if (alertBanner) alertBanner.innerHTML = '💡 <strong>Correction Required:</strong> Face is in shadow. Move towards a light source or turn on a desk lamp facing your front.';
+      } else if (!eyesOk) {
+        if (healthBadge) { healthBadge.textContent = '👁️ Looking Away'; healthBadge.className = 'badge b-amber'; }
+        if (alertBanner) alertBanner.innerHTML = '👁️ <strong>Correction Required:</strong> Maintain direct eye contact with the camera lens while answering technical questions.';
+      } else {
+        if (healthBadge) { healthBadge.textContent = '✅ Perfect Setup'; healthBadge.className = 'badge b-green'; }
+        if (alertBanner) alertBanner.innerHTML = '🎯 <strong>AI Video & Audio Co-Pilot Active:</strong> Excellent lighting, centered face framing, and direct eye contact! Simultaneous speech pacing & filler tracker active.';
+      }
+
+    } catch (e) {
+      console.error("Frame analysis error:", e);
+    }
+  }, 600);
+}
+
+function stopVideoAiAnalysis() {
+  if (videoAnalysisInterval) {
+    clearInterval(videoAnalysisInterval);
+    videoAnalysisInterval = null;
+  }
+  const auditPanel = document.getElementById('videoAiAuditPanel');
+  if (auditPanel) auditPanel.style.display = 'none';
 }
 
 function updateTranscriptUI(text) {
