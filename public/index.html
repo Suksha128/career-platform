@@ -634,7 +634,7 @@ select option {background:#ffffff;color:var(--t1);}
   </div></div>
 
   <!-- INTERVIEW MAIN GRID: AVATAR & CONTROLS -->
-  <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:24px;margin-bottom:24px;" class="animate d1">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px;margin-bottom:24px;" class="animate d1">
     
     <!-- LEFT: VIRTUAL HIRING MANAGER AVATAR CARD -->
     <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
@@ -678,6 +678,33 @@ select option {background:#ffffff;color:var(--t1);}
           </div>
           <div style="font-size:.95rem;font-weight:600;line-height:1.5;color:var(--t1);" id="followupQuestionText">Loading follow-up...</div>
           <div style="font-size:.74rem;color:var(--t2);margin-top:8px;font-style:italic;" id="followupContextReason">Triggered based on your latest spoken response.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDDLE: CANDIDATE LIVE VIDEO CARD -->
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
+      <div class="card-body" style="display:flex;flex-direction:column;height:100%;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <p style="font-weight:700;margin:0;">📹 Candidate Video Stream</p>
+          <span class="badge b-blue" id="videoModeBadge">Offline</span>
+        </div>
+        
+        <!-- Video box / Camera Stream Container -->
+        <div style="position:relative;flex:1;min-height:220px;background:#070a13;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+          <!-- Live Video Feed -->
+          <video id="candidateVideo" autoplay playsinline muted style="display:none;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);"></video>
+          
+          <!-- Fallback placeholder when camera is off -->
+          <div id="cameraPlaceholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--t2);">
+            <div style="font-size:2.5rem;margin-bottom:10px;animation:pulse 2s infinite;">📷</div>
+            <div style="font-weight:600;font-size:.85rem;color:var(--t1);">Video Interview Mode</div>
+            <div style="font-size:.72rem;margin-top:4px;">Enable camera to practice body language and mock virtual eye contact.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;justify-content:center;">
+          <button id="btnToggleCamera" class="btn btn-primary btn-sm" onclick="toggleCameraStream()" style="padding:8px 16px;">📷 Start Video Feed</button>
         </div>
       </div>
     </div>
@@ -2317,6 +2344,55 @@ function stopInterviewRecord() {
 
   generateInterviewSummary();
   generateSpontaneousFollowup(interviewState.transcript);
+}
+
+let candidateStream = null;
+
+async function toggleCameraStream() {
+  const video = document.getElementById('candidateVideo');
+  const placeholder = document.getElementById('cameraPlaceholder');
+  const btn = document.getElementById('btnToggleCamera');
+  const badge = document.getElementById('videoModeBadge');
+  
+  if (candidateStream) {
+    candidateStream.getTracks().forEach(track => track.stop());
+    candidateStream = null;
+    if (video) {
+      video.srcObject = null;
+      video.style.display = 'none';
+    }
+    if (placeholder) placeholder.style.display = 'flex';
+    if (badge) {
+      badge.textContent = 'Offline';
+      badge.className = 'badge b-blue';
+    }
+    if (btn) {
+      btn.textContent = '📷 Start Video Feed';
+      btn.className = 'btn btn-primary btn-sm';
+    }
+    showToast('Video camera feed stopped.', '📹');
+  } else {
+    try {
+      candidateStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
+      if (video) {
+        video.srcObject = candidateStream;
+        video.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+      if (badge) {
+        badge.textContent = '● Live Stream';
+        badge.className = 'badge b-green';
+      }
+      if (btn) {
+        btn.textContent = '🛑 Stop Video Feed';
+        btn.className = 'btn btn-danger btn-sm';
+      }
+      showToast('Video camera stream active!', '📹');
+    } catch (err) {
+      console.error(err);
+      showToast('Camera access denied or unavailable.', '⚠️');
+    }
+  }
 }
 
 function updateTranscriptUI(text) {
