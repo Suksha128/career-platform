@@ -1953,26 +1953,57 @@ function drawRadarChart(data){
 }
 
 // ─── RESUME TAILOR ────────────────────────────
-let resumeInit=false;
-function initResumePage(){if(resumeInit)return;resumeInit=true;tailorResume();}
-function tailorResume(){
-  const co=document.getElementById('tailorCompany')?.value||'Amazon';
-  const d=RESUME_DATA[co]||RESUME_DATA.Amazon;
-  document.getElementById('atsBefore').textContent=d.before;
-  document.getElementById('atsAfter').textContent=d.after;
-  document.getElementById('atsImprove').textContent='+'+( d.after-d.before)+' points ↑';
-  setTimeout(()=>{document.getElementById('atsProgress').style.width=d.after+'%';},100);
-  document.getElementById('tailorSummary').textContent=d.summary;
-  document.getElementById('tailorBullets').innerHTML=d.bullets.map(b=>`
-    <div style="margin-bottom:16px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div class="diff-old">❌ ${b.old}</div>
-        <div class="diff-new">✅ ${b.new}</div>
-      </div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;padding:6px 0;">${b.kw.map(k=>'<span class="badge b-cyan" style="font-size:.7rem;">+ '+k+'</span>').join('')}</div>
-    </div>`).join('');
-  document.getElementById('atsKeywords').innerHTML=d.keywords.map(k=>'<span class="badge b-purple">🔑 '+k+'</span>').join('');
-  document.getElementById('tailorTips').innerHTML=d.tips.map((t,i)=>`<div style="display:flex;gap:10px;margin-bottom:10px;font-size:.85rem;"><span style="color:var(--amber);flex-shrink:0;">${i+1}.</span><span>${t}</span></div>`).join('');
+function initResumePage() {
+  tailorResume();
+  const alterInput = document.getElementById('alterResumeInput');
+  if (alterInput && !alterInput.value.trim()) {
+    if (state.profile && state.profile.name) {
+      loadCandidateProfileResume();
+    } else {
+      loadSampleResumeForAlteration();
+    }
+  } else {
+    suggestKeywordsForAlteration();
+  }
+}
+
+function tailorResume() {
+  const co = document.getElementById('tailorCompany')?.value || 'Amazon';
+  const d = RESUME_DATA[co] || RESUME_DATA.Amazon;
+  
+  const atsBeforeEl = document.getElementById('atsBefore');
+  const atsAfterEl = document.getElementById('atsAfter');
+  const atsImproveEl = document.getElementById('atsImprove');
+  const atsProgressEl = document.getElementById('atsProgress');
+  const tailorSummaryEl = document.getElementById('tailorSummary');
+  const tailorBulletsEl = document.getElementById('tailorBullets');
+  const atsKeywordsEl = document.getElementById('atsKeywords');
+  const tailorTipsEl = document.getElementById('tailorTips');
+
+  if (atsBeforeEl) atsBeforeEl.textContent = d.before;
+  if (atsAfterEl) atsAfterEl.textContent = d.after;
+  if (atsImproveEl) atsImproveEl.textContent = '+' + (d.after - d.before) + ' points ↑';
+  if (atsProgressEl) setTimeout(() => { atsProgressEl.style.width = d.after + '%'; }, 100);
+  if (tailorSummaryEl) tailorSummaryEl.textContent = d.summary;
+
+  if (tailorBulletsEl) {
+    tailorBulletsEl.innerHTML = d.bullets.map(b => `
+      <div style="margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="diff-old">❌ ${b.old}</div>
+          <div class="diff-new">✅ ${b.new}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;padding:6px 0;">${b.kw.map(k => '<span class="badge b-cyan" style="font-size:.7rem;">+ ' + k + '</span>').join('')}</div>
+      </div>`).join('');
+  }
+
+  if (atsKeywordsEl) {
+    atsKeywordsEl.innerHTML = d.keywords.map(k => '<span class="badge b-purple">🔑 ' + k + '</span>').join('');
+  }
+
+  if (tailorTipsEl) {
+    tailorTipsEl.innerHTML = d.tips.map((t, i) => `<div style="display:flex;gap:10px;margin-bottom:10px;font-size:.85rem;"><span style="color:var(--amber);flex-shrink:0;">${i + 1}.</span><span>${t}</span></div>`).join('');
+  }
 }
 
 // ─── IN-PLACE RESUME CONTENT ALTERER ENGINE ───────
