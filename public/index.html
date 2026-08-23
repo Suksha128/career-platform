@@ -217,7 +217,7 @@ select option {background:#ffffff;color:var(--t1);}
 <div class="toast" id="toast"><span id="toastIcon">✅</span><span id="toastMsg"></span></div>
 
 <!-- ═══ HOME ═══ -->
-<div id="page-home" style="position:relative;z-index:1;padding:88px 40px 60px;max-width:1380px;margin:0 auto;">
+<div id="page-home" class="page active" style="position:relative;z-index:1;padding:88px 40px 60px;max-width:1380px;margin:0 auto;">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;min-height:calc(100vh - 148px);">
     <div>
       <div class="hero-pill animate">⚡ Powered by Qwen2.5 AI &amp; Recruitment Intelligence Engines</div>
@@ -2497,9 +2497,15 @@ function startInterviewRecord() {
   interviewState.fillerCounts = { um:0, uh:0, like:0, so:0, youknow:0, basically:0 };
   
   document.getElementById('recBtnIcon').textContent = '⏹️';
+  
+  const switchEl = document.getElementById('toggleRoleSwitch');
+  const isInterviewer = switchEl && switchEl.checked;
   document.getElementById('recBtnText').textContent = 'Stop Recording';
-  document.getElementById('btnInterviewRecord').classList.replace('btn-primary', 'btn-danger');
-  document.getElementById('recStatusText').textContent = '🔴 Listening... speak your answer clearly';
+  
+  const btn = document.getElementById('btnInterviewRecord');
+  if(btn) btn.classList.replace('btn-primary', 'btn-danger');
+  
+  document.getElementById('recStatusText').textContent = isInterviewer ? '🔴 Listening... ask your question clearly' : '🔴 Listening... speak your answer clearly';
   document.getElementById('interviewSummaryCard').style.display = 'none';
   
   updateTranscriptUI('');
@@ -4584,7 +4590,7 @@ function showAuthAccountModal(){
 // ─── SPEECH GUARD REJECTION FILTER ────────────────
 function validateProfessionalSpeech(text) {
   const clean = text.toLowerCase().trim();
-  if (clean.length < 4) return false;
+  if (clean.length === 0) return false;
 
   // Reject gibberish, casual slang, and non-professional noise patterns
   const junkPatterns = [
