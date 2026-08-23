@@ -1712,17 +1712,16 @@ function exportTailoredResumePDF() {
 
       ${certsHtml}
 
-      <script>
-        window.onload = function() {
-          window.print();
-        };
-      </script>
     </body>
     </html>
   `;
 
   printWindow.document.write(htmlContent);
   printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    try { printWindow.print(); } catch(e){}
+  }, 500);
 }
 
 // ─── QUIZ ────────────────────────────────────
