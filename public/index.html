@@ -1716,23 +1716,30 @@ function importProfileJSON(event){
 let matchInit=false, currentDomain='All', selectedRole=null;
 
 function initMatchPage(){
-  if(matchInit) return; 
-  matchInit=true;
   const p = state.profile;
-  if(p && p.name) {
-    document.getElementById('matchName').textContent = p.name;
-    document.getElementById('matchDomain').textContent = (p.domain||'Software Development') + ' • ' + (p.location||'Bangalore') + ' • ' + (p.exp == 0 ? 'Fresher' : p.exp + ' yr(s)');
-    document.getElementById('matchAvatar').textContent = p.name[0].toUpperCase();
-    document.getElementById('matchBadges').innerHTML = '<span class="badge b-blue">' + (p.skills||[]).length + ' Skills</span><span class="badge b-purple">' + (p.projects||[]).length + ' Projects</span>';
+  const candSkills = (state.skills && state.skills.length > 0)
+    ? state.skills
+    : (p?.skills && p.skills.length > 0) ? p.skills : [];
+
+  if (p && (p.name || candSkills.length > 0)) {
+    document.getElementById('matchName').textContent = p.name || 'Candidate Profile';
+    document.getElementById('matchDomain').textContent = (p.domain||'Software Development') + ' • ' + (p.location||'Bangalore') + ' • ' + (p.exp == 0 ? 'Fresher' : (p.exp || 0) + ' yr(s)');
+    document.getElementById('matchAvatar').textContent = (p.name && p.name[0]) ? p.name[0].toUpperCase() : '👤';
+    document.getElementById('matchBadges').innerHTML = '<span class="badge b-blue">' + candSkills.length + ' Skills</span><span class="badge b-purple">' + (p.projects||[]).length + ' Projects</span>';
   } else {
-    document.getElementById('matchName').textContent = 'Candidate Profile';
-    document.getElementById('matchDomain').textContent = 'No Profile Saved Yet • Complete your details in the Profile tab';
+    document.getElementById('matchName').textContent = 'Candidate Profile (Incomplete)';
+    document.getElementById('matchDomain').textContent = '⚠️ No skills entered yet • Complete your details in the Profile tab for real-time match accuracy';
     document.getElementById('matchAvatar').textContent = '👤';
-    document.getElementById('matchBadges').innerHTML = '<span class="badge b-amber">0 Skills</span><span class="badge b-purple">0 Projects</span>';
+    document.getElementById('matchBadges').innerHTML = '<span class="badge b-red">0 Skills</span><span class="badge b-amber">0% Base Match</span>';
   }
+
   renderDomainFilters();
   renderRoleList();
-  selectRole(ROLES.sort((a,b)=>b.match-a.match)[0]);
+  
+  const dynamicallyMatched = ROLES.map(r => getDynamicRoleMatch(r)).sort((a,b) => b.match - a.match);
+  if (dynamicallyMatched.length > 0) {
+    selectRole(dynamicallyMatched[0]);
+  }
 }
 
 function renderDomainFilters(){
@@ -1749,22 +1756,39 @@ function filterDomain(d){
 
 // ─── DYNAMIC ACCURATE SKILL MATCHING ENGINE ───
 function getDynamicRoleMatch(role) {
-  // 1. Candidate Skills Extraction
+  // 1. Candidate Skills Extraction (Strictly from user profile / input)
   const candidateSkills = (state.skills && state.skills.length > 0) 
     ? state.skills 
     : (state.profile?.skills && state.profile.skills.length > 0)
       ? state.profile.skills
-      : ['Python', 'SQL', 'Git', 'React', 'REST APIs'];
+      : [];
 
-  const normCandidate = candidateSkills.map(s => s.toLowerCase().trim().replace(/[^a-z0-9]/g, ''));
-  
-  // 2. Aggregate Required Skills for Role
   const allRoleSkills = Array.from(new Set([
     ...(role.matched || []),
     ...(role.missing || []),
     ...(role.radar ? role.radar.map(r => r.s) : [])
   ]));
 
+  // If candidate has entered ZERO details, match score is strictly 0%!
+  if (candidateSkills.length === 0) {
+    const zeroRadar = (role.radar || []).map(item => ({
+      s: item.s,
+      c: 5, // Baseline 5% for unassessed skill
+      r: item.r
+    }));
+
+    return {
+      ...role,
+      match: 0,
+      matched: [],
+      missing: allRoleSkills,
+      radar: zeroRadar
+    };
+  }
+
+  const normCandidate = candidateSkills.map(s => s.toLowerCase().trim().replace(/[^a-z0-9]/g, ''));
+  
+  // 2. Aggregate Required Skills for Role
   let weightedMatchScore = 0;
   let totalWeight = 0;
 
@@ -1820,8 +1844,8 @@ function getDynamicRoleMatch(role) {
   if (certs.length >= 1) certBonus += 2;
 
   // 4. Calculate Final Multi-Factor Match Score
-  const rawScore = totalWeight > 0 ? (weightedMatchScore / totalWeight) * 100 : 50;
-  const finalMatchPct = Math.min(96, Math.max(15, Math.round(rawScore + projectBonus + certBonus)));
+  const rawScore = totalWeight > 0 ? (weightedMatchScore / totalWeight) * 100 : 0;
+  const finalMatchPct = Math.min(100, Math.max(0, Math.round(rawScore + projectBonus + certBonus)));
 
   // 5. Dynamic Radar Generation
   const dynamicRadar = (role.radar || []).map(item => {
@@ -1829,7 +1853,7 @@ function getDynamicRoleMatch(role) {
     const hasSkill = normCandidate.some(c => c.includes(normItem) || normItem.includes(c));
     return {
       s: item.s,
-      c: hasSkill ? Math.min(95, Math.max(70, item.r + 5)) : Math.min(25, item.c),
+      c: hasSkill ? Math.min(95, Math.max(70, item.r + 5)) : Math.min(20, item.c),
       r: item.r
     };
   });
